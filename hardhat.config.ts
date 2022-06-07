@@ -86,7 +86,7 @@ const config: HardhatUserConfig = {
       url: process.env.RPC_URL,
       chainId: 137,
       accounts: {
-        mnemonic:process.env.PRIVATE_MNEMONIC,
+        mnemonic:process.env.PRIVATE_MNEMONIC?process.env.PRIVATE_MNEMONIC:"test test test test test test test test test test test junk",
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 16
