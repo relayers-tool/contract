@@ -8,7 +8,6 @@ module.exports = {
         "mock/mockTornadoGovernanceStaking.sol",
         "mock/mockTornadoStakingRewards.sol",
         "mock/mockTornRouter.sol",
-        "Greeter.sol",
         "mock/interface/ImockTronRouter.sol",
     ]
 };
