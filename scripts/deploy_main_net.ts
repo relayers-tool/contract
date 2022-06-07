@@ -6,10 +6,10 @@ import {waitBlocks} from "../test/utils";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
 
 async function main() {
-  let mRootManger:RootManger;
-  let mDeposit :Deposit;
-  let mExitQueue :ExitQueue;
-  let mIncome :Income;
+  let mRootManger_logic:RootManger;
+  let mDeposit_logic :Deposit;
+  let mExitQueue_logic :ExitQueue;
+  let mIncome_logic :Income;
   let torn_erc20: MERC20;
   let deployer1:SignerWithAddress,deployer2:SignerWithAddress;
   let address_torn_erc20 =  '0x77777FeDdddFfC19Ff86DB637967013e6C6A116C';
@@ -21,38 +21,34 @@ async function main() {
   // @ts-ignore
   [deployer1,deployer2,] = await ethers.getSigners();
 
-  mRootManger = await (await ethers.getContractFactory("RootManger")).deploy(address_RelayerRegistry,address_torn_erc20);
-  console.log(`let address_mRootManger_logic =  '${mRootManger.address}'`);
+  mRootManger_logic = await (await ethers.getContractFactory("RootManger")).deploy(address_RelayerRegistry,address_torn_erc20);
+  console.log(`let address_mRootManger_logic =  '${mRootManger_logic.address}'`);
   await waitBlocks(2);
 
 
-  let mRootManger_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mRootManger.address,deployer1.address,"0x");
+  let mRootManger_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mRootManger_logic.address,deployer1.address,"0x");
   console.log(`let address_mRootManger_proxy =  '${mRootManger_proxy.address}'`);
 
-  mIncome = await (await ethers.getContractFactory("Income")).deploy(address_SwapRouter,address_weth,address_torn_erc20,mRootManger.address);
-  console.log(`let address_mIncome_logic =  '${mIncome.address}'`);
+  mIncome_logic = await (await ethers.getContractFactory("Income")).deploy(address_SwapRouter,address_weth,address_torn_erc20,mRootManger_proxy.address);
+  console.log(`let address_mIncome_logic =  '${mIncome_logic.address}'`);
   await waitBlocks(2);
 
-  let mIncome_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mIncome.address,deployer1.address,"0x");
+  let mIncome_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mIncome_logic.address,deployer1.address,"0x");
   console.log(`let address_mIncome_proxy =  '${mIncome_proxy.address}'`);
 
 
-  mDeposit = await (await ethers.getContractFactory("Deposit")).deploy(address_torn_erc20,address_TornadoGovernanceStaking,address_RelayerRegistry,mRootManger_proxy.address);
-  console.log(`let address_mDeposit_logic =  '${mDeposit.address}'`);
+  mDeposit_logic = await (await ethers.getContractFactory("Deposit")).deploy(address_torn_erc20,address_TornadoGovernanceStaking,address_RelayerRegistry,mRootManger_proxy.address);
+  console.log(`let address_mDeposit_logic =  '${mDeposit_logic.address}'`);
   await waitBlocks(2);
-  let mDeposit_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mDeposit.address,deployer1.address,"0x");
+  let mDeposit_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mDeposit_logic.address,deployer1.address,"0x");
   console.log(`let address_mDeposit_proxy =  '${mDeposit_proxy.address}'`);
 
-  mExitQueue = await (await ethers.getContractFactory("ExitQueue")).deploy(address_torn_erc20,mDeposit_proxy.address);
-  console.log(`let address_mExitQueue_logic =  '${mExitQueue.address}'`);
+  mExitQueue_logic = await (await ethers.getContractFactory("ExitQueue")).deploy(address_torn_erc20,mDeposit_proxy.address);
+  console.log(`let address_mExitQueue_logic =  '${mExitQueue_logic.address}'`);
   await waitBlocks(2);
 
-  let mExitQueue_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mExitQueue.address,deployer1.address,"0x");
+  let mExitQueue_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mExitQueue_logic.address,deployer1.address,"0x");
   console.log(`let address_mExitQueue_proxy =  '${mExitQueue_proxy.address}'`);
-
-
-
-
 
 }
 

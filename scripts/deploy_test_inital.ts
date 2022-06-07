@@ -85,16 +85,16 @@ async function main() {
 
     let proxy_Deposit =( await ethers.getContractFactory('Deposit')).attach(address_mDeposit_proxy);
     console.log("await proxy_Deposit.connect(deployer2).__Deposit_init()");
-   // await proxy_Deposit.connect(deployer2).__Deposit_init();
+   await proxy_Deposit.connect(deployer2).__Deposit_init();
 
     let proxy_ExitQueue = (await ethers.getContractFactory('ExitQueue')).attach(address_mExitQueue_proxy);
     console.log("proxy_ExitQueue.connect(deployer2).__ExitQueue_init()");
-   // await proxy_ExitQueue.connect(deployer2).__ExitQueue_init();
+    await proxy_ExitQueue.connect(deployer2).__ExitQueue_init();
 
     let proxy_RootManger = (await ethers.getContractFactory('RootManger')).attach(address_mRootManger_proxy);
     console.log("__RootManger_init(proxy_mIncome.address,proxy_Deposit.address,proxy_ExitQueue.address)");
-  //  await proxy_RootManger.connect(deployer2).__RootManger_init(proxy_mIncome.address,proxy_Deposit.address,proxy_ExitQueue.address);
-  //  await proxy_RootManger.connect(deployer2).setOperator(operator.address);
+   await proxy_RootManger.connect(deployer2).__RootManger_init(proxy_mIncome.address,proxy_Deposit.address,proxy_ExitQueue.address);
+   await proxy_RootManger.connect(deployer2).setOperator(operator.address);
 
     //give enough torn for swap
     console.log("torn_erc20.mint for: "+mockSwap.address);

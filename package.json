@@ -2,7 +2,7 @@
   "scripts": {
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
-    "deploy": "npx hardhat run --network hardhat  scripts/deploy.ts"
+    "deploy": "npx hardhat run --network hardhat  scripts/deploy_main_net.ts"
   },
   "name": "hardhat-project",
   "devDependencies": {
