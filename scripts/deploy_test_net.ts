@@ -14,26 +14,9 @@ import {
   RootManger
 } from "../typechain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
+import {waitBlocks} from "../test/utils";
 
-const delay = (ms: number) => new Promise((resolve, reject) => setTimeout(resolve, ms))
 
-const waitBlocks = async (block: number) => {
-
-  const network = await ethers.getDefaultProvider().getNetwork();
-  console.log("Network name=", network.name);
-
-  const blockNumAfter = await ethers.provider.getBlockNumber();
-  while(true){
-    let NO = await ethers.provider.getBlockNumber();
-    console.log(NO);
-    if(NO >= blockNumAfter+block){
-      return;
-    }else{
-      await delay(15000);
-    }
-  }
-
-}
 
 
 
@@ -94,16 +77,16 @@ async function main() {
   console.log(`let address_mIncome_proxy =  '${mIncome_proxy.address}'`);
 
 
-  mTornRouter = await (await ethers.getContractFactory("MTornRouter")).deploy(usdc_erc20.address,dai_erc20.address,mIncome.address,mRelayerRegistry.address);
+  mTornRouter = await (await ethers.getContractFactory("MTornRouter")).deploy(usdc_erc20.address,dai_erc20.address,mIncome_proxy.address,mRelayerRegistry.address);
   console.log(`let address_mTornRouter =  '${mTornRouter.address}'`);
 
-  mDeposit = await (await ethers.getContractFactory("Deposit")).deploy(torn_erc20.address,mTornadoGovernanceStaking.address,mRelayerRegistry.address,mRootManger.address);
+  mDeposit = await (await ethers.getContractFactory("Deposit")).deploy(torn_erc20.address,mTornadoGovernanceStaking.address,mRelayerRegistry.address,mRootManger_proxy.address);
   console.log(`let address_mDeposit_logic =  '${mDeposit.address}'`);
   await waitBlocks(2);
   let mDeposit_proxy = await (await ethers.getContractFactory("RelayerDAOProxy")).deploy(mDeposit.address,deployer1.address,"0x");
   console.log(`let address_mDeposit_proxy =  '${mDeposit_proxy.address}'`);
 
-  mExitQueue = await (await ethers.getContractFactory("ExitQueue")).deploy(torn_erc20.address,mRootManger.address);
+  mExitQueue = await (await ethers.getContractFactory("ExitQueue")).deploy(torn_erc20.address,mRootManger_proxy.address);
   console.log(`let address_mExitQueue_logic =  '${mExitQueue.address}'`);
   await waitBlocks(2);
 
