@@ -22,7 +22,7 @@ Currently,the amount of TORN locked in the Tornado Cash governance contract is 7
     npx hardhat test
 ```
 
-####Run coverage:
+#### Run coverage:
 
 ```
    npx hardhat coverage
