@@ -171,7 +171,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         }
     }
 
-    function withDraw(uint256 _amount_token) override external nonReentrant returns (uint256) {
+    function withDrawWithApproval(uint256 _amount_token) override external nonReentrant {
         require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
         require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
         uint256  shortage;
@@ -183,7 +183,6 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         }
         require(IRootManger(ROOT_MANAGER).withdraw(msg.sender, _amount_token), 'Something went wrong on Manager Contract');
         IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, torn);
-        return torn;
     }
 
     function withdraw_for_exit(uint256 _amount_token) override external onlyExitQueue returns (uint256) {

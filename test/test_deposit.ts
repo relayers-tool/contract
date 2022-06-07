@@ -261,7 +261,7 @@ describe("test_deposit", function () {
 
         it("case1 : : test Insufficient", async function () {
 
-            await expect(mDeposit.connect(user1).withDraw(stake_torn)).to.be.revertedWith("balance Insufficient")
+            await expect(mDeposit.connect(user1).withDrawWithApproval(stake_torn)).to.be.revertedWith("balance Insufficient")
 
         });
 
@@ -281,13 +281,13 @@ describe("test_deposit", function () {
             let  token = await mRootManger.balanceOf(user1.address);
 
             expect((await mDeposit.getValueShouldUnlock(token)).torn).equal(stake_torn) ;
-            await expect(mDeposit.connect(user1).withDraw(token)).to.revertedWith("pool Insufficient");
+            await expect(mDeposit.connect(user1).withDrawWithApproval(token)).to.revertedWith("pool Insufficient");
 
             await   mRootManger.connect(user1).approve(mExitQueue.address,token);
             await mExitQueue.connect(user1).addQueueWithApproval(token);
 
             expect((await mDeposit.getValueShouldUnlock(token)).torn).equal(stake_torn) ;
-            await expect(mDeposit.connect(user1).withDraw(token)).to.revertedWith("Queue not empty");
+            await expect(mDeposit.connect(user1).withDrawWithApproval(token)).to.revertedWith("Queue not empty");
         });
 
         it("case3  : use gov staking for withdraw", async function () {
@@ -299,7 +299,7 @@ describe("test_deposit", function () {
              let  token = await mRootManger.balanceOf(user1.address);
             expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).equal(stake_torn);
             expect((await mDeposit.getValueShouldUnlock(token)).torn).equal(stake_torn) ;
-            await mDeposit.connect(user1).withDraw(token);
+            await mDeposit.connect(user1).withDrawWithApproval(token);
            expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).equal(0);
 
         });
@@ -314,7 +314,7 @@ describe("test_deposit", function () {
             await mDeposit.connect(user1).depositWithApproval(stake_torn);
             expect(await mRootManger.totalTorn()).equal(stake_torn);
             let  token = await mRootManger.balanceOf(user1.address);
-            await mDeposit.connect(user1).withDraw(token.div(2));
+            await mDeposit.connect(user1).withDrawWithApproval(token.div(2));
             expect(await mRootManger.totalTorn()).equal(stake_torn.div(2));
 
         });

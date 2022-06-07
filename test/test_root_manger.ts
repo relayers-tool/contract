@@ -115,6 +115,4 @@ describe("RootManger", function () {
   });
 
 
-
-
 });
