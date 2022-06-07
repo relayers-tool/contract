@@ -128,6 +128,26 @@ export async function createFixture(is_reg_relayer:boolean) :Promise<Fixture>{
 }
 
 
+const delay = (ms: number) => new Promise((resolve, reject) => setTimeout(resolve, ms))
+
+export const waitBlocks = async (block: number) => {
+
+    const network = await ethers.getDefaultProvider().getNetwork();
+
+    const blockNumAfter = await ethers.provider.getBlockNumber();
+    while(true){
+        let NO = await ethers.provider.getBlockNumber();
+        console.log(NO);
+        if(NO >= blockNumAfter+block){
+            return;
+        }else{
+            await delay(15000);
+        }
+    }
+
+}
+
+
 export  async function banlancOf  (info:Fixture, type:string, user:any) {
     switch (type) {
         case "usdc":{
