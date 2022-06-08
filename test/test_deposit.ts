@@ -15,7 +15,7 @@ import {
 import {BigNumber} from "@ethersproject/bignumber";
 import {signERC2612Permit} from "eth-permit";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {set_up} from "./start_up";
+import {set_up_fixture} from "./start_up";
 describe("test_deposit", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
 
@@ -31,14 +31,13 @@ describe("test_deposit", function () {
     let owner:SignerWithAddress;
     let dao_relayer1:SignerWithAddress;
 
-    let fix_info: Fixture;
 
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
     let mTornadoStakingRewards:MTornadoStakingRewards;
     beforeEach(async () => {
         // console.log(await set_up()) ;
+        let fix_info = await set_up_fixture("register_relayers");
 
-        fix_info = await createFixture(true);
         usdc_erc20 = fix_info.usdc_erc20;
         torn_erc20 = fix_info.torn_erc20;
         mTornRouter =fix_info.mTornRouter;
@@ -55,21 +54,27 @@ describe("test_deposit", function () {
         mTornadoStakingRewards = fix_info.mTornadoStakingRewards;
         dao_relayer1 = fix_info.dao_relayer1;
         owner = fix_info.owner;
-
+      //  let i = 1;
+       // console.log(i++);
         let usdc = ethers.utils.parseUnits("1",6);
         await usdc_erc20.connect(user1).mint(user1.address,usdc.mul(1000));
 
-
+        //console.log(i++);
         // deposit usdc for test
          usdc = ethers.utils.parseUnits("1",6);
         await usdc_erc20.connect(user1).approve(mTornRouter.address,usdc);
+        //console.log(i++);
         await mTornRouter.connect(user1).deposit("usdc",usdc);
+       // console.log(i++);
         await mTornRouter.connect(user1).withdraw("usdc",usdc,user2.address);
+       // console.log(i++);
 
         //deposit eth for test
         let eth = ethers.utils.parseUnits("1000",18);
         await mTornRouter.connect(user1).deposit("eth", eth, {value: eth});
+       // console.log(i++,mTornRouter);
         await mTornRouter.connect(user1).withdraw("eth", eth, user2.address);
+        // console.log(i++);
 
     });
 
@@ -77,6 +82,7 @@ describe("test_deposit", function () {
         let stake_torn=ethers.utils.parseUnits("50",18);
 
         beforeEach(async () => {
+            // console.log(user1,torn_erc20,mDeposit);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn);
             await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
             await mDeposit.connect(user1).depositWithApproval(stake_torn);

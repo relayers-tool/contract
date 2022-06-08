@@ -8,11 +8,13 @@ import {
     MTornadoGovernanceStaking,
     MTornadoStakingRewards, MTornRouter, RootManger
 } from "../typechain-types";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
-export  async function set_up () {
+import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
+import {expect} from "chai";
+export  async function set_up_fixture(fix_name:string) {
     // it first ensure the deployment is executed and reset (use of evm_snaphost for fast test)
     // await deployments.fixture(["mock_torn"]);
-    await deployments.fixture(["test_net"]);
+    expect("test_initial register_relayers".includes(fix_name)).true;
+    await deployments.fixture([fix_name]);
     // we get an instantiated contract in the form of a ethers.js Contract instance:
     const contracts = {
         mock_torn: (await deployments.get('mock_torn')).address,
@@ -30,13 +32,18 @@ export  async function set_up () {
         MTornRouter:(await deployments.get('MTornRouter')).address,
     };
 
+    let owner:SignerWithAddress,proxy_admin:SignerWithAddress;
     let deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
     let relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
     let stake1:SignerWithAddress,stake2:SignerWithAddress,stake3:SignerWithAddress;
+    let dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress;
     // @ts-ignore
-    [deployer1,deployer2,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3] = await ethers.getSigners();
+    [deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner] = await ethers.getSigners();
 
     let torn_erc20: MERC20;
+    let usdc_erc20: MERC20;
+    let dai_erc20: MERC20;
+    let weth_erc20: MERC20;
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
     let mRelayerRegistry :MRelayerRegistry;
     let mTornadoStakingRewards :MTornadoStakingRewards;
@@ -50,6 +57,9 @@ export  async function set_up () {
     let mockSwap :MockSwap;
 
     torn_erc20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
+    usdc_erc20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_usdc);
+    dai_erc20  = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_dai);
+    weth_erc20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_weth);
     mockSwap =  <MockSwap>(await ethers.getContractFactory("MockSwap")).attach(contracts.mockSwap);
     mRelayerRegistry = <MRelayerRegistry>(await ethers.getContractFactory("MRelayerRegistry")).attach(contracts.mRelayerRegistry);
     mTornadoStakingRewards = <MTornadoStakingRewards>(await ethers.getContractFactory("MTornadoStakingRewards")).attach(contracts.mTornadoStakingRewards);
@@ -70,8 +80,10 @@ export  async function set_up () {
 
     // finally we return the whole object (including the tokenOwner set_up as a User object)
     return {
-        ...contracts,
-        deployer1,deployer2,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,
+        usdc_erc20,
+        dai_erc20,
+        weth_erc20,
+        deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner,
         torn_erc20,mockSwap,mRelayerRegistry,mTornadoStakingRewards,mTornadoGovernanceStaking,mRootManger,mIncome,mTornRouter,mDeposit,mExitQueue
     };
 }

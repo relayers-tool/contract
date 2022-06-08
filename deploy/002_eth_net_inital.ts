@@ -2,9 +2,8 @@
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {Deposit, ExitQueue, Income, MTornadoGovernanceStaking, MTornRouter, RootManger} from "../typechain-types";
-import {set_up} from "../test/start_up";
 
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
+import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 
 
 

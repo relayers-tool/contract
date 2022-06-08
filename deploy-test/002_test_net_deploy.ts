@@ -10,7 +10,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {deployments,ethers, getNamedAccounts} = hre;
     const {deploy} = deployments;
 
-    const {deployer1} = await getNamedAccounts();
+    const {deployer1,proxy_admin} = await getNamedAccounts();
 
     const contracts = {
         mock_torn: (await deployments.get('mock_torn')).address,
@@ -31,8 +31,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
     let ret_RootManger =  await deploy('RootManger', {
-        from: deployer1,
-        args: [ret_RootManger_logic.address,deployer1,"0x"],
+        from:deployer1,
+        args: [ret_RootManger_logic.address,proxy_admin,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
@@ -48,7 +48,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_mIncome =  await deploy('Income', {
         from: deployer1,
-        args: [ret_Income_logic.address,deployer1,"0x"],
+        args: [ret_Income_logic.address,proxy_admin,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
@@ -71,7 +71,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_Deposit =  await deploy('Deposit', {
         from: deployer1,
-        args: [ret_mDeposit_logic.address,deployer1,"0x"],
+        args: [ret_mDeposit_logic.address,proxy_admin,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
@@ -87,7 +87,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_mExitQueue =  await deploy('ExitQueue', {
         from: deployer1,
-        args: [ret_mExitQueue_logic.address,deployer1,"0x"],
+        args: [ret_mExitQueue_logic.address,proxy_admin,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });

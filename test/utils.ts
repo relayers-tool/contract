@@ -59,6 +59,7 @@ export async function createFixture(is_reg_relayer:boolean) :Promise<Fixture>{
     mTornadoGovernanceStaking = <MTornadoGovernanceStaking>await (await ethers.getContractFactory("MTornadoGovernanceStaking")).deploy(torn_erc20.address);
     mRelayerRegistry = <MRelayerRegistry>await (await ethers.getContractFactory("MRelayerRegistry")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
     mTornadoStakingRewards = <MTornadoStakingRewards>await (await ethers.getContractFactory("MTornadoStakingRewards")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
+
     await mTornadoGovernanceStaking.setStakingRewardContract(mTornadoStakingRewards.address);
 
     mRootManger =<RootManger> await (await ethers.getContractFactory("RootManger")).deploy(mRelayerRegistry.address,torn_erc20.address);

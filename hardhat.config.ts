@@ -64,16 +64,23 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer1:0,
     deployer2:1,
-    relayer1:2,
-    relayer2:3,
-    relayer3:4,
-    user1:5,
-    user2:6,
-    user3:7,
-    operator:8,
-    stake1:9,
-    stake2:10,
-    stake3:11
+    proxy_admin:2,
+    relayer1:3,
+    relayer2:4,
+    relayer3:5,
+    user1:6,
+    user2:7,
+    user3:8,
+    operator:9,
+    stake1:10,
+    stake2:11,
+    stake3:12,
+    dao_relayer1:13,
+    dao_relayer2:14,
+    dao_relayer3:15,
+    owner:16,
+
+
   },
   networks: {
     hardhat: {
