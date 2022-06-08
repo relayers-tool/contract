@@ -9,8 +9,8 @@ import {
   MTornadoStakingRewards,
   MTornRouter,
   RootManger
-} from "../typechain";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
+} from "../typechain-types";
+import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {createFixture, Fixture} from "./utils";
 
 describe("RootManger", function () {

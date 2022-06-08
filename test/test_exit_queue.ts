@@ -9,8 +9,8 @@ import {
     MTornadoStakingRewards,
     MTornRouter,
     RootManger
-} from "../typechain";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
+} from "../typechain-types";
+import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {about, createFixture, Fixture} from "./utils";
 import {BigNumber} from "ethers";
 import {signERC2612Permit} from "eth-permit";

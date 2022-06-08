@@ -10,10 +10,12 @@ import {
     MTornadoStakingRewards,
     MTornRouter,
     RootManger
-} from "../typechain";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
+} from "../typechain-types";
+
 import {BigNumber} from "@ethersproject/bignumber";
 import {signERC2612Permit} from "eth-permit";
+import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
+import {set_up} from "./start_up";
 describe("test_deposit", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
 
@@ -34,6 +36,8 @@ describe("test_deposit", function () {
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
     let mTornadoStakingRewards:MTornadoStakingRewards;
     beforeEach(async () => {
+        // console.log(await set_up()) ;
+
         fix_info = await createFixture(true);
         usdc_erc20 = fix_info.usdc_erc20;
         torn_erc20 = fix_info.torn_erc20;

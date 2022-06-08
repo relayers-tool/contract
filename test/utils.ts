@@ -7,8 +7,8 @@ import {
     MTornadoStakingRewards,
     MTornRouter,
     RootManger
-} from "../typechain";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
+} from "../typechain-types";
+import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {BaseContract, BigNumber} from "ethers";
 
 
@@ -50,29 +50,27 @@ export async function createFixture(is_reg_relayer:boolean) :Promise<Fixture>{
 
     // @ts-ignore
     [deployer1,deployer2,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner] = await ethers.getSigners();
-    usdc_erc20 = await (await ethers.getContractFactory("MERC20")).deploy("usdc","mock_usdc",6);
-    dai_erc20 = await (await ethers.getContractFactory("MERC20")).deploy("dai","mock_dai",18);
-    torn_erc20 = await (await ethers.getContractFactory("MERC20")).deploy("torn","mock_torn",18);
-    weth_erc20 = await (await ethers.getContractFactory("MERC20")).deploy("weth","mock_weth",18);
+    usdc_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("usdc","mock_usdc",6);
+    dai_erc20 =  <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("dai","mock_dai",18);
+    torn_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("torn","mock_torn",18);
+    weth_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("weth","mock_weth",18);
 
-    mockSwap =  await (await ethers.getContractFactory("MockSwap")).deploy(weth_erc20.address);
-    mTornadoGovernanceStaking = await (await ethers.getContractFactory("MTornadoGovernanceStaking")).deploy(torn_erc20.address);
-    mRelayerRegistry = await (await ethers.getContractFactory("MRelayerRegistry")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
-    mTornadoStakingRewards = await (await ethers.getContractFactory("MTornadoStakingRewards")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
+    mockSwap = <MockSwap> await (await ethers.getContractFactory("MockSwap")).deploy(weth_erc20.address);
+    mTornadoGovernanceStaking = <MTornadoGovernanceStaking>await (await ethers.getContractFactory("MTornadoGovernanceStaking")).deploy(torn_erc20.address);
+    mRelayerRegistry = <MRelayerRegistry>await (await ethers.getContractFactory("MRelayerRegistry")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
+    mTornadoStakingRewards = <MTornadoStakingRewards>await (await ethers.getContractFactory("MTornadoStakingRewards")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
     await mTornadoGovernanceStaking.setStakingRewardContract(mTornadoStakingRewards.address);
 
-    mRootManger = await (await ethers.getContractFactory("RootManger")).deploy(mRelayerRegistry.address,torn_erc20.address);
+    mRootManger =<RootManger> await (await ethers.getContractFactory("RootManger")).deploy(mRelayerRegistry.address,torn_erc20.address);
 
-    mIncome = await (await ethers.getContractFactory("Income")).deploy(mockSwap.address,weth_erc20.address,torn_erc20.address,mRootManger.address);
-    mTornRouter = await (await ethers.getContractFactory("MTornRouter")).deploy(usdc_erc20.address,dai_erc20.address,mIncome.address,mRelayerRegistry.address);
+    mIncome = <Income>await (await ethers.getContractFactory("Income")).deploy(mockSwap.address,weth_erc20.address,torn_erc20.address,mRootManger.address);
+    mTornRouter = <MTornRouter>await (await ethers.getContractFactory("MTornRouter")).deploy(usdc_erc20.address,dai_erc20.address,mIncome.address,mRelayerRegistry.address);
 
-    mDeposit = await (await ethers.getContractFactory("Deposit")).deploy(torn_erc20.address,mTornadoGovernanceStaking.address,mRelayerRegistry.address,mRootManger.address);
+    mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).deploy(torn_erc20.address,mTornadoGovernanceStaking.address,mRelayerRegistry.address,mRootManger.address);
 
-    mExitQueue = await (await ethers.getContractFactory("ExitQueue")).deploy(torn_erc20.address,mRootManger.address);
+    mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).deploy(torn_erc20.address,mRootManger.address);
 
     await mRootManger.__RootManger_init(mIncome.address,mDeposit.address,mExitQueue.address);
-
-
     await mRootManger.setOperator(operator.address);
     await mDeposit.__Deposit_init();
     await mExitQueue.__ExitQueue_init();

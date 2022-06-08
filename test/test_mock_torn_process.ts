@@ -11,8 +11,8 @@ import {
     MTornadoStakingRewards,
     MTornRouter,
     RootManger
-} from "../typechain";
-import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/src/signers";
+} from "../typechain-types";
+import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 describe("main_process", function () {
 
     let usdc_erc20: MERC20,dai_erc20: MERC20,torn_erc20: MERC20;

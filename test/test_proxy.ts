@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import {MERC20} from "../typechain";
+import {MERC20} from "../typechain-types";
 
 describe("RelayerDAOProxy", function () {
     it("Should proxy", async function () {
@@ -43,7 +43,7 @@ describe("RelayerDAOProxy", function () {
 
     it("Should proxy 2", async function () {
 
-        let usdc_erc20: MERC20 = await (await ethers.getContractFactory("MERC20")).deploy("usdc","mock_usdc",6);
+        let usdc_erc20: MERC20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("usdc","mock_usdc",6);
         const [, deployer2] = await ethers.getSigners();
         await usdc_erc20.mint(deployer2.address,5000);
         expect(await usdc_erc20.balanceOf(deployer2.address)).equal(5000);
