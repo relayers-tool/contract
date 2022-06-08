@@ -26,9 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let mExitQueue :ExitQueue;
     let mIncome :Income;
 
-
     mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(contracts.RootManger);
-
     mIncome = <Income>await (await ethers.getContractFactory("Income")).attach(contracts.Income);
 
     mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
