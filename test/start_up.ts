@@ -37,14 +37,13 @@ async function config_check(){
     expect(await mRootManger.exitQueueContract()).equal(contracts.ExitQueue);
     expect(await mRootManger.depositContract()).equal(contracts.Deposit);
 
-    console.log("config_check ok")
 }
 
 
 export  async function set_up_fixture(fix_name:string) {
     // it first ensure the deployment is executed and reset (use of evm_snaphost for fast test)
     // await deployments.fixture(["mock_torn"]);
-    expect("test_initial register_relayers".includes(fix_name)).true;
+    expect("test_net register_relayers".includes(fix_name)).true;
     await deployments.fixture([fix_name]);
     // we get an instantiated contract in the form of a ethers.js Contract instance:
     const contracts = {

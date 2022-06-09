@@ -32,7 +32,7 @@ describe("main_process", function () {
 
     beforeEach(async () => {
 
-        fix_info = await set_up_fixture("test_initial");
+        fix_info = await set_up_fixture("test_net");
          usdc_erc20 = fix_info.usdc_erc20;
         torn_erc20 = fix_info.torn_erc20;
         mTornadoGovernanceStaking = fix_info.mTornadoGovernanceStaking;

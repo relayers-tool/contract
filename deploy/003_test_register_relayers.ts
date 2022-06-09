@@ -54,11 +54,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     //register relayers
     //give torn to relayers
-    console.log("mint for relayer1 :",relayer1.address);
+    // console.log("mint for relayer1 :",relayer1.address);
     await (await torn_erc20.mint(relayer1.address, ethers.utils.parseUnits("10000",18))).wait(1);
-    console.log("mint for relayer2:",relayer2.address);
+    // console.log("mint for relayer2:",relayer2.address);
     await (await torn_erc20.mint(relayer2.address, ethers.utils.parseUnits("10000",18))).wait(1);
-    console.log("mint for relayer3:",relayer3.address);
+    // console.log("mint for relayer3:",relayer3.address);
     await (await torn_erc20.mint(relayer3.address, ethers.utils.parseUnits("10000",18))).wait(1);
 
     let stake_value = ethers.utils.parseUnits("5000",18);
@@ -67,15 +67,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let mRelayerRegistry = <MRelayerRegistry>(await ethers.getContractFactory("MRelayerRegistry")).attach(contracts.mRelayerRegistry);
     let mTornadoGovernanceStaking = <MTornadoGovernanceStaking>await (await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(contracts.mTornadoGovernanceStaking);
 
-    console.log("register 1");
     await (await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_value)).wait(1);
-    console.log("register 2");
     await (await torn_erc20.connect(relayer2).approve(mRelayerRegistry.address,stake_value)).wait(1);
-    console.log("register 3");
     await (await mRelayerRegistry.connect(relayer2).register(relayer2.address, stake_value)).wait(1);
-     console.log("dao_relayer1",dao_relayer1.address);
     await (await torn_erc20.connect(dao_relayer1).approve(mRelayerRegistry.address,stake_value)).wait(1);
-    console.log("register 5");
     await (await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address,0)).wait(1);
 
     try {
@@ -100,4 +95,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 func.tags = ['register_relayers'];
-func.dependencies = ["test_initial"];
+func.dependencies = ["test_net"];

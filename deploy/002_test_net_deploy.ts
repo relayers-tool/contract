@@ -1,7 +1,8 @@
 
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {MTornadoGovernanceStaking} from "../typechain-types";
+import {Deposit, ExitQueue, MERC20, MTornadoGovernanceStaking, RootManger} from "../typechain-types";
+import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 
 
 
@@ -10,8 +11,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const {deployments,ethers, getNamedAccounts} = hre;
     const {deploy} = deployments;
 
-    const {deployer1,proxy_admin} = await getNamedAccounts();
-
+    const {deployer1,proxy_admin,operator} = await getNamedAccounts();
+    let deployer_1:SignerWithAddress,deployer2:SignerWithAddress;
+    // @ts-ignore
+    [deployer_1,deployer2,] = await ethers.getSigners();
     const contracts = {
         mock_torn: (await deployments.get('mock_torn')).address,
         mock_dai: (await deployments.get('mock_dai')).address,
@@ -91,6 +94,26 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         log: true,
         contract:"RelayerDAOProxy"
     });
+
+    if(ret_RootManger.newlyDeployed){
+        let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(ret_RootManger.address);
+        await mRootManger.connect(deployer2).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address);
+        await mRootManger.connect(deployer2).setOperator(operator);
+    }
+
+    if(ret_Deposit.newlyDeployed){
+        let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(ret_Deposit.address);
+        await mDeposit.connect(deployer2).__Deposit_init();
+    }
+
+    if(ret_mExitQueue.newlyDeployed){
+        let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(ret_mExitQueue.address);
+        await mExitQueue.connect(deployer2).__ExitQueue_init();
+    }
+
+    let torn_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
+    //give enough torn for swap
+    await torn_erc20.mint(contracts.mockSwap, ethers.utils.parseUnits("1000000",18));
 
 };
 export default func;
