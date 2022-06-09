@@ -11,7 +11,7 @@ import {
   RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {about,  Fixture} from "./utils";
+import {about} from "./utils";
 import {set_up_fixture} from "./start_up";
 
 describe("RootManger", function () {

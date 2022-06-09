@@ -122,9 +122,8 @@ describe("main_process", function () {
             await  mIncome.connect( operator).distributeTorn(eth_to_torn);
 
             expect(await  mRootManger.connect(stake2).balanceOfTorn(stake2.address)).to.equal(stake_torn.add(eth_to_torn));
-
             let relay_lost =  (await  mRelayerRegistry.getRelayerBalance( relayer1.address)).add(await  mRelayerRegistry.getRelayerBalance( relayer2.address));
-            console.log(ethers.utils.formatUnits(relay_lost,18));
+
 
 
         });

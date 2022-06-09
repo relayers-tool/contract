@@ -1,5 +1,4 @@
 pragma solidity ^0.8.0;
-import "hardhat/console.sol";
 import "./Interface/IDepositContract.sol";
 import "./Interface/IRootManger.sol";
 import "./Interface/IExitQueue.sol";
@@ -72,7 +71,6 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
 
         IERC20Upgradeable(TORN_CONTRACT).safeApprove(TORN_GOVERNANCE_STAKING, balance);
         ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockWithApproval(balance);
-       // console.log("ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockedBalance(this) %d",ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockedBalance(address(this)));
         emit lock_to_gov(balance);
     }
 

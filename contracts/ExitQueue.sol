@@ -1,11 +1,7 @@
 pragma solidity ^0.8.0;
-import "hardhat/console.sol";
+
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
@@ -15,7 +11,7 @@ import "./Interface/IRootManger.sol";
 import "./Interface/IDepositContract.sol";
 
 contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
-    using SafeMath for uint256;
+
 
     address immutable public ROOT_MANAGER;
     address immutable  public TORN_CONTRACT;
@@ -102,13 +98,9 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         uint256 value = 0;
         require(maxIndex >=  preparedIndex+1,"no pending");
         uint256 next = nextSkipIndex();
-//        console.log(" executeQueue next %d",next);
         require(INDEX_ERR != next,"too many skips");
         preparedIndex+=next;
-       // console.log("index2value[preparedIndex] %d",index2value[preparedIndex]);
-       // console.log("IRootManger(ROOT_MANAGER).valueForTorn(index2value[preparedIndex+next] %d",IRootManger(ROOT_MANAGER).valueForTorn(index2value[preparedIndex]));
         value = IDepositContract(deposit_addr).withdraw_for_exit(index2value[preparedIndex]);
-//       console.log("executeQueue preparedIndex %d",preparedIndex);
         index2value[preparedIndex] = value;
     }
 

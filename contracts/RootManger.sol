@@ -1,12 +1,7 @@
 pragma solidity ^0.8.0;
-import "hardhat/console.sol";
+
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./Interface/IRootManger.sol";
@@ -15,7 +10,6 @@ import "./Interface/IinComeContract.sol";
 import "./Interface/IRelayerRegistry.sol";
 
 contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
-    using SafeMath for uint256;
 
     address public  override exitQueueContract;
     address  public override depositContract;
@@ -71,12 +65,12 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     }
 
     modifier onlyDepositContract() {
-        require(_msgSender() == depositContract, "Caller is not depositContract");
+        require(msg.sender == depositContract, "Caller is not depositContract");
         _;
     }
 
     modifier onlyInComeContract() {
-        require(_msgSender() == inComeContract, "Caller is not inComeContract");
+        require(msg.sender == inComeContract, "Caller is not inComeContract");
         _;
     }
 
@@ -94,11 +88,8 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     //  Deposit torn + eInCome torn + totalRelayerTorn
     function totalTorn() override public view returns (uint256 ret){
         ret =  IDepositContract(depositContract).totalBalanceOfTorn();
-     //   console.log("IDepositContract(depositContract).totalBalanceOfTorn() %d", IDepositContract(depositContract).totalBalanceOfTorn());
         ret += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
-        //console.log("ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract) %d",ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract));
         ret+= this.totalRelayerTorn();
-       // console.log("this.totalRelayerTorn() %d",this.totalRelayerTorn());
     }
 
     function safeDeposit(address account,uint256 value) override  onlyDepositContract external {
@@ -107,9 +98,8 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
         if(total == uint256(0)){
             to_mint = 10*10**decimals();
         }
-        else{
-            // valve / ( totalTorn() + value) = to_mint/(totalSupply()+ to_mint)
-            to_mint =  total.mul(value).div(this.totalTorn());
+        else{ // valve / ( totalTorn() + value) = to_mint/(totalSupply()+ to_mint)
+            to_mint =  total * value / this.totalTorn();
         }
         _mint(account,to_mint);
     }
@@ -132,6 +122,6 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     }
 
     function valueForTorn(uint256 value_token) override  public view returns (uint256){
-        return value_token.mul(this.totalTorn()).div(totalSupply());
+        return value_token*(this.totalTorn())/(totalSupply());
     }
 }
