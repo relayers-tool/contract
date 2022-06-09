@@ -1,8 +1,8 @@
 pragma solidity ^0.8.0;
 
 interface IRootManger {
-       function deposit(address account,uint256 value) external returns (bool);
-       function withdraw(address account,uint256 to_burn) external returns (bool);
+       function safeDeposit(address account,uint256 value) external;
+       function safeWithdraw(address account,uint256 to_burn) external ;
        function balanceOfTorn(address account) external view returns (uint256);
        function addIncome(uint256 amount)  external ;
        function valueForTorn(uint256 value_token)  external view returns (uint256);

@@ -134,7 +134,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
 
     function depositWithApproval(uint256 _amount) public nonReentrant {
         address _account = msg.sender;
-        require(IRootManger(ROOT_MANAGER).deposit(_account, _amount), 'Something went wrong on Manager Contract');
+        IRootManger(ROOT_MANAGER).safeDeposit(_account, _amount);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _amount);
 
         // this is designed to avoid pay too much gas by one user
@@ -148,9 +148,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
                  _checkLock2Gov();
                  return ;
              }
-             if(need_unlock == IN_SUFFICIENT){
-                 return;
-             }
+            require(need_unlock != IN_SUFFICIENT,"balance Insufficient");
             ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(need_unlock);
          }
 
@@ -181,7 +179,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         if(shortage != SUFFICIENT) {
             ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
         }
-        require(IRootManger(ROOT_MANAGER).withdraw(msg.sender, _amount_token), 'Something went wrong on Manager Contract');
+        IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
         IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, torn);
     }
 
@@ -196,7 +194,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         if(shortage != SUFFICIENT) {
             ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
         }
-        require(IRootManger(ROOT_MANAGER).withdraw(msg.sender, _amount_token), 'Something went wrong on Manager Contract');
+        IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
         IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, torn);
         return torn;
     }

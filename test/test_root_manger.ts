@@ -117,10 +117,10 @@ describe("RootManger", function () {
 
   it("test onlyDepositContract", async function () {
 
-    await expect(mRootManger.connect(user1).deposit(relayer1.address,5000)).revertedWith("Caller is not depositContract");
-    await expect(mRootManger.connect(user1).deposit(user1.address,5000)).revertedWith("Caller is not depositContract");
-    await expect(mRootManger.connect(user1).withdraw(user1.address,5000)).revertedWith("Caller is not depositContract");
-    await expect(mRootManger.connect(relayer1).withdraw(relayer1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootManger.connect(user1).safeDeposit(relayer1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootManger.connect(user1).safeDeposit(user1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootManger.connect(user1).safeWithdraw(user1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootManger.connect(relayer1).safeWithdraw(relayer1.address,5000)).revertedWith("Caller is not depositContract");
 
   });
 

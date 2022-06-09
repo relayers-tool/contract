@@ -123,18 +123,17 @@ describe("test_deposit", function () {
     });
 
 
-    describe("isBalanceEnough(uint256 _amount_token)", function () {
+    describe("stake2Node", function () {
 
-        it("case1 test isBalanceEnough", async function () {
-           // await mDeposit.getValueShouldUnlock(500);
-            //await mRootManger.balanceOf(mDeposit.address)
-            // console.log(await torn_erc20.balanceOf(mDeposit.address));
-            // console.log(await mDeposit.isBalanceEnough((await mRootManger.totalSupply()).mul(500)));
-            // expect(await mDeposit.isBalanceEnough(500)).equal(false);
-            // await mDeposit.connect(user1).deposit(stake_torn,allowanceParameters.deadline,allowanceParameters.v,allowanceParameters.r,allowanceParameters.s);
-            // expect(await mRootManger.totalTorn()).equal(stake_torn);
-            // await expect(mDeposit.connect(user1).deposit(stake_torn.div(2),allowanceParameters.deadline,allowanceParameters.v,allowanceParameters.r,allowanceParameters.s))
-            //     .revertedWith("ERC20Permit: invalid signature");
+        it("stake2Node test operator", async function () {
+            let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
+           await expect(mDeposit.connect(user1).stake2Node(0,5000)).revertedWith("Caller is not operator");
+            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
+            await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
+            await torn_erc20.connect(user1).mint(user1.address,stake_torn);
+            await  mDeposit.connect(user1).depositWithApproval(stake_torn);
+            await mDeposit.connect(operator).stake2Node(0,stake_torn.div(2));
+            await expect(mDeposit.connect(operator).stake2Node(10,stake_torn.div(2))).revertedWith("Invalid index");
         });
 
     });

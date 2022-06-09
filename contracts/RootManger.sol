@@ -101,7 +101,7 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
        // console.log("this.totalRelayerTorn() %d",this.totalRelayerTorn());
     }
 
-    function deposit(address account,uint256 value) override  onlyDepositContract external returns (bool){
+    function safeDeposit(address account,uint256 value) override  onlyDepositContract external {
         uint256 total = totalSupply();
         uint256 to_mint;
         if(total == uint256(0)){
@@ -112,16 +112,14 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
             to_mint =  total.mul(value).div(this.totalTorn());
         }
         _mint(account,to_mint);
-        return true;
     }
 
-    function withdraw(address account,uint256 to_burn) override onlyDepositContract public returns (bool){
+    function safeWithdraw(address account,uint256 to_burn) override onlyDepositContract public {
 //        uint256 total = totalSupply();
 //        uint256 to_burn;
 //        // to_burn = totalSupply() * value / totalTorn()
 //        to_burn =  total.mul(value_token).div(this.totalTorn());
         _burn(account,to_burn);
-        return true;
     }
 
     event Income(address from, uint vaule);
