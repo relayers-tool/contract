@@ -10,4 +10,7 @@ contract RelayerDAOProxy is TransparentUpgradeableProxy {
         bytes memory _data
     ) TransparentUpgradeableProxy(_logic, admin_, _data) { }
 
+    receive() override external payable  {
+        //_fallback();
+    }
 }
