@@ -12,6 +12,7 @@ import {
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {createFixture, Fixture} from "./utils";
+import {set_up_fixture} from "./start_up";
 
 describe("RootManger", function () {
 
@@ -30,12 +31,12 @@ describe("RootManger", function () {
   let dao_relayer1:SignerWithAddress;
   let relayer1:SignerWithAddress;
   let relayer2:SignerWithAddress,relayer3:SignerWithAddress
-  let fix_info: Fixture;
+
 
   let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
   let mTornadoStakingRewards:MTornadoStakingRewards;
   beforeEach(async () => {
-    fix_info = await createFixture(true);
+    let fix_info = await set_up_fixture("register_relayers");
     usdc_erc20 = fix_info.usdc_erc20;
     torn_erc20 = fix_info.torn_erc20;
     mTornRouter =fix_info.mTornRouter;
@@ -71,8 +72,6 @@ describe("RootManger", function () {
     await mTornRouter.connect(user1).withdraw("eth", eth, user2.address);
 
   });
-
-
 
 
   it("test setOperator", async function () {

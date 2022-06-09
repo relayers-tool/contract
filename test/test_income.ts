@@ -12,6 +12,7 @@ import {
     RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
+import {set_up_fixture} from "./start_up";
 describe("test_income", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
 
@@ -28,7 +29,7 @@ describe("test_income", function () {
     let fix_info: Fixture;
 
     beforeEach(async () => {
-        fix_info = await createFixture(true);
+        fix_info = await set_up_fixture("register_relayers");
         usdc_erc20 = fix_info.usdc_erc20;
         torn_erc20 = fix_info.torn_erc20;
         mTornRouter =fix_info.mTornRouter;

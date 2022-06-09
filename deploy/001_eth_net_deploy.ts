@@ -21,6 +21,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let address_weth ="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
     // @ts-ignore
     [deployer1,deployer2,] = await ethers.getSigners();
+    const {operator} = await getNamedAccounts();
 
 
     let ret_RootManger_logic =  await deploy('RootManger_logic', {
@@ -80,6 +81,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         contract:"RelayerDAOProxy"
     });
 
+
+    if(ret_RootManger.newlyDeployed){
+        let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(ret_RootManger.address);
+        await mRootManger.connect(deployer2).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address);
+        await mRootManger.connect(deployer2).setOperator(operator);
+    }
+
+   if(ret_Deposit.newlyDeployed){
+       let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(ret_Deposit.address);
+       await mDeposit.connect(deployer2).__Deposit_init();
+   }
+
+    if(ret_mExitQueue.newlyDeployed){
+        let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(ret_mExitQueue.address);
+        await mExitQueue.connect(deployer2).__ExitQueue_init();
+    }
 
 };
 export default func;

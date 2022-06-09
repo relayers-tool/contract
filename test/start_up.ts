@@ -10,6 +10,37 @@ import {
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {expect} from "chai";
+
+
+async function config_check(){
+    const contracts = {
+        mock_torn: (await deployments.get('mock_torn')).address,
+        mock_dai: (await deployments.get('mock_dai')).address,
+        mock_usdc: (await deployments.get('mock_usdc')).address,
+        mock_weth: (await deployments.get('mock_weth')).address,
+        mTornadoGovernanceStaking:(await deployments.get('MTornadoGovernanceStaking')).address,
+        mRelayerRegistry:(await deployments.get('MRelayerRegistry')).address,
+        mTornadoStakingRewards:(await deployments.get('MTornadoStakingRewards')).address,
+        mockSwap:(await deployments.get('MockSwap')).address,
+        Deposit:(await deployments.get('Deposit')).address,
+        RootManger:(await deployments.get('RootManger')).address,
+        ExitQueue:(await deployments.get('ExitQueue')).address,
+        Income:(await deployments.get('Income')).address,
+        MTornRouter:(await deployments.get('MTornRouter')).address,
+    };
+   let  mRootManger =<RootManger> await (await ethers.getContractFactory("RootManger")).attach(contracts.RootManger);
+
+    expect(await mRootManger.exitQueueContract()).equal(contracts.ExitQueue);
+    expect(await mRootManger.TORN_CONTRACT()).equal(contracts.mock_torn);
+    expect(await mRootManger.TORN_RELAYER_REGISTRY()).equal(contracts.mRelayerRegistry);
+    expect(await mRootManger.inComeContract()).equal(contracts.Income);
+    expect(await mRootManger.exitQueueContract()).equal(contracts.ExitQueue);
+    expect(await mRootManger.depositContract()).equal(contracts.Deposit);
+
+    console.log("config_check ok")
+}
+
+
 export  async function set_up_fixture(fix_name:string) {
     // it first ensure the deployment is executed and reset (use of evm_snaphost for fast test)
     // await deployments.fixture(["mock_torn"]);
@@ -21,7 +52,7 @@ export  async function set_up_fixture(fix_name:string) {
         mock_dai: (await deployments.get('mock_dai')).address,
         mock_usdc: (await deployments.get('mock_usdc')).address,
         mock_weth: (await deployments.get('mock_weth')).address,
-         mTornadoGovernanceStaking:(await deployments.get('MTornadoGovernanceStaking')).address,
+        mTornadoGovernanceStaking:(await deployments.get('MTornadoGovernanceStaking')).address,
         mRelayerRegistry:(await deployments.get('MRelayerRegistry')).address,
         mTornadoStakingRewards:(await deployments.get('MTornadoStakingRewards')).address,
         mockSwap:(await deployments.get('MockSwap')).address,
@@ -76,8 +107,7 @@ export  async function set_up_fixture(fix_name:string) {
 
     mExitQueue = <ExitQueue> await (await ethers.getContractFactory("ExitQueue")).attach(contracts.ExitQueue);
 
-
-
+    await config_check();
     // finally we return the whole object (including the tokenOwner set_up as a User object)
     return {
         usdc_erc20,

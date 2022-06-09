@@ -35,7 +35,7 @@ describe("test_deposit", function () {
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
     let mTornadoStakingRewards:MTornadoStakingRewards;
     beforeEach(async () => {
-        // console.log(await set_up()) ;
+
         let fix_info = await set_up_fixture("register_relayers");
 
         usdc_erc20 = fix_info.usdc_erc20;

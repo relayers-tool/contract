@@ -60,8 +60,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // @ts-ignore
     [deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner] = await ethers.getSigners();
 
-    // @ts-ignore
-    [deployer1,deployer2,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner] = await ethers.getSigners();
     try {
         await mRootManger.connect(deployer2).__RootManger_init(mIncome.address, mDeposit.address, mExitQueue.address);
     } catch (e) {

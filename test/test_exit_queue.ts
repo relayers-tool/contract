@@ -14,6 +14,7 @@ import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {about, createFixture, Fixture} from "./utils";
 import {BigNumber} from "ethers";
 import {signERC2612Permit} from "eth-permit";
+import {set_up_fixture} from "./start_up";
 
 describe("ExitQueue", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
@@ -30,13 +31,12 @@ describe("ExitQueue", function () {
     let owner:SignerWithAddress;
     let dao_relayer1:SignerWithAddress;
 
-    let fix_info: Fixture;
 
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
     let mTornadoStakingRewards:MTornadoStakingRewards;
     let stake_torn:BigNumber;
     beforeEach(async () => {
-        fix_info = await createFixture(true);
+        let fix_info = await set_up_fixture("register_relayers");
         usdc_erc20 = fix_info.usdc_erc20;
         torn_erc20 = fix_info.torn_erc20;
         mTornRouter =fix_info.mTornRouter;
