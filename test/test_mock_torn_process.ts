@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import {BigNumber, BigNumberish,  Signer} from "ethers";
 
-import {about, banlancOf, Fixture, getGovStakeReward, createFixture} from "./utils";
+import {about, banlancOf, Fixture, getGovStakeReward} from "./utils";
 import {
     Deposit, ExitQueue, Income,
     MERC20, MockSwap,
@@ -13,6 +13,7 @@ import {
     RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
+import {set_up_fixture} from "./start_up";
 describe("main_process", function () {
 
     let usdc_erc20: MERC20,dai_erc20: MERC20,torn_erc20: MERC20;
@@ -31,7 +32,7 @@ describe("main_process", function () {
 
     let info :Fixture;
     beforeEach(async () => {
-        info = await createFixture(false);
+        info =  await set_up_fixture("test_net");
 
         usdc_erc20 =info.usdc_erc20;
         dai_erc20 = info.dai_erc20;

@@ -11,7 +11,6 @@ import {
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {BaseContract, BigNumber} from "ethers";
 
-
 export interface Fixture {
     usdc_erc20: MERC20;dai_erc20: MERC20;torn_erc20: MERC20;weth_erc20: MERC20;
     mTornadoGovernanceStaking:MTornadoGovernanceStaking;
@@ -30,121 +29,7 @@ export interface Fixture {
     dao_relayer1:SignerWithAddress;dao_relayer2:SignerWithAddress;dao_relayer3:SignerWithAddress;owner:SignerWithAddress;
 }
 
-export async function createFixture(is_reg_relayer:boolean) :Promise<Fixture>{
-    let usdc_erc20: MERC20,dai_erc20: MERC20,torn_erc20: MERC20,weth_erc20: MERC20;
-    let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
-    let mRelayerRegistry :MRelayerRegistry;
-    let mTornadoStakingRewards :MTornadoStakingRewards;
-
-    let mTornRouter :MTornRouter;
-    let mRootManger:RootManger;
-    let mDeposit :Deposit;
-    let mExitQueue :ExitQueue;
-    let mIncome :Income;
-    let mockSwap :MockSwap;
-    let owner:SignerWithAddress;
-    let deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
-    let relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
-    let stake1:SignerWithAddress,stake2:SignerWithAddress,stake3:SignerWithAddress;
-    let dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress;
-
-    // @ts-ignore
-    [deployer1,deployer2,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner] = await ethers.getSigners();
-    usdc_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("usdc","mock_usdc",6);
-    dai_erc20 =  <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("dai","mock_dai",18);
-    torn_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("torn","mock_torn",18);
-    weth_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("weth","mock_weth",18);
-
-    mockSwap = <MockSwap> await (await ethers.getContractFactory("MockSwap")).deploy(weth_erc20.address);
-    mTornadoGovernanceStaking = <MTornadoGovernanceStaking>await (await ethers.getContractFactory("MTornadoGovernanceStaking")).deploy(torn_erc20.address);
-    mRelayerRegistry = <MRelayerRegistry>await (await ethers.getContractFactory("MRelayerRegistry")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
-    mTornadoStakingRewards = <MTornadoStakingRewards>await (await ethers.getContractFactory("MTornadoStakingRewards")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
-
-    await mTornadoGovernanceStaking.setStakingRewardContract(mTornadoStakingRewards.address);
-
-    mRootManger =<RootManger> await (await ethers.getContractFactory("RootManger")).deploy(mRelayerRegistry.address,torn_erc20.address);
-
-    mIncome = <Income>await (await ethers.getContractFactory("Income")).deploy(mockSwap.address,weth_erc20.address,torn_erc20.address,mRootManger.address);
-    mTornRouter = <MTornRouter>await (await ethers.getContractFactory("MTornRouter")).deploy(usdc_erc20.address,dai_erc20.address,mIncome.address,mRelayerRegistry.address);
-
-    mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).deploy(torn_erc20.address,mTornadoGovernanceStaking.address,mRelayerRegistry.address,mRootManger.address);
-
-    mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).deploy(torn_erc20.address,mRootManger.address);
-
-    await mRootManger.__RootManger_init(mIncome.address,mDeposit.address,mExitQueue.address);
-    await mRootManger.setOperator(operator.address);
-    await mDeposit.__Deposit_init();
-    await mExitQueue.__ExitQueue_init();
-    //give enough torn for swap
-    await torn_erc20.mint(mockSwap.address, ethers.utils.parseUnits("1000000",18));
-
-
-    if(is_reg_relayer){
-        //register relayers
-        //give torn to relayers
-        await torn_erc20.mint(relayer1.address, ethers.utils.parseUnits("10000",18));
-        await torn_erc20.mint(relayer2.address, ethers.utils.parseUnits("10000",18));
-        await torn_erc20.mint(relayer3.address, ethers.utils.parseUnits("10000",18));
-
-        let stake_value = ethers.utils.parseUnits("5000",18);
-        await torn_erc20.connect(relayer1).approve(mRelayerRegistry.address,stake_value.mul(5));
-
-        await mRelayerRegistry.connect(relayer1).register(relayer1.address,stake_value);
-        await torn_erc20.connect(relayer2).approve(mRelayerRegistry.address,stake_value);
-        await mRelayerRegistry.connect(relayer2).register(relayer2.address,stake_value);
-        await torn_erc20.connect(dao_relayer1).approve(mRelayerRegistry.address,stake_value);
-        await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address,0);
-
-        await mRootManger.connect(deployer1).transferOwnership(owner.address);
-        await mRootManger.connect(owner).addRelayer(dao_relayer1.address,0);
-
-        //initialize fist stake avoid dive 0
-        let stake_torn=ethers.utils.parseUnits("1",18);
-        await torn_erc20.mint(stake1.address,stake_torn);
-        await torn_erc20.connect(stake1).approve(mTornadoGovernanceStaking.address,stake_torn);
-        await mTornadoGovernanceStaking.connect(stake1).stake(stake_torn)
-    }
-
-
-
-    return {
-        usdc_erc20,dai_erc20,torn_erc20,weth_erc20,
-         mTornadoGovernanceStaking,
-     mRelayerRegistry,
-     mTornadoStakingRewards,
-     mTornRouter,
-     mRootManger,
-     mDeposit,
-     mExitQueue,
-     mIncome,
-     mockSwap,
-     deployer1,deployer2,relayer1,
-     relayer2,relayer3,user1,user2,user3,operator,
-     stake1,stake2,stake3,
-     dao_relayer1,dao_relayer2,dao_relayer3,owner
-    };
-
-}
-
-
 const delay = (ms: number) => new Promise((resolve, reject) => setTimeout(resolve, ms))
-
-export const waitBlocks = async (block: number) => {
-
-    const network = await ethers.getDefaultProvider().getNetwork();
-
-    const blockNumAfter = await ethers.provider.getBlockNumber();
-    while(true){
-        let NO = await ethers.provider.getBlockNumber();
-        console.log(NO);
-        if(NO >= blockNumAfter+block){
-            return;
-        }else{
-            await delay(15000);
-        }
-    }
-
-}
 
 
 export  async function banlancOf  (info:Fixture, type:string, user:any) {

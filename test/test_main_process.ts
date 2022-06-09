@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import {createFixture, Fixture, banlancOf, getGovRelayerReward} from "./utils";
+import { Fixture, banlancOf, getGovRelayerReward} from "./utils";
 import {
     Deposit, ExitQueue, Income,
     MERC20, MockSwap,
