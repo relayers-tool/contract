@@ -178,6 +178,9 @@ export  async function  getGovRelayerReward(info:Fixture, type:string, value:Big
 }
 
 export  function about ( value1:BigNumber,value2:BigNumber)  {
+    if(value1.sub(value2).abs().gt(200)){
+        return false;
+    }
     return value1.sub(value2).abs().lte(value1.div(10**10))&&value1.sub(value2).abs().lte(value2.div(10**10));
 }
 

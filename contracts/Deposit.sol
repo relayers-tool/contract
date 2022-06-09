@@ -148,8 +148,9 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
                  _checkLock2Gov();
                  return ;
              }
-            require(need_unlock != IN_SUFFICIENT,"balance Insufficient");
-            ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(need_unlock);
+            if(need_unlock != IN_SUFFICIENT){
+                ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(need_unlock);
+             }
          }
 
     }
@@ -169,8 +170,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         }
     }
 
-    function withDrawWithApproval(uint256 _amount_token) override external nonReentrant {
-        require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
+    function _safeDrawWith(uint256 _amount_token) internal  returns (uint256)  {
         require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
         uint256  shortage;
         uint256 torn;
@@ -181,22 +181,17 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         }
         IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
         IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, torn);
+        return torn;
     }
 
+    function withDrawWithApproval(uint256 _amount_token) override external nonReentrant {
+        require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
+        _safeDrawWith(_amount_token);
+    }
+
+    //because of nonReentrant have to supply this function forn exitQueue
     function withdraw_for_exit(uint256 _amount_token) override external onlyExitQueue returns (uint256) {
-//        require(IExitQueue(IRootManger(ROOT_MANAGER).exitQueueContract()).nextValue() == 0,"Queue not empty");
-        require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
-        uint256  shortage;
-        uint256 torn;
-        (shortage,torn) = getValueShouldUnlock(_amount_token);
-    //    console.log("_amount_token:%d --> torn %d",_amount_token,torn);
-        require(shortage != IN_SUFFICIENT, 'Insufficient');
-        if(shortage != SUFFICIENT) {
-            ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
-        }
-        IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
-        IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, torn);
-        return torn;
+      return _safeDrawWith(_amount_token);
     }
 
 

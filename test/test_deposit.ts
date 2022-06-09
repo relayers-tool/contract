@@ -137,6 +137,39 @@ describe("test_deposit", function () {
         });
 
     });
+    describe("onlyExitQueue", function () {
+
+        it("test onlyExitQueue ", async function () {
+            let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
+            await expect(mDeposit.connect(user1).stake2Node(0,5000)).revertedWith("Caller is not operator");
+            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
+            await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
+            await torn_erc20.connect(user1).mint(user1.address,stake_torn);
+            await  mDeposit.connect(user1).depositWithApproval(stake_torn);
+            await mRootManger.connect(user1).approve(mDeposit.address,await mRootManger.balanceOf(user1.address));
+            await expect(mDeposit.connect(user1).withdraw_for_exit(await mRootManger.balanceOf(user1.address))).revertedWith("Caller is not exitQueue");
+        });
+
+    });
+
+
+
+    describe("test multi sufficient", function () {
+
+        it("test onlyExitQueue ", async function () {
+            let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
+            await expect(mDeposit.connect(user1).stake2Node(0,5000)).revertedWith("Caller is not operator");
+            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
+            await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
+            await torn_erc20.connect(user1).mint(user1.address,stake_torn);
+            await  mDeposit.connect(user1).depositWithApproval(stake_torn);
+            await mRootManger.connect(user1).approve(mDeposit.address,await mRootManger.balanceOf(user1.address));
+            await expect(mDeposit.connect(user1).withdraw_for_exit(await mRootManger.balanceOf(user1.address))).revertedWith("Caller is not exitQueue");
+        });
+
+    });
+
+
 
 
     describe("test depositWithApproval", function () {
