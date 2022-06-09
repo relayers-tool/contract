@@ -27,7 +27,7 @@ contract MRelayerRegistry is IRelayerRegistry{
 
     function register(address relayer ,uint256 stake) external {
         for(uint256 i = 0 ;i < array.length ; ++i){
-            require(array[i] != relayer);
+            require(array[i] != relayer,"registered");
         }
         counter += 1 ;
         array.push(relayer);
