@@ -104,6 +104,15 @@ describe("test_deposit", function () {
             expect(await  mDeposit.maxReserveTorn()).to.be.equal(maxReserveTorn);
             expect(await  mDeposit.maxRewardInGov()).to.be.equal(maxRewardInGov);
         });
+        it("case3 : Invalid para", async function () {
+            let  maxReserveTorn  =ethers.utils.parseUnits(Math.random()*10+"",18);
+            let maxRewardInGov  =ethers.utils.parseUnits(Math.random()*10+"",18);
+            await  expect(mDeposit.connect(operator).setMaxReservePara(maxReserveTorn,0)).revertedWith("Invalid para");
+            await  expect(mDeposit.connect(operator).setMaxReservePara(0,0)).revertedWith("Invalid para");
+            await  expect(mDeposit.connect(operator).setMaxReservePara(0,maxRewardInGov)).revertedWith("Invalid para");
+        });
+
+
 
     });
 
@@ -154,30 +163,118 @@ describe("test_deposit", function () {
 
 
 
-    describe("test multi sufficient", function () {
+    describe("test isBalanceEnough", function () {
 
-        it("test onlyExitQueue ", async function () {
+        it("test isBalanceEnough", async function () {
             let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await expect(mDeposit.connect(user1).stake2Node(0,5000)).revertedWith("Caller is not operator");
             await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
             await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
-            await torn_erc20.connect(user1).mint(user1.address,stake_torn);
+            await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(500));
             await  mDeposit.connect(user1).depositWithApproval(stake_torn);
-            await mRootManger.connect(user1).approve(mDeposit.address,await mRootManger.balanceOf(user1.address));
-            await expect(mDeposit.connect(user1).withdraw_for_exit(await mRootManger.balanceOf(user1.address))).revertedWith("Caller is not exitQueue");
+            expect(await mDeposit.isBalanceEnough(500)).true;
+            let token = await mRootManger.balanceOf(user1.address);
+            await mRootManger.connect(user1).approve(mExitQueue.address,token);
+            await mExitQueue.connect(user1).addQueueWithApproval(token );
+            expect(await mDeposit.isBalanceEnough(500)).false;
         });
+
+    });
+
+    describe("test multi sufficient", function () {
+        let stake_torn:BigNumber;
+        beforeEach(async () => {
+            stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
+            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
+            await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn.mul(5000));
+            await torn_erc20.connect(user2).approve(mDeposit.address,stake_torn.mul(5000));
+            await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(500));
+            await torn_erc20.connect(user1).mint(user2.address,stake_torn.mul(500));
+            await  mDeposit.connect(user1).depositWithApproval(stake_torn);
+            await mDeposit.connect(operator).stake2Node(0,stake_torn);
+        });
+
+
+        it("test insufficient to whitDraw", async function () {
+           await  expect(mDeposit.connect(user1).withDrawWithApproval(await mRootManger.balanceOf(user1.address))).revertedWith("pool Insufficient");
+        });
+
+        it("test not stake2Node operator ", async function () {
+            await expect(mDeposit.connect(user1).stake2Node(0,5000)).revertedWith("Caller is not operator");
+        });
+
+
+        it("test need_unlock form gov", async function () {
+            let laset_token = await mRootManger.balanceOf(user1.address);
+            await  mDeposit.connect(user1).depositWithApproval(stake_torn.mul(6));
+            expect(await torn_erc20.balanceOf(mDeposit.address)).equal(0);
+            let new_token = await mRootManger.balanceOf(user1.address);
+            await mRootManger.connect(user1).approve(mDeposit.address,new_token);
+            expect(await mDeposit.isBalanceEnough(new_token.sub(laset_token))).true;
+            let last_torn = await torn_erc20.balanceOf(user1.address);
+            await mDeposit.connect(user1).withDrawWithApproval(new_token.sub(laset_token));
+            let new_torn =  await torn_erc20.balanceOf(user1.address);
+            expect(about(new_torn.sub(last_torn),stake_torn.mul(6))).true;
+        });
+
+        it("test need_unlock form gov when deposit", async function () {
+            let laset_token = await mRootManger.balanceOf(user1.address);
+            await  mDeposit.connect(user1).depositWithApproval(stake_torn.mul(6));
+            expect(await torn_erc20.balanceOf(mDeposit.address)).equal(0);
+            let new_token = await mRootManger.balanceOf(user1.address);
+            await mRootManger.connect(user1).approve(mDeposit.address,new_token);
+            expect(await mDeposit.isBalanceEnough(new_token.sub(laset_token))).true;
+            await mRootManger.connect(user1).approve(mExitQueue.address,new_token);
+            await mExitQueue.connect(user1).addQueueWithApproval(new_token.sub(laset_token));
+            //unlock the torn form gov
+            await mDeposit.connect(user2).depositWithApproval(501);
+            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(new_token.sub(laset_token));
+            //transfer to queue
+            await mDeposit.connect(user2).depositWithApproval(500);
+            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(0);
+            let last_torn = await torn_erc20.balanceOf(user1.address);
+            await mExitQueue.connect(user1).withDraw();
+            let new_torn =  await torn_erc20.balanceOf(user1.address);
+            expect(about(new_torn.sub(last_torn),stake_torn.mul(6))).true;
+        });
+
+        it("test need_unlock form gov IN_SUFFICIENT  when deposit", async function () {
+            let laset_token = await mRootManger.balanceOf(user1.address);
+            await  mDeposit.connect(user1).depositWithApproval(stake_torn.mul(2));
+            let mDeposit_tron = await torn_erc20.balanceOf(mDeposit.address);
+            console.log("mDeposit_tron",mDeposit_tron);
+            await mDeposit.connect(operator).stake2Node(0,mDeposit_tron);
+            await mRootManger.connect(user1).approve(mExitQueue.address,laset_token);
+            await mExitQueue.connect(user1).addQueueWithApproval(laset_token);
+            await mDeposit.connect(user2).depositWithApproval(500);
+            expect(await mDeposit.getValueShouldUnlockFromGov()).equal(await mDeposit.IN_SUFFICIENT());
+
+        });
+
+
+        it("test need_unlock form gov  when deposit balance is over queue", async function () {
+            let laset_token = await mRootManger.balanceOf(user1.address);
+            await  mDeposit.connect(user1).depositWithApproval(stake_torn.mul(2));
+            let new_token = await mRootManger.balanceOf(user1.address);
+            let mDeposit_tron = await torn_erc20.balanceOf(mDeposit.address);
+
+            await mRootManger.connect(user1).approve(mExitQueue.address,new_token);
+            await mExitQueue.connect(user1).addQueueWithApproval(new_token.sub(laset_token).div(5));
+            expect(await mDeposit.getValueShouldUnlockFromGov()).lt(await mDeposit.IN_SUFFICIENT());
+            //transfer to queue
+            await mDeposit.connect(user2).depositWithApproval(500);
+            expect(await mExitQueue.nextValue()).equal(0);
+            expect(about(await torn_erc20.balanceOf(mExitQueue.address),stake_torn.mul(2).div(5))).equal(true);
+
+        });
+
 
     });
 
 
 
-
     describe("test depositWithApproval", function () {
         let stake_torn:BigNumber =  BigNumber.from(0);
-
-        beforeEach(async () => {
-
-        });
 
         it("case1 : test Insufficient", async function () {
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
@@ -282,24 +379,17 @@ describe("test_deposit", function () {
            await mDeposit.connect(user3).depositWithApproval(2000000);
             let next_value = await mExitQueue.nextValue();
             expect(next_value).equal(0);
-            // todo  here have some errors ,is it seriousness ?
+
             expect(about(await torn_erc20.balanceOf(mExitQueue.address),stake_torn)).to.true;
 
         });
 
-
     });
-
 
 
     describe("test withdraw", function () {
         let stake_torn=ethers.utils.parseUnits("50",18);
 
-        // beforeEach(async () => {
-        //     await torn_erc20.connect(user1).mint(user1.address,stake_torn);
-        //     await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
-        //     await mDeposit.connect(user1).depositWithApproval(stake_torn);
-        // });
 
         it("case1 : : test Insufficient", async function () {
 
@@ -362,17 +452,6 @@ describe("test_deposit", function () {
         });
 
     });
-
-
-
-
-    // it("case dummy : ", async function () {
-    //     // let banlnce_torn = await torn_erc20.balanceOf(mDeposit.address);
-    //     // expect(banlnce_torn).to.gt(0);
-    //     // await expect(mDeposit.connect(operator).lock2Gov(banlnce_torn.div(2),true)).to.be.emit(mDeposit, "lock_to_gov")
-    //     //     .withArgs(banlnce_torn.div(2),true);
-    // });
-
 
 
 });

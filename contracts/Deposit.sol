@@ -61,10 +61,10 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
     event lock_to_gov(uint256 _amount);
 
     function _checkLock2Gov() internal  {
-
-        if(isNeedTransfer2Queue()){
-            return ;
-        }
+        // the follow code will never run
+        //    if(isNeedTransfer2Queue()){
+        //        return ;
+        //    }
         uint256 balance = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
         if(maxReserveTorn >= balance){
             return ;
@@ -132,10 +132,10 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         depositWithApproval(_amount);
     }
 
-    function depositWithApproval(uint256 _amount) public nonReentrant {
+    function depositWithApproval(uint256 _qty) public nonReentrant {
         address _account = msg.sender;
-        IRootManger(ROOT_MANAGER).safeDeposit(_account, _amount);
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _amount);
+        IRootManger(ROOT_MANAGER).safeDeposit(_account, _qty);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _qty);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
@@ -144,6 +144,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
              _claimRewardFromGov();
          } else{
              uint256 need_unlock =  getValueShouldUnlockFromGov();
+
              if(need_unlock == 0){
                  _checkLock2Gov();
                  return ;
@@ -202,14 +203,14 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         _t += checkRewardOnGov();
     }
 
-//    function isBalanceEnough(uint256 _amount_token)  external view returns (bool) {
-//        if(IExitQueue(EXIT_QUEUE).nextValue() != 0){
-//            return false;
-//        }
-//        uint256  shortage;
-//        (shortage,) = getValueShouldUnlock(_amount_token);
-//        return shortage < IN_SUFFICIENT;
-//    }
+    function isBalanceEnough(uint256 _amount_token)  external view returns (bool) {
+        if(IExitQueue(EXIT_QUEUE).nextValue() != 0){
+            return false;
+        }
+        uint256  shortage;
+        (shortage,) = getValueShouldUnlock(_amount_token);
+        return shortage < IN_SUFFICIENT;
+    }
 
     function balanceOfStakingOnGov() public view returns (uint256 t) {
         t =ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockedBalance(address(this));
