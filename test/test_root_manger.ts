@@ -11,7 +11,7 @@ import {
   RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {createFixture, Fixture} from "./utils";
+import {about, createFixture, Fixture} from "./utils";
 import {set_up_fixture} from "./start_up";
 
 describe("RootManger", function () {
@@ -80,14 +80,15 @@ describe("RootManger", function () {
     await torn_erc20.connect(user3).approve(mDeposit.address,stake_torn);
     await mDeposit.connect(user3).depositWithApproval(stake_torn);
     expect(await mRootManger.balanceOfTorn(user3.address)).equal(stake_torn);
-    expect(await mRootManger.valueForTorn(await mRootManger.balanceOfTorn(user3.address))).equal(stake_torn);
+    expect(await mRootManger.valueForTorn(await mRootManger.balanceOf(user3.address))).equal(stake_torn);
+
     let stake_torn1 = ethers.utils.parseUnits(Math.random()*100+"",18);
-    await torn_erc20.connect(user2).mint(user3.address,stake_torn1);
+    await torn_erc20.connect(user2).mint(user2.address,stake_torn1);
     await torn_erc20.connect(user2).approve(mDeposit.address,stake_torn1);
     await mDeposit.connect(user2).depositWithApproval(stake_torn1);
 
-    expect(await mRootManger.balanceOfTorn(user3.address)).equal(stake_torn);
-    expect(await mRootManger.valueForTorn(await mRootManger.balanceOfTorn(user3.address))).equal(stake_torn);
+    expect(about(await mRootManger.balanceOfTorn(user2.address),stake_torn1)).true;
+    expect(about(await mRootManger.valueForTorn(await mRootManger.balanceOf(user3.address)),stake_torn)).true;
   });
 
   it("test setOperator", async function () {
@@ -122,11 +123,13 @@ describe("RootManger", function () {
     await expect(mRootManger.connect(owner).removeRelayer(0)).revertedWith("index err");
     await mRootManger.connect(owner).addRelayer(relayer1.address,0);
     await expect(mRootManger.connect(owner).addRelayer(relayer1.address,0)).revertedWith("index err");
+    await expect(mRootManger.connect(owner).removeRelayer(3)).revertedWith("index err");
 
     await mRootManger.connect(owner).addRelayer(relayer3.address,(await mRootManger.MAX_RELAYER_COUNTER()).sub(1));
     expect(await mRootManger._relayers(((await mRootManger.MAX_RELAYER_COUNTER()).sub(1)))).equal(relayer3.address);
     await mRootManger.connect(owner).removeRelayer((await mRootManger.MAX_RELAYER_COUNTER()).sub(1));
     expect(await mRootManger._relayers(((await mRootManger.MAX_RELAYER_COUNTER()).sub(1)))).equal("0x0000000000000000000000000000000000000000");
+    await expect(mRootManger.connect(owner).removeRelayer((await mRootManger.MAX_RELAYER_COUNTER()).add(2))).revertedWith("too large index");
   });
 
 
