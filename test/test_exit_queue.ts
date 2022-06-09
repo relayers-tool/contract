@@ -290,7 +290,36 @@ describe("ExitQueue", function () {
         });
 
     });
+    describe("multi executeQueue()  nextValue() UpdateSkipIndex()", function () {
+        it("case888", async function () {
+            let token1 = await mRootManger.balanceOf(user1.address);
+            stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
+            await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(5000));
+            await mRootManger.connect(user1).approve(mExitQueue.address,token1.mul(5000));
 
+            let max_queue = await mExitQueue.MAX_QUEUE_CANCEL();
+            await expect(mExitQueue.connect(user2).executeQueue()).revertedWith("no pending");
+
+            for(let i = 0 ; i < max_queue.add(5).toNumber() ;i++){
+                await mExitQueue.connect(user1).addQueueWithApproval(token1.div(2));
+                await mExitQueue.connect(user1).cancelQueue();
+            }
+
+            await torn_erc20.connect(user2).mint(user2.address,stake_torn.mul(5000));
+            await mRootManger.connect(user2).approve(mExitQueue.address,token1.mul(5000));
+
+            let token2 = await mRootManger.balanceOf(user2.address);
+            for(let i = 0 ; i < max_queue.add(10).toNumber() ;i++){
+                await mExitQueue.connect(user2).addQueueWithApproval(token2.div(2));
+                await mExitQueue.connect(user2).cancelQueue();
+            }
+            expect(await mExitQueue.nextSkipIndex()).equal(await  mExitQueue.INDEX_ERR());
+            await expect(mExitQueue.connect(user2).nextValue()).revertedWith("too many skips");
+            await expect(mExitQueue.connect(user2).executeQueue()).revertedWith("too many skips");
+
+
+        });
+    });
 
 
     describe("multi addQueue and cancel", function () {

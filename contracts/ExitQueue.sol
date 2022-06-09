@@ -117,13 +117,15 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         if(next == 0) {
             return 0;
         }
+        require(INDEX_ERR != next,"too many skips");
+
         // avoid the last one had canceled;
         uint256 nextValue = index2value[preparedIndex+next];
         if(nextValue == 0)
         {
             return 0;
         }
-        require(INDEX_ERR != next,"too many skips");
+
        return IRootManger(ROOT_MANAGER).valueForTorn(nextValue);
     }
 

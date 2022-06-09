@@ -71,12 +71,12 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     }
 
     modifier onlyDepositContract() {
-        require(_msgSender() == depositContract, "Caller is not  depositContract");
+        require(_msgSender() == depositContract, "Caller is not depositContract");
         _;
     }
 
     modifier onlyInComeContract() {
-        require(_msgSender() == inComeContract, "Caller is not  inComeContract");
+        require(_msgSender() == inComeContract, "Caller is not inComeContract");
         _;
     }
 

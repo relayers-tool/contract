@@ -78,6 +78,7 @@ describe("test_income", function () {
              .withArgs(usdc_erc20.address,operator.address, usdc_value);
          await expect(mIncome.connect(operator).withdraw("0x0000000000000000000000000000000000000000",eth_value)).to.be.emit(mIncome, "with_draw")
              .withArgs("0x0000000000000000000000000000000000000000",operator.address, eth_value);
+        await expect(mIncome.connect(operator).withdraw("0x0000000000000000000000000000000000000000",eth_value.mul(2))).revertedWith("Insufficient balance");
          expect(await  usdc_erc20.balanceOf(operator.address)).to.equal(usdc_value);
 
     });

@@ -115,6 +115,21 @@ describe("RootManger", function () {
 
   });
 
+  it("test onlyDepositContract", async function () {
+
+    await expect(mRootManger.connect(user1).deposit(relayer1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootManger.connect(user1).deposit(user1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootManger.connect(user1).withdraw(user1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootManger.connect(relayer1).withdraw(relayer1.address,5000)).revertedWith("Caller is not depositContract");
+
+  });
+
+  it("test onlyInComeContract", async function () {
+    await expect(mRootManger.connect(user1).addIncome(5000)).revertedWith("Caller is not inComeContract");
+
+  });
+
+
   it("test removeRelayer", async function () {
 
     await expect(mRootManger.connect(user1).removeRelayer(0)).revertedWith("Ownable: caller is not the owner");
