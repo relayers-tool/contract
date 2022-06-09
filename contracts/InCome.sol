@@ -76,13 +76,9 @@ contract Income is IinComeContract {
     }
 
 
-    event received(address, uint);
     receive() external payable {
-        emit received(msg.sender, msg.value);
+
     }
 
-    event called_fallback(address, uint);
-    fallback() external payable {
-        emit called_fallback(msg.sender, msg.value);
-    }
+
 }
