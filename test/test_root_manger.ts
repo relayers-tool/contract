@@ -74,12 +74,28 @@ describe("RootManger", function () {
   });
 
 
+  it("test balanceOfTorn and valueForTorn", async function () {
+    let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
+    await torn_erc20.connect(user3).mint(user3.address,stake_torn);
+    await torn_erc20.connect(user3).approve(mDeposit.address,stake_torn);
+    await mDeposit.connect(user3).depositWithApproval(stake_torn);
+    expect(await mRootManger.balanceOfTorn(user3.address)).equal(stake_torn);
+    expect(await mRootManger.valueForTorn(await mRootManger.balanceOfTorn(user3.address))).equal(stake_torn);
+    let stake_torn1 = ethers.utils.parseUnits(Math.random()*100+"",18);
+    await torn_erc20.connect(user2).mint(user3.address,stake_torn1);
+    await torn_erc20.connect(user2).approve(mDeposit.address,stake_torn1);
+    await mDeposit.connect(user2).depositWithApproval(stake_torn1);
+
+    expect(await mRootManger.balanceOfTorn(user3.address)).equal(stake_torn);
+    expect(await mRootManger.valueForTorn(await mRootManger.balanceOfTorn(user3.address))).equal(stake_torn);
+  });
+
   it("test setOperator", async function () {
-      await mRootManger.connect(owner).transferOwnership(user1.address);
-      expect(await  mRootManger.owner()).equal(user1.address);
-      await expect(mRootManger.connect(owner).setOperator(user1.address)).revertedWith("Ownable: caller is not the owner");
-      await mRootManger.connect(user1).setOperator(user2.address);
-      expect(await mRootManger.operator()).equal(user2.address);
+    await mRootManger.connect(owner).transferOwnership(user1.address);
+    expect(await  mRootManger.owner()).equal(user1.address);
+    await expect(mRootManger.connect(owner).setOperator(user1.address)).revertedWith("Ownable: caller is not the owner");
+    await mRootManger.connect(user1).setOperator(user2.address);
+    expect(await mRootManger.operator()).equal(user2.address);
   });
 
 
