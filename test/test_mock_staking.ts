@@ -1,6 +1,6 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
-import {MERC20, MRelayerRegistry, MTornadoGovernanceStaking, MTornadoStakingRewards} from "../typechain-types";
+import {expect} from "chai";
+import {ethers} from "hardhat";
+import {MERC20, MTornadoGovernanceStaking, MTornadoStakingRewards} from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture} from "./start_up";
 

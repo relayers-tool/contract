@@ -1,12 +1,16 @@
 // We import the hardhat environment field we are planning to use
-import {ethers, deployments, getNamedAccounts, getUnnamedAccounts} from 'hardhat';
+import {deployments, ethers} from 'hardhat';
 import {
-    Deposit, ExitQueue, Income,
+    Deposit,
+    ExitQueue,
+    Income,
     MERC20,
     MockSwap,
     MRelayerRegistry,
     MTornadoGovernanceStaking,
-    MTornadoStakingRewards, MTornRouter, RootManger
+    MTornadoStakingRewards,
+    MTornRouter,
+    RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {expect} from "chai";

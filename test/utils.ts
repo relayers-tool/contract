@@ -1,14 +1,15 @@
-import {ethers} from "hardhat";
 import {
-    Deposit, ExitQueue, Income,
-    MERC20, MockSwap,
+    Deposit,
+    ExitQueue,
+    Income,
+    MERC20,
+    MockSwap,
     MRelayerRegistry,
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
     MTornRouter,
     RootManger
 } from "../typechain-types";
-import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {BaseContract, BigNumber} from "ethers";
 
 export interface Fixture {

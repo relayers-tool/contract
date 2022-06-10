@@ -1,11 +1,12 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
+import {expect} from "chai";
+import {ethers} from "hardhat";
 
-import { about} from "./utils";
+import {about} from "./utils";
 import {
-    Deposit, ExitQueue, Income,
-    MERC20, MockSwap,
-    MRelayerRegistry,
+    Deposit,
+    ExitQueue,
+    Income,
+    MERC20,
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
     MTornRouter,
@@ -16,6 +17,7 @@ import {BigNumber} from "@ethersproject/bignumber";
 import {signERC2612Permit} from "eth-permit";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, set_up_fixture} from "./start_up";
+
 describe("test_deposit", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
 
@@ -240,7 +242,6 @@ describe("test_deposit", function () {
             let laset_token = await mRootManger.balanceOf(user1.address);
             await  mDeposit.connect(user1).depositWithApproval(stake_torn.mul(2));
             let mDeposit_tron = await torn_erc20.balanceOf(mDeposit.address);
-            console.log("mDeposit_tron",mDeposit_tron);
             await mDeposit.connect(operator).stake2Node(0,mDeposit_tron);
             await mRootManger.connect(user1).approve(mExitQueue.address,laset_token);
             await mExitQueue.connect(user1).addQueueWithApproval(laset_token);
@@ -254,7 +255,6 @@ describe("test_deposit", function () {
             let laset_token = await mRootManger.balanceOf(user1.address);
             await  mDeposit.connect(user1).depositWithApproval(stake_torn.mul(2));
             let new_token = await mRootManger.balanceOf(user1.address);
-            let mDeposit_tron = await torn_erc20.balanceOf(mDeposit.address);
 
             await mRootManger.connect(user1).approve(mExitQueue.address,new_token);
             await mExitQueue.connect(user1).addQueueWithApproval(new_token.sub(laset_token).div(5));

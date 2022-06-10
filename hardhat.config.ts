@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 
-import { HardhatUserConfig, task } from "hardhat/config";
+import {HardhatUserConfig, task} from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
@@ -8,48 +8,20 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import 'hardhat-deploy';
 
+
 dotenv.config();
 //
 // // This is a sample Hardhat task. To learn how to create your own go to
 // // https://hardhat.org/guides/create-task.html
-// task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
-//   const accounts = await hre.ethers.getSigners();
-//
-//   for (const account of accounts) {
-//     console.log(account.address);
-//   }
-// });
-//
-// task("transfer", "transfer eth to 1~3", async (taskArgs, hre) => {
-//   const accounts = await hre.ethers.getSigners();
-//   let eth =  await accounts[0].getBalance();
-//     if(eth.eq(0)){
-//       console.log("eth is 0 ");
-//       return;
-//     }
-//    eth = eth.div(8);
-//     let send_to = async ( addr:string) =>{
-//       console.log("send to ",addr,eth);
-//         const tx = await accounts[0].sendTransaction({
-//           to: addr,
-//           value: eth
-//         });
-//         let rep = await hre.ethers.provider.waitForTransaction(tx.hash,1,250000);
-//         if(!rep.status)
-//         {
-//           throw "time out"
-//         }
-//     }
-//   await send_to(accounts[1].address);
-//   await send_to(accounts[2].address);
-//   await send_to(accounts[3].address);
-//   await send_to(accounts[4].address);
-//
-// });
+task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
+  const accounts = await hre.ethers.getSigners();
+  for (const account of accounts) {
+    console.log(account.address);
+  }
+});
 
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
+//task("eth_net_deploy_check", "Prints the list of accounts", eth_net_deploy_check);
 
 const config: HardhatUserConfig = {
   solidity: {

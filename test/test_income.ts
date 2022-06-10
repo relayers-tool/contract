@@ -1,18 +1,11 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
+import {expect} from "chai";
+import {ethers} from "hardhat";
 
-import { Fixture, banlancOf, getGovRelayerReward, Coin2Tron} from "./utils";
-import {
-    Deposit, ExitQueue, Income,
-    MERC20, MockSwap,
-    MRelayerRegistry,
-    MTornadoGovernanceStaking,
-    MTornadoStakingRewards,
-    MTornRouter,
-    RootManger
-} from "../typechain-types";
+import {banlancOf, Coin2Tron, Fixture} from "./utils";
+import {Deposit, Income, MERC20, MTornRouter} from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, set_up_fixture} from "./start_up";
+
 describe("test_income", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
 

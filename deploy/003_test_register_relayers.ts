@@ -1,18 +1,15 @@
-
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {
     Deposit,
     ExitQueue,
     Income,
-    MERC20, MRelayerRegistry,
+    MERC20,
+    MRelayerRegistry,
     MTornadoGovernanceStaking,
     MTornRouter,
     RootManger
 } from "../typechain-types";
-
-import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {BigNumber} from "ethers";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -61,17 +58,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let limit_token = ethers.utils.parseUnits("5000",18);
     if((await torn_erc20.balanceOf(relayer1.address)) < limit_token ){
-        console.log("mint for relayer1.address");
         await (await torn_erc20.mint(relayer1.address, ethers.utils.parseUnits("10000",18))).wait(1);
     }
     // console.log("mint for relayer2:",relayer2.address);
     if(await torn_erc20.balanceOf(relayer2.address) <limit_token ){
-        console.log("mint for relayer2.address");
         await (await torn_erc20.mint(relayer2.address, ethers.utils.parseUnits("10000",18))).wait(1);
     }
 
     if(await torn_erc20.balanceOf(relayer3.address) <limit_token ){
-        console.log("mint for relayer3.address");
         await (await torn_erc20.mint(relayer3.address, ethers.utils.parseUnits("10000",18))).wait(1);
     }
 
@@ -84,22 +78,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let allowance = await torn_erc20.connect(relayer1).allowance(relayer1.address,mRelayerRegistry.address);
     if(allowance < stake_value.mul(5)){
-        console.log(" relayer1 approve(mRelayerRegistry.address)");
         await (await torn_erc20.connect(relayer1).approve(mRelayerRegistry.address,stake_value.mul(20))).wait(1);
     }
     if((await mRelayerRegistry.stakeValue(relayer1.address)).toNumber() <= 0){
-        console.log(" relayer1 register");
         await (await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_value)).wait(1);
     }
 
 
      allowance = await torn_erc20.connect(relayer2).allowance(relayer2.address,mRelayerRegistry.address);
     if(allowance <stake_value.mul(5)){
-        console.log(" relayer2 approve(mRelayerRegistry.address)");
         await (await torn_erc20.connect(relayer2).approve(mRelayerRegistry.address,stake_value.mul(20))).wait(1);
     }
     if((await mRelayerRegistry.stakeValue(relayer2.address)).toNumber() <= 0){
-        console.log(" relayer2 register");
         await (await mRelayerRegistry.connect(relayer2).register(relayer2.address, stake_value)).wait(1);
     }
 
@@ -108,11 +98,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
      allowance = await torn_erc20.connect(dao_relayer1).allowance(dao_relayer1.address,mRelayerRegistry.address);
     if(allowance < (stake_value.mul(5))){
-        console.log(" dao_relayer1 approve(mRelayerRegistry.address)");
         await (await torn_erc20.connect(dao_relayer1).approve(mRelayerRegistry.address,stake_value.mul(20))).wait(1);
     }
     if((await mRelayerRegistry.stakeValue(dao_relayer1.address)).toNumber() <= 0){
-        console.log(" dao_relayer1 register");
         await (await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address, 0)).wait(1);
     }
 
@@ -124,7 +112,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let addr = await mRootManger.connect(owner)._relayers(0);
     if(addr != dao_relayer1.address){
-        console.log(" dao_relayer1 addRelayer");
         await (await mRootManger.connect(owner).addRelayer(dao_relayer1.address, 0)).wait(1);
     }
 

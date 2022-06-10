@@ -1,8 +1,7 @@
-
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 
-import {Deposit, ExitQueue, Income, MERC20, MTornadoGovernanceStaking, RootManger} from "../typechain-types";
+import {Deposit, ExitQueue, Income, RootManger} from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 

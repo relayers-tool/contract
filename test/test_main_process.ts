@@ -1,18 +1,19 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
+import {expect} from "chai";
+import {ethers} from "hardhat";
 
-import { Fixture, banlancOf, getGovRelayerReward} from "./utils";
+import {banlancOf, Fixture, getGovRelayerReward} from "./utils";
 import {
-    Deposit, ExitQueue, Income,
-    MERC20, MockSwap,
+    Deposit,
+    Income,
+    MERC20,
     MRelayerRegistry,
     MTornadoGovernanceStaking,
-    MTornadoStakingRewards,
     MTornRouter,
     RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, set_up_fixture} from "./start_up";
+
 describe("main_process", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;

@@ -1,4 +1,3 @@
-
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 
@@ -78,7 +77,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     mTornadoGovernanceStaking = <MTornadoGovernanceStaking>(await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(mTornadoGovernanceStaking_res.address);
 
     if ((await mTornadoGovernanceStaking.TORN_STAKING_REWARDS()) != ret_mTornadoStakingRewards.address) {
-        console.log("setStakingRewardContract");
         await mTornadoGovernanceStaking.setStakingRewardContract(ret_mTornadoStakingRewards.address);
     }
 

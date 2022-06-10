@@ -1,10 +1,7 @@
-
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {Deposit, ExitQueue, MERC20, MTornadoGovernanceStaking, RootManger} from "../typechain-types";
-import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
-
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -105,19 +102,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     if((await mRootManger.connect(users.owner).owner()) != users.owner.address){
-        console.log("__RootManger_init");
         await mRootManger.connect(users.owner).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address);
         await mRootManger.connect(users.owner).setOperator(users.operator.address);
     }
 
     if((await mDeposit.connect(users.owner).EXIT_QUEUE()) != ret_mExitQueue.address){
-        console.log("__Deposit_init");
         await mDeposit.connect(users.owner).__Deposit_init();
     }
 
     //there is no way to detect init
     try {
-        console.log("__ExitQueue_init");
         await mExitQueue.connect(users.owner).__ExitQueue_init();
     } catch (e:any) {
         console.log(e.reason);
@@ -126,7 +120,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     //give enough torn for swap
     if((await torn_erc20.balanceOf(contracts.mockSwap)).lte(ethers.utils.parseUnits("500000",18)))
     {
-        console.log("mint for contracts.mockSwap");
         await torn_erc20.mint(contracts.mockSwap, ethers.utils.parseUnits("1000000",18));
     }
 

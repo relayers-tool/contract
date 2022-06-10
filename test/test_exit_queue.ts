@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
+import {expect} from "chai";
+import {ethers} from "hardhat";
 import {
     Deposit,
     ExitQueue,
@@ -11,7 +11,7 @@ import {
     RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {about,  Fixture} from "./utils";
+import {about} from "./utils";
 import {BigNumber} from "ethers";
 import {signERC2612Permit} from "eth-permit";
 import {get_user_fixture, set_up_fixture} from "./start_up";
@@ -292,7 +292,7 @@ describe("ExitQueue", function () {
 
     });
     describe("multi executeQueue()  nextValue() UpdateSkipIndex()", function () {
-        it("case888", async function () {
+        it("case1:", async function () {
             let token1 = await mRootManger.balanceOf(user1.address);
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(5000));
