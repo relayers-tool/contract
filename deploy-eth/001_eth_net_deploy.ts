@@ -4,6 +4,7 @@ import {HardhatRuntimeEnvironment} from "hardhat/types";
 
 import {Deposit, ExitQueue, Income, MERC20, MTornadoGovernanceStaking, RootManger} from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
+import {get_user_fixture, USER_FIX} from "../test/start_up";
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -19,10 +20,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let address_RelayerRegistry =  '0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2';
     let address_TornadoStakingRewards =  '0x2fc93484614a34f26f7970cbb94615ba109bb4bf';
     let address_weth ="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-    // @ts-ignore
-    [deployer1,deployer2,] = await ethers.getSigners();
+
     const {operator} = await getNamedAccounts();
 
+    let users:USER_FIX = await get_user_fixture();
+    deployer1 = users.deployer1;
+    deployer2 = users.deployer2;
 
     let ret_RootManger_logic =  await deploy('RootManger_logic', {
         from: deployer1.address,

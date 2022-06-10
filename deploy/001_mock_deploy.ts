@@ -74,7 +74,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         contract:"MTornadoStakingRewards"
     });
 
-
     let mTornadoGovernanceStaking: MTornadoGovernanceStaking;
     mTornadoGovernanceStaking = <MTornadoGovernanceStaking>(await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(mTornadoGovernanceStaking_res.address);
 
@@ -82,8 +81,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         console.log("setStakingRewardContract");
         await mTornadoGovernanceStaking.setStakingRewardContract(ret_mTornadoStakingRewards.address);
     }
-
-
 
 
 };
