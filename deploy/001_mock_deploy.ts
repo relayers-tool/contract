@@ -75,15 +75,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
 
-    if(ret_mTornadoStakingRewards.newlyDeployed){
-        let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
-        mTornadoGovernanceStaking = <MTornadoGovernanceStaking>(await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(mTornadoGovernanceStaking_res.address);
+    let mTornadoGovernanceStaking: MTornadoGovernanceStaking;
+    mTornadoGovernanceStaking = <MTornadoGovernanceStaking>(await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(mTornadoGovernanceStaking_res.address);
+
+    if ((await mTornadoGovernanceStaking.TORN_STAKING_REWARDS()) != ret_mTornadoStakingRewards.address) {
+        console.log("setStakingRewardContract");
         await mTornadoGovernanceStaking.setStakingRewardContract(ret_mTornadoStakingRewards.address);
     }
-
-
-
-
 
 
 

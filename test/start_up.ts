@@ -39,6 +39,29 @@ async function config_check(){
 
 }
 
+export interface USER_FIX {
+     owner:SignerWithAddress,proxy_admin:SignerWithAddress;
+     deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
+     relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
+     stake1:SignerWithAddress,stake2:SignerWithAddress,stake3:SignerWithAddress;
+     dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress;
+}
+
+export  async function get_user_fixture(){
+    let owner:SignerWithAddress,proxy_admin:SignerWithAddress;
+    let deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
+    let relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
+    let stake1:SignerWithAddress,stake2:SignerWithAddress,stake3:SignerWithAddress;
+    let dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress;
+    // @ts-ignore
+    [deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner] = await ethers.getSigners();
+    return {
+        deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner
+    };
+
+}
+
+
 
 export  async function set_up_fixture(fix_name:string) {
     // it first ensure the deployment is executed and reset (use of evm_snaphost for fast test)
@@ -112,7 +135,6 @@ export  async function set_up_fixture(fix_name:string) {
         usdc_erc20,
         dai_erc20,
         weth_erc20,
-        deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner,
         torn_erc20,mockSwap,mRelayerRegistry,mTornadoStakingRewards,mTornadoGovernanceStaking,mRootManger,mIncome,mTornRouter,mDeposit,mExitQueue
     };
 }

@@ -2,18 +2,21 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import {MERC20, MRelayerRegistry, MTornadoGovernanceStaking, MTornadoStakingRewards} from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
+import {get_user_fixture} from "./start_up";
 
 describe("MockTornadoGovernanceStaking", function () {
     let torn_erc20: MERC20;
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
 
     let mTornadoStakingRewards :MTornadoStakingRewards;
-    let deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
-    let relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
+    let user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress;
 
     beforeEach(async () => {
         // @ts-ignore
-        [deployer1,deployer2,relayer1, relayer2,relayer3,user1,user2,user3,operator] = await ethers.getSigners();
+        let users = await get_user_fixture()
+        user1 = users.user1;
+        user2 = users.user2;
+        user3 = users.user3;
         torn_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("torn","mock_torn",18);
         mTornadoGovernanceStaking = <MTornadoGovernanceStaking>await (await ethers.getContractFactory("MTornadoGovernanceStaking")).deploy(torn_erc20.address);
         mTornadoStakingRewards = <MTornadoStakingRewards>await (await ethers.getContractFactory("MTornadoStakingRewards")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);

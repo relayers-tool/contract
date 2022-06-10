@@ -13,7 +13,7 @@ import {
     RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {set_up_fixture} from "./start_up";
+import {get_user_fixture, set_up_fixture} from "./start_up";
 describe("main_process", function () {
 
     let usdc_erc20: MERC20,dai_erc20: MERC20,torn_erc20: MERC20;
@@ -22,7 +22,7 @@ describe("main_process", function () {
     let mTornadoStakingRewards :MTornadoStakingRewards;
 
     let mTornRouter :MTornRouter;
-    let deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
+    let relayer1:SignerWithAddress;
     let relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress ;
     let stake1:SignerWithAddress,stake2:SignerWithAddress;
 
@@ -33,6 +33,7 @@ describe("main_process", function () {
     let info :Fixture;
     beforeEach(async () => {
         info =  await set_up_fixture("test_net");
+        let users = await get_user_fixture();
 
         usdc_erc20 =info.usdc_erc20;
         dai_erc20 = info.dai_erc20;
@@ -41,13 +42,13 @@ describe("main_process", function () {
         mRelayerRegistry = info.mRelayerRegistry;
         mTornadoStakingRewards = info.mTornadoStakingRewards;
         mTornRouter = info.mTornRouter;
-        relayer1 = info.relayer1;
-        relayer2 = info.relayer2;
-        relayer3 = info.relayer3;
-        user1 = info.user1;
-        user2 = info.user2;
-        stake1 = info.stake1;
-        stake2 = info.stake2;
+        relayer1 = users.relayer1;
+        relayer2 = users.relayer2;
+        relayer3 = users.relayer3;
+        user1 = users.user1;
+        user2 = users.user2;
+        stake1 = users.stake1;
+        stake2 = users.stake2;
 
         //give torn to relayers
         await torn_erc20.mint(relayer1.address, ethers.utils.parseUnits("10000",18));

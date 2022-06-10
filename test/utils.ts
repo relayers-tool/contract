@@ -16,17 +16,12 @@ export interface Fixture {
     mTornadoGovernanceStaking:MTornadoGovernanceStaking;
     mRelayerRegistry :MRelayerRegistry;
     mTornadoStakingRewards :MTornadoStakingRewards;
-
     mTornRouter :MTornRouter;
     mRootManger:RootManger;
     mDeposit :Deposit;
     mExitQueue :ExitQueue;
     mIncome :Income;
     mockSwap :MockSwap;
-    deployer1:SignerWithAddress;deployer2:SignerWithAddress;relayer1:SignerWithAddress;
-    relayer2:SignerWithAddress;relayer3:SignerWithAddress;user1:SignerWithAddress;user2:SignerWithAddress;user3:SignerWithAddress;operator:SignerWithAddress ;
-    stake1:SignerWithAddress;stake2:SignerWithAddress;stake3:SignerWithAddress;
-    dao_relayer1:SignerWithAddress;dao_relayer2:SignerWithAddress;dao_relayer3:SignerWithAddress;owner:SignerWithAddress;
 }
 
 const delay = (ms: number) => new Promise((resolve, reject) => setTimeout(resolve, ms))

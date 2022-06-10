@@ -1,5 +1,5 @@
+// SPDX-License-Identifier: MIT
 import "hardhat/console.sol";
-
 library mockLib{
 
     function getDecimals(uint256 coinType ) internal returns(uint256) {

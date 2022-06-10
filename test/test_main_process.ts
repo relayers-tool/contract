@@ -12,7 +12,7 @@ import {
     RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {set_up_fixture} from "./start_up";
+import {get_user_fixture, set_up_fixture} from "./start_up";
 describe("main_process", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
@@ -31,6 +31,7 @@ describe("main_process", function () {
     let fix_info :Fixture;
 
     beforeEach(async () => {
+        let users = await get_user_fixture()
 
         fix_info = await set_up_fixture("test_net");
          usdc_erc20 = fix_info.usdc_erc20;
@@ -41,14 +42,14 @@ describe("main_process", function () {
         mRootManger = fix_info.mRootManger;
         mDeposit = fix_info.mDeposit;
         mIncome = fix_info.mIncome;
-        relayer1 = fix_info.relayer1;
-        relayer2 = fix_info.relayer2;
-        relayer3 = fix_info.relayer3;
-        user1 = fix_info.user1;
-        user2 = fix_info.user2;
-        operator = fix_info.operator;
-        stake1 = fix_info.stake1;
-        stake2 = fix_info.stake2;
+        relayer1 = users.relayer1;
+        relayer2 = users.relayer2;
+        relayer3 = users.relayer3;
+        user1 = users.user1;
+        user2 = users.user2;
+        operator = users.operator;
+        stake1 = users.stake1;
+        stake2 = users.stake2;
 
         //register relayers
         //give torn to relayers

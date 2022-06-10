@@ -3,6 +3,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {Deposit, ExitQueue, MERC20, MTornadoGovernanceStaking, RootManger} from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
+import {get_user_fixture, USER_FIX} from "../test/start_up";
 
 
 
@@ -10,11 +11,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // @ts-ignore
     const {deployments,ethers, getNamedAccounts} = hre;
     const {deploy} = deployments;
+    let users:USER_FIX = await get_user_fixture();
 
-    const {deployer1,proxy_admin,operator} = await getNamedAccounts();
-    let deployer_1:SignerWithAddress,deployer2:SignerWithAddress;
-    // @ts-ignore
-    [deployer_1,deployer2,] = await ethers.getSigners();
     const contracts = {
         mock_torn: (await deployments.get('mock_torn')).address,
         mock_dai: (await deployments.get('mock_dai')).address,
@@ -27,22 +25,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     };
 
     let ret_RootManger_logic =  await deploy('RootManger_logic', {
-        from: deployer1,
+        from: users.deployer1.address,
         args: [contracts.mRelayerRegistry,contracts.mock_torn],
         log: true,
         contract:"RootManger"
     });
 
     let ret_RootManger =  await deploy('RootManger', {
-        from:deployer1,
-        args: [ret_RootManger_logic.address,proxy_admin,"0x"],
+        from: users.deployer1.address,
+        args: [ret_RootManger_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
 
 
     let ret_Income_logic =  await deploy('Income_logic', {
-        from: deployer1,
+        from: users.deployer1.address,
         args: [contracts.mockSwap,contracts.mock_weth,contracts.mock_torn,ret_RootManger.address],
         log: true,
         contract:"Income"
@@ -50,14 +48,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     let ret_mIncome =  await deploy('Income', {
-        from: deployer1,
-        args: [ret_Income_logic.address,proxy_admin,"0x"],
+        from: users.deployer1.address,
+        args: [ret_Income_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
 
     let ret_mTornRouter =  await deploy('MTornRouter', {
-        from: deployer1,
+        from: users.deployer1.address,
         args: [contracts.mock_usdc,contracts.mock_dai,ret_mIncome.address,contracts.mRelayerRegistry],
         log: true,
         contract:"MTornRouter"
@@ -65,7 +63,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     let ret_mDeposit_logic =  await deploy('Deposit_logic', {
-        from: deployer1,
+        from: users.deployer1.address,
         args: [contracts.mock_torn,contracts.mTornadoGovernanceStaking,contracts.mRelayerRegistry,ret_RootManger.address],
         log: true,
         contract:"Deposit"
@@ -73,15 +71,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     let ret_Deposit =  await deploy('Deposit', {
-        from: deployer1,
-        args: [ret_mDeposit_logic.address,proxy_admin,"0x"],
+        from: users.deployer1.address,
+        args: [ret_mDeposit_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
 
 
     let ret_mExitQueue_logic =  await deploy('ExitQueue_logic', {
-        from: deployer1,
+        from: users.deployer1.address,
         args: [contracts.mock_torn,ret_RootManger.address],
         log: true,
         contract:"ExitQueue"
@@ -89,31 +87,50 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     let ret_mExitQueue =  await deploy('ExitQueue', {
-        from: deployer1,
-        args: [ret_mExitQueue_logic.address,proxy_admin,"0x"],
+        from: users.deployer1.address,
+        args: [ret_mExitQueue_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
 
-    if(ret_RootManger.newlyDeployed){
-        let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(ret_RootManger.address);
-        await mRootManger.connect(deployer2).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address);
-        await mRootManger.connect(deployer2).setOperator(operator);
-    }
 
-    if(ret_Deposit.newlyDeployed){
-        let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(ret_Deposit.address);
-        await mDeposit.connect(deployer2).__Deposit_init();
-    }
 
-    if(ret_mExitQueue.newlyDeployed){
-        let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(ret_mExitQueue.address);
-        await mExitQueue.connect(deployer2).__ExitQueue_init();
-    }
+    let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(ret_RootManger.address);
+    let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(ret_Deposit.address);
+    let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(ret_mExitQueue.address);
 
     let torn_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
     //give enough torn for swap
     await torn_erc20.mint(contracts.mockSwap, ethers.utils.parseUnits("1000000",18));
+
+
+    if((await mRootManger.connect(users.owner).owner()) != users.owner.address){
+        console.log("__RootManger_init");
+        await mRootManger.connect(users.owner).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address);
+        await mRootManger.connect(users.owner).setOperator(users.operator.address);
+    }
+
+    if((await mDeposit.connect(users.owner).EXIT_QUEUE()) != ret_mExitQueue.address){
+        console.log("__Deposit_init");
+        await mDeposit.connect(users.owner).__Deposit_init();
+    }
+
+    //there is no way to detect init
+    try {
+        console.log("__ExitQueue_init");
+        await mExitQueue.connect(users.owner).__ExitQueue_init();
+    } catch (e:any) {
+        console.log(e.reason);
+    }
+
+    //give enough torn for swap
+    if((await torn_erc20.balanceOf(contracts.mockSwap)).lte(ethers.utils.parseUnits("500000",18)))
+    {
+        console.log("mint for contracts.mockSwap");
+        await torn_erc20.mint(contracts.mockSwap, ethers.utils.parseUnits("1000000",18));
+    }
+
+
 
 };
 export default func;

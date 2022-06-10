@@ -15,7 +15,7 @@ import {
 import {BigNumber} from "@ethersproject/bignumber";
 import {signERC2612Permit} from "eth-permit";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {set_up_fixture} from "./start_up";
+import {get_user_fixture, set_up_fixture} from "./start_up";
 describe("test_deposit", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
 
@@ -37,23 +37,23 @@ describe("test_deposit", function () {
     beforeEach(async () => {
 
         let fix_info = await set_up_fixture("register_relayers");
-
+        let users = await get_user_fixture();
         usdc_erc20 = fix_info.usdc_erc20;
         torn_erc20 = fix_info.torn_erc20;
         mTornRouter =fix_info.mTornRouter;
         mDeposit =fix_info.mDeposit;
         mIncome =  fix_info.mIncome;
-        user1 = fix_info.user1;
-        user2 = fix_info.user2;
-        user3 = fix_info.user3;
-        operator = fix_info.operator;
-        stake1 = fix_info.stake1;
+        user1 = users.user1;
+        user2 = users.user2;
+        user3 = users.user3;
+        operator = users.operator;
+        stake1 = users.stake1;
         mTornadoGovernanceStaking = fix_info.mTornadoGovernanceStaking;
         mRootManger = fix_info.mRootManger;
         mExitQueue = fix_info.mExitQueue;
         mTornadoStakingRewards = fix_info.mTornadoStakingRewards;
-        dao_relayer1 = fix_info.dao_relayer1;
-        owner = fix_info.owner;
+        dao_relayer1 = users.dao_relayer1;
+        owner = users.owner;
 
         let usdc = ethers.utils.parseUnits("1",6);
         await usdc_erc20.connect(user1).mint(user1.address,usdc.mul(1000));
