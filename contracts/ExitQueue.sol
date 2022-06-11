@@ -41,6 +41,12 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         addQueueWithApproval(_amount_token);
     }
 
+    function address2Value(address addr) view public returns (uint256 v,bool prepared){
+        uint256 index = addr2index[addr];
+        v = index2value[index];
+        prepared = preparedIndex >= index;
+    }
+
     function nextSkipIndex() view public returns (uint256){
 
         uint256 maxIndex_ = maxIndex;             // save gas
