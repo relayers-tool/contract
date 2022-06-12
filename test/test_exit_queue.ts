@@ -198,6 +198,10 @@ describe("ExitQueue", function () {
             expect(await mExitQueue.nextSkipIndex()).equal(1);
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(4));
              torn_value = await mRootManger.valueForTorn(token.div(4));
+
+            let ret = await mExitQueue.connect(user1).address2Value(user1.address);
+            expect(ret.v).equal(token.div(4));
+            expect(ret.prepared).equal(false);
             expect(await mExitQueue.nextValue()).equal(torn_value);
             expect(await mExitQueue.maxIndex()).equal(2);
             expect(await mExitQueue.preparedIndex()).equal(0);
@@ -221,7 +225,10 @@ describe("ExitQueue", function () {
             expect(await mExitQueue.preparedIndex()).equal(0);
             await mDeposit.connect(user2).depositWithApproval(5000000);
             //triger the executeQueue
-            await mDeposit.connect(user1).depositWithApproval(50000000);
+            await mDeposit.connect(user2).depositWithApproval(50000000);
+            let ret = await mExitQueue.connect(user1).address2Value(user1.address);
+            expect(about(ret.v,stake_torn.div(2))).true;
+            expect(ret.prepared).equal(true);
             expect(await mExitQueue.preparedIndex()).equal(1);
             expect(mExitQueue.connect(user1).cancelQueue()).revertedWith("prepared")
 
