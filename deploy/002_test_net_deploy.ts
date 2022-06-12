@@ -98,17 +98,27 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let torn_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
     //give enough torn for swap
-    await torn_erc20.mint(contracts.mockSwap, ethers.utils.parseUnits("1000000",18));
+
+    if(await torn_erc20.balanceOf(contracts.mockSwap) < ethers.utils.parseUnits("100000",18)){
+        await torn_erc20.mint(contracts.mockSwap, ethers.utils.parseUnits("1000000",18));
+    }
 
 
-    if((await mRootManger.connect(users.owner).owner()) != users.owner.address){
+    try {
         await mRootManger.connect(users.owner).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address);
         await mRootManger.connect(users.owner).setOperator(users.operator.address);
     }
-
-    if((await mDeposit.connect(users.owner).EXIT_QUEUE()) != ret_mExitQueue.address){
-        await mDeposit.connect(users.owner).__Deposit_init();
+    catch (e:any) {
+        console.log(e.reason)
     }
+
+
+    try {
+        await mDeposit.connect(users.owner).__Deposit_init();
+    } catch (e:any) {
+        console.log(e.reason)
+    }
+
 
     //there is no way to detect init
     try {
