@@ -183,6 +183,13 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         return torn;
     }
 
+
+    function withDraw(uint256 _amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant {
+        require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
+        IERC20PermitUpgradeable(ROOT_MANAGER).permit(msg.sender, address(this), _amount, deadline, v, r, s);
+        _safeDrawWith(_amount);
+    }
+
     function withDrawWithApproval(uint256 _amount_token) override external nonReentrant {
         require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
         _safeDrawWith(_amount_token);

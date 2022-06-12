@@ -132,6 +132,37 @@ describe("test_deposit", function () {
     });
 
 
+    describe("test withDraw(uint256 _amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s)", function () {
+
+        it("case1 :  test withDraw", async function () {
+            let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
+            await torn_erc20.connect(user1).mint(user1.address,stake_torn);
+            const allowanceParameters = await signERC2612Permit(user1, torn_erc20.address,user1.address, mDeposit.address, stake_torn.toBigInt().toString()); //Sign operation
+            expect(await mRootManger.balanceOf(mDeposit.address)).equal(0);
+            await mDeposit.connect(user1).deposit(stake_torn,allowanceParameters.deadline,allowanceParameters.v,allowanceParameters.r,allowanceParameters.s);
+            expect(await mRootManger.totalTorn()).equal(stake_torn);
+            let token = await mRootManger.balanceOf(user1.address);
+            const allowanceParameters2 = await signERC2612Permit(user1, mRootManger.address,user1.address, mDeposit.address, token.div(4).toBigInt().toString()); //Sign operation
+            await mDeposit.connect(user1).withDraw(token.div(4),allowanceParameters2.deadline,allowanceParameters2.v,allowanceParameters2.r,allowanceParameters2.s);
+            await expect(mDeposit.connect(user1).withDraw(token,allowanceParameters2.deadline,allowanceParameters2.v,allowanceParameters2.r,allowanceParameters2.s))
+                .revertedWith("ERC20Permit: invalid signature");
+
+            await mRootManger.connect(user1).approve(mExitQueue.address,token.div(4));
+            await mExitQueue.connect(user1).addQueueWithApproval(token.div(4))
+
+            const allowanceParameters3 = await signERC2612Permit(user1, mRootManger.address,user1.address, mDeposit.address, token.div(4).toBigInt().toString()); //Sign operation
+            await expect(mDeposit.connect(user1).withDraw(token.div(4),allowanceParameters3.deadline,allowanceParameters3.v,allowanceParameters3.r,allowanceParameters3.s)).revertedWith("Queue not empty");
+
+
+
+
+
+
+        });
+
+    });
+
+
     describe("stake2Node", function () {
 
         it("stake2Node test operator", async function () {
