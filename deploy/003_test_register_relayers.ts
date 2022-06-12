@@ -58,15 +58,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let limit_token = ethers.utils.parseUnits("5000",18);
     if((await torn_erc20.balanceOf(relayer1.address)) < limit_token ){
-        await (await torn_erc20.mint(relayer1.address, ethers.utils.parseUnits("10000",18))).wait(1);
+         (await torn_erc20.mint(relayer1.address, ethers.utils.parseUnits("10000",18)));
     }
     // console.log("mint for relayer2:",relayer2.address);
     if(await torn_erc20.balanceOf(relayer2.address) <limit_token ){
-        await (await torn_erc20.mint(relayer2.address, ethers.utils.parseUnits("10000",18))).wait(1);
+         (await torn_erc20.mint(relayer2.address, ethers.utils.parseUnits("10000",18)));
     }
 
     if(await torn_erc20.balanceOf(relayer3.address) <limit_token ){
-        await (await torn_erc20.mint(relayer3.address, ethers.utils.parseUnits("10000",18))).wait(1);
+         (await torn_erc20.mint(relayer3.address, ethers.utils.parseUnits("10000",18)));
     }
 
 
@@ -78,19 +78,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let allowance = await torn_erc20.connect(relayer1).allowance(relayer1.address,mRelayerRegistry.address);
     if(allowance < stake_value.mul(5)){
-        await (await torn_erc20.connect(relayer1).approve(mRelayerRegistry.address,stake_value.mul(20))).wait(1);
+         (await torn_erc20.connect(relayer1).approve(mRelayerRegistry.address,stake_value.mul(20)));
     }
     if((await mRelayerRegistry.stakeValue(relayer1.address)).toNumber() <= 0){
-        await (await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_value)).wait(1);
+         (await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_value))
     }
 
 
      allowance = await torn_erc20.connect(relayer2).allowance(relayer2.address,mRelayerRegistry.address);
     if(allowance <stake_value.mul(5)){
-        await (await torn_erc20.connect(relayer2).approve(mRelayerRegistry.address,stake_value.mul(20))).wait(1);
+         (await torn_erc20.connect(relayer2).approve(mRelayerRegistry.address,stake_value.mul(20)));
     }
     if((await mRelayerRegistry.stakeValue(relayer2.address)).toNumber() <= 0){
-        await (await mRelayerRegistry.connect(relayer2).register(relayer2.address, stake_value)).wait(1);
+         (await mRelayerRegistry.connect(relayer2).register(relayer2.address, stake_value));
     }
 
 
@@ -98,10 +98,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
      allowance = await torn_erc20.connect(dao_relayer1).allowance(dao_relayer1.address,mRelayerRegistry.address);
     if(allowance < (stake_value.mul(5))){
-        await (await torn_erc20.connect(dao_relayer1).approve(mRelayerRegistry.address,stake_value.mul(20))).wait(1);
+         (await torn_erc20.connect(dao_relayer1).approve(mRelayerRegistry.address,stake_value.mul(20)));
     }
     if((await mRelayerRegistry.stakeValue(dao_relayer1.address)).toNumber() <= 0){
-        await (await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address, 0)).wait(1);
+         (await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address, 0));
     }
 
 
@@ -112,7 +112,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let addr = await mRootManger.connect(owner)._relayers(0);
     if(addr != dao_relayer1.address){
-        await (await mRootManger.connect(owner).addRelayer(dao_relayer1.address, 0)).wait(1);
+         (await mRootManger.connect(owner).addRelayer(dao_relayer1.address, 0));
     }
 
 
@@ -122,15 +122,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let stake_torn=ethers.utils.parseUnits("1",18);
 
     if((await torn_erc20.balanceOf(stake1.address)).lte(stake_torn.mul(5))){
-        await (await torn_erc20.mint(stake1.address,stake_torn.mul(50))).wait(1);
+         (await torn_erc20.mint(stake1.address,stake_torn.mul(50)));
     }
 
     if((await torn_erc20.allowance(stake1.address,contracts.mTornadoGovernanceStaking)).lte(stake_torn)){
-        await (await  torn_erc20.connect(stake1).approve(contracts.mTornadoGovernanceStaking,stake_torn.mul(5))).wait(1);
+         (await  torn_erc20.connect(stake1).approve(contracts.mTornadoGovernanceStaking,stake_torn.mul(5)));
     }
 
     if((await mTornadoGovernanceStaking.balanceOf(stake1.address)).lte(stake_torn)){
-        await (await  mTornadoGovernanceStaking.connect(stake1).stake(stake_torn)).wait(1);
+         (await  mTornadoGovernanceStaking.connect(stake1).stake(stake_torn));
     }
 
 
