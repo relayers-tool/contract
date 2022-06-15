@@ -113,6 +113,12 @@ describe("ExitQueue", function () {
             await expect(mExitQueue.connect(user1).addQueueWithApproval(token.div(2))).revertedWith("have pending");
         });
 
+        it("case : add 0", async function () {
+            let token = await mRootManger.balanceOf(user1.address);
+            await mRootManger.connect(user1).approve(mExitQueue.address,token);
+            await expect(mExitQueue.connect(user1).addQueueWithApproval(0)).revertedWith("error para");
+        });
+
         it("case : add the second time  when prepared ", async function () {
             let token = await mRootManger.balanceOf(user1.address);
             await mRootManger.connect(user1).approve(mExitQueue.address,token);

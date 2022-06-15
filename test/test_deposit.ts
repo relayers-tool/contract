@@ -413,6 +413,10 @@ describe("test_deposit", function () {
 
         });
 
+        it("case5 : depositWithApproval 0", async function () {
+            await expect(mDeposit.connect(user3).depositWithApproval(0)).to.be.revertedWith("error para");
+        });
+
     });
 
 
@@ -423,7 +427,7 @@ describe("test_deposit", function () {
         it("case1 : : test Insufficient", async function () {
 
             await expect(mDeposit.connect(user1).withDrawWithApproval(stake_torn)).to.be.revertedWith("balance Insufficient")
-
+            await expect(mDeposit.connect(user1).withDrawWithApproval(0)).to.be.revertedWith("error para")
         });
 
         it("case2 : : Queue is not empty or pool Insufficient", async function () {
@@ -479,6 +483,7 @@ describe("test_deposit", function () {
             expect(await mRootManger.totalTorn()).equal(stake_torn.div(2));
 
         });
+
 
     });
 
