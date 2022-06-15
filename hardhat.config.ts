@@ -64,6 +64,7 @@ const config: HardhatUserConfig = {
     matic: {
       url: process.env.RPC_URL,
       chainId: 137,
+      gasMultiplier:1.5,
       accounts: {
         mnemonic:process.env.PRIVATE_MNEMONIC?process.env.PRIVATE_MNEMONIC:"test test test test test test test test test test test junk",
         path: "m/44'/60'/0'/0",
@@ -72,6 +73,17 @@ const config: HardhatUserConfig = {
       }
     },
 
+    bsc: {
+      url: process.env.BSC_RPC_URL,
+      chainId: 56,
+      gasMultiplier:1.3,
+      accounts: {
+        mnemonic:process.env.PRIVATE_MNEMONIC?process.env.PRIVATE_MNEMONIC:"test test test test test test test test test test test junk",
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 18
+      }
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
