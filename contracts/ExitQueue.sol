@@ -35,7 +35,6 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         ROOT_MANAGER = _root_manager;
     }
 
-
     function  addQueue(uint256 _amount_token, uint256 deadline, uint8 v, bytes32 r, bytes32 s) override external {
         IERC20PermitUpgradeable(ROOT_MANAGER).permit(_msgSender(), address(this), _amount_token, deadline, v, r, s);
         addQueueWithApproval(_amount_token);
@@ -80,6 +79,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     event add_queue(uint256 _amount_token);
     function addQueueWithApproval(uint256 _amount_token) override public  nonReentrant{
         maxIndex += 1;
+        require(_amount_token > 0,"error para");
         require(addr2index[_msgSender()] == 0 && index2value[maxIndex]==0,"have pending");
         addr2index[_msgSender()] = maxIndex;
         index2value[maxIndex] = _amount_token;
@@ -126,7 +126,6 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
 
        return IRootManger(ROOT_MANAGER).valueForTorn(nextValue);
     }
-
     function  withDraw() override external nonReentrant {
         uint256 index =addr2index[_msgSender()];
         require(index <= preparedIndex,"not prepared");
@@ -136,7 +135,4 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         delete index2value[index];
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT),_msgSender(),value);
     }
-
-
-
 }

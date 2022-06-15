@@ -132,6 +132,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
 
     function depositWithApproval(uint256 _qty) public nonReentrant {
         address _account = msg.sender;
+        require(_qty > 0,"error para");
         IRootManger(ROOT_MANAGER).safeDeposit(_account, _qty);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _qty);
 
@@ -171,6 +172,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
 
     function _safeDrawWith(uint256 _amount_token) internal  returns (uint256)  {
         require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
+        require(_amount_token > 0,"error para");
         uint256  shortage;
         uint256 torn;
         (shortage,torn) = getValueShouldUnlock(_amount_token);
