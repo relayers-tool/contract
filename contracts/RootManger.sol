@@ -15,7 +15,7 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     address  public override depositContract;
     address  public override inComeContract;
     address public  override operator;
-
+    address public  profitRecord;
     uint256 public constant MAX_RELAYER_COUNTER = 10;
     mapping(uint256 => address) public override _relayers;
 
@@ -37,14 +37,14 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     }
 
     /** ---------- init ---------- **/
-    function __RootManger_init(address _inComeContract,address _depositContract,address _exitQueueContract) public initializer {
-        __RootManger_init_unchained(_inComeContract,_depositContract,_exitQueueContract);
+    function __RootManger_init(address _inComeContract,address _depositContract,address _exitQueueContract,address _profitRecord) public initializer {
+        __RootManger_init_unchained(_inComeContract,_depositContract,_exitQueueContract,_profitRecord);
         __ERC20_init("relayer_dao", "relayer_dao_token");
         __ERC20Permit_init("relayer_dao");
         __Ownable_init();
     }
 
-    function __RootManger_init_unchained(address _inComeContract,address _depositContract,address _exitQueueContract) public onlyInitializing {
+    function __RootManger_init_unchained(address _inComeContract,address _depositContract,address _exitQueueContract,address _profitRecord) public onlyInitializing {
         inComeContract=_inComeContract;
         depositContract = _depositContract;
         exitQueueContract = _exitQueueContract;

@@ -19,10 +19,8 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
     address immutable public TORN_GOVERNANCE_STAKING;
     address immutable public TORN_RELAYER_REGISTRY;
     address immutable public ROOT_MANAGER;
-    address immutable public PROFIT_RECORD;
     address  public EXIT_QUEUE;
-
-    uint256 public profitAddress;
+    address public profitAddress;
     uint256 public profitRatio;
     uint256 public maxReserveTorn;
     uint256 public maxRewardInGov;
@@ -39,8 +37,6 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         TORN_GOVERNANCE_STAKING = _tornGovernanceStaking;
         TORN_RELAYER_REGISTRY = _tornRelayerRegistry;
         ROOT_MANAGER = _root_manager;
-        PROFIT_RECORD = _profit_record;
-
     }
 
     /** ---------- modifier ---------- **/
@@ -78,10 +74,11 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         emit lock_to_gov(balance);
     }
 
-    function setMaxReservePara(uint256 _amount,uint256 _maxRewardInGov) external onlyOperator {
+    function setMaxReservePara(uint256 _amount,uint256 _maxRewardInGov,address _profitAddress) external onlyOperator {
         require(_amount > 0 &&  _maxRewardInGov > 0, 'Invalid para');
         maxReserveTorn = _amount;
         maxRewardInGov = _maxRewardInGov;
+        profitAddress  =_profitAddress;
     }
 
 // inorder to  reduce the complex the unlock only check the value
@@ -140,7 +137,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         uint256 root_token = IRootManger(ROOT_MANAGER).safeDeposit(_account, _qty);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _qty);
         //record the deposit
-        ProfitRecord(PROFIT_RECORD).newDeposit(msg.sender,_qty,root_token);
+        ProfitRecord(RootManger(ROOT_MANAGER).profitRecord()).newDeposit(msg.sender,_qty,root_token);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
@@ -187,8 +184,8 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
             ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
         }
         IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
-
-        uint256 profit = ProfitRecord(PROFIT_RECORD).withDraw(msg.sender,_amount_token);
+        address profit_address = RootManger(ROOT_MANAGER).profitRecord();
+        uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender,_amount_token);
         profit = profit*profitRatio/1000;
         //send to  profitAddress
         if(profit > 0){

@@ -75,6 +75,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
 
+    let ret_ProfitRecord_logic =  await deploy('ProfitRecord_logic', {
+        from: users.deployer1.address,
+        args: [contracts.mock_torn,ret_RootManger.address],
+        log: true,
+        contract:"ProfitRecord"
+    });
+
+    let ret_ProfitRecord =  await deploy('ProfitRecord', {
+        from: users.deployer1.address,
+        args: [ret_ProfitRecord_logic.address,users.proxy_admin.address,"0x"],
+        log: true,
+        contract:"ProfitRecord"
+    });
+
+
+
     let ret_mExitQueue_logic =  await deploy('ExitQueue_logic', {
         from: users.deployer1.address,
         args: [contracts.mock_torn,ret_RootManger.address],

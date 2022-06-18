@@ -19,12 +19,12 @@ contract ProfitRecord is Initializable, ReentrancyGuardUpgradeable{
     address immutable public ROOT_MANAGER;
     address immutable public TORN_CONTRACT;
 
-    struct price_store{
+    struct PRICE_STORE {
         uint256 price;
         uint256 amount;
     }
 
-    mapping(address => price_store) public profitStore;
+    mapping(address => PRICE_STORE) public profitStore;
       modifier onlyDepositContract() {
         require(msg.sender == IRootManger(ROOT_MANAGER).depositContract(), "Caller is not depositContract");
         _;
@@ -44,7 +44,7 @@ contract ProfitRecord is Initializable, ReentrancyGuardUpgradeable{
 
 
     function  newDeposit(address addr,uint256 torn_amount,uint256 amount_root_token) nonReentrant onlyDepositContract public{
-        price_store memory userStore = profitStore[addr];
+        PRICE_STORE memory userStore = profitStore[addr];
         if(userStore.amount == 0){
            uint256 new_price = torn_amount*(10**18)/amount_root_token;
            profitStore[addr].price = new_price;
@@ -57,8 +57,8 @@ contract ProfitRecord is Initializable, ReentrancyGuardUpgradeable{
 
     }
 
-    function  withDraw(address addr,uint256 amount_root_token) nonReentrant onlyDepositOrExitContract public returns (uint256 profit) {
-        profit = getProfit(getProfit,amount_root_token);
+    function  withDraw(address addr,uint256 amount_root_token) nonReentrant onlyDepositContract public returns (uint256 profit) {
+        profit = getProfit(addr,amount_root_token);
         if(profitStore[addr].amount > amount_root_token){
             profitStore[addr].amount -= amount_root_token;
         }
@@ -68,10 +68,10 @@ contract ProfitRecord is Initializable, ReentrancyGuardUpgradeable{
     }
 
     function  getProfit(address addr,uint256 amount_root_token) public view returns (uint256 profit){
-        price_store memory userStore = profitStore[addr];
-        require(price_store.amount >= amount_root_token,"err root token");
+        PRICE_STORE memory userStore = profitStore[addr];
+        require(userStore.amount >= amount_root_token,"err root token");
         uint256 value = IRootManger(ROOT_MANAGER).valueForTorn(amount_root_token);
-        profit = value - (price_store.price*amount_root_token/10**18);
+        profit = value - (userStore.price*amount_root_token/10**18);
     }
 
 }
