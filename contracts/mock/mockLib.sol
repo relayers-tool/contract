@@ -19,10 +19,11 @@ library mockLib{
     function checkValue(string memory coinType ,uint256 value ) internal returns(bool) {
          uint256 decimals = getDecimals( coin2Index(coinType));
 
-         return (value == uint256(10)**decimals || value == uint256(10)*(10**decimals) || value == uint256(100)*(10**decimals)
+         return (value == uint256(10)*uint256(10)**decimals ||value == uint256(10)**decimals || value == uint256(100000)*(10**decimals) || value == uint256(1000000)*(10**decimals)
          || value == uint256(1000)*(10**decimals)|| value == uint256(10000)*(10**decimals));
     }
     function coin2Index(string memory coinType) internal pure returns(uint256){
+
          if(strcmp(coinType,"eth")){
              return 0;
          }else if(strcmp(coinType,"usdc")){

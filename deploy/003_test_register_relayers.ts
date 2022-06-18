@@ -133,8 +133,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if((await mTornadoGovernanceStaking.balanceOf(stake1.address)).lte(stake_torn)){
         (await  mTornadoGovernanceStaking.connect(stake1).stake(stake_torn));
     }
-
-
+    // let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
+    // await torn_erc20.mint(users.reward.address,stake_torn.mul(100));
+    // await torn_erc20.connect(users.reward).approve(mDeposit.address,stake_torn.mul(10))
+    // await mDeposit.connect(users.reward).depositWithApproval(stake_torn);
 
 };
 export default func;

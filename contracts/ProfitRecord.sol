@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+import "hardhat/console.sol";
 import "./Interface/IDepositContract.sol";
 import "./Interface/IRootManger.sol";
 import "./Interface/IExitQueue.sol";
@@ -45,6 +46,10 @@ contract ProfitRecord is Initializable, ReentrancyGuardUpgradeable{
 
     function  newDeposit(address addr,uint256 torn_amount,uint256 amount_root_token) nonReentrant onlyDepositContract public{
         PRICE_STORE memory userStore = profitStore[addr];
+
+//        console.log("newDeposit amount_root_token %d",amount_root_token);
+//        console.logAddress(addr);
+
         if(userStore.amount == 0){
            uint256 new_price = torn_amount*(10**18)/amount_root_token;
            profitStore[addr].price = new_price;
@@ -58,6 +63,11 @@ contract ProfitRecord is Initializable, ReentrancyGuardUpgradeable{
     }
 
     function  withDraw(address addr,uint256 amount_root_token) nonReentrant onlyDepositContract public returns (uint256 profit) {
+
+
+//        console.log("withDraw amount_root_token %d",amount_root_token);
+//        console.logAddress(addr);
+
         profit = getProfit(addr,amount_root_token);
         if(profitStore[addr].amount > amount_root_token){
             profitStore[addr].amount -= amount_root_token;
@@ -69,6 +79,12 @@ contract ProfitRecord is Initializable, ReentrancyGuardUpgradeable{
 
     function  getProfit(address addr,uint256 amount_root_token) public view returns (uint256 profit){
         PRICE_STORE memory userStore = profitStore[addr];
+//        console.log("userStore.amount %d",userStore.amount);
+//        console.logAddress(addr);
+//        console.log("amount_root_token %d",amount_root_token);
+
+
+
         require(userStore.amount >= amount_root_token,"err root token");
         uint256 value = IRootManger(ROOT_MANAGER).valueForTorn(amount_root_token);
         profit = value - (userStore.price*amount_root_token/10**18);

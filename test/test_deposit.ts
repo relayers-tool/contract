@@ -32,14 +32,15 @@ describe("test_deposit", function () {
     let stake1:SignerWithAddress;
     let owner:SignerWithAddress;
     let dao_relayer1:SignerWithAddress;
-
+    let reward:SignerWithAddress;
+    let users: { user1: any; user2: any; user3: any; operator: any; stake1: any; dao_relayer1: any; owner: any; reward: any; deployer1?: SignerWithAddress; deployer2?: SignerWithAddress; proxy_admin?: SignerWithAddress; relayer1?: SignerWithAddress; relayer2?: SignerWithAddress; relayer3?: SignerWithAddress; stake2?: SignerWithAddress; stake3?: SignerWithAddress; dao_relayer2?: SignerWithAddress; dao_relayer3?: SignerWithAddress; };
 
     let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
     let mTornadoStakingRewards:MTornadoStakingRewards;
     beforeEach(async () => {
 
         let fix_info = await set_up_fixture("register_relayers");
-        let users = await get_user_fixture();
+        users = await get_user_fixture();
         usdc_erc20 = fix_info.usdc_erc20;
         torn_erc20 = fix_info.torn_erc20;
         mTornRouter =fix_info.mTornRouter;
@@ -56,6 +57,7 @@ describe("test_deposit", function () {
         mTornadoStakingRewards = fix_info.mTornadoStakingRewards;
         dao_relayer1 = users.dao_relayer1;
         owner = users.owner;
+        reward = users.reward;
 
         let usdc = ethers.utils.parseUnits("1",6);
         await usdc_erc20.connect(user1).mint(user1.address,usdc.mul(1000));
@@ -93,23 +95,23 @@ describe("test_deposit", function () {
            let  maxReserveTorn  =ethers.utils.parseUnits(Math.random()*10+"",18);
             let maxRewardInGov  =ethers.utils.parseUnits(Math.random()*10+"",18);
 
-            await expect( mDeposit.connect(user1).setMaxReservePara(maxReserveTorn,maxRewardInGov)).to.be.revertedWith("Caller is not operator");
+            await expect( mDeposit.connect(user1).setMaxReservePara(maxReserveTorn,maxRewardInGov,reward.address)).to.be.revertedWith("Caller is not operator");
 
         });
 
         it("case2 : test result", async function () {
             let  maxReserveTorn  =ethers.utils.parseUnits(Math.random()*10+"",18);
             let maxRewardInGov  =ethers.utils.parseUnits(Math.random()*10+"",18);
-            await  mDeposit.connect(operator).setMaxReservePara(maxReserveTorn,maxRewardInGov);
+            await  mDeposit.connect(operator).setMaxReservePara(maxReserveTorn,maxRewardInGov,reward.address);
             expect(await  mDeposit.maxReserveTorn()).to.be.equal(maxReserveTorn);
             expect(await  mDeposit.maxRewardInGov()).to.be.equal(maxRewardInGov);
         });
         it("case3 : Invalid para", async function () {
             let  maxReserveTorn  =ethers.utils.parseUnits(Math.random()*10+"",18);
             let maxRewardInGov  =ethers.utils.parseUnits(Math.random()*10+"",18);
-            await  expect(mDeposit.connect(operator).setMaxReservePara(maxReserveTorn,0)).revertedWith("Invalid para");
-            await  expect(mDeposit.connect(operator).setMaxReservePara(0,0)).revertedWith("Invalid para");
-            await  expect(mDeposit.connect(operator).setMaxReservePara(0,maxRewardInGov)).revertedWith("Invalid para");
+            await  expect(mDeposit.connect(operator).setMaxReservePara(maxReserveTorn,0,reward.address)).revertedWith("Invalid para");
+            await  expect(mDeposit.connect(operator).setMaxReservePara(0,0,reward.address)).revertedWith("Invalid para");
+            await  expect(mDeposit.connect(operator).setMaxReservePara(0,maxRewardInGov,reward.address)).revertedWith("Invalid para");
         });
 
 
@@ -168,7 +170,7 @@ describe("test_deposit", function () {
         it("stake2Node test operator", async function () {
             let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
            await expect(mDeposit.connect(user1).stake2Node(0,5000)).revertedWith("Caller is not operator");
-            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
+            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5),reward.address);
             await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn);
             await  mDeposit.connect(user1).depositWithApproval(stake_torn);
@@ -182,12 +184,12 @@ describe("test_deposit", function () {
         it("test onlyExitQueue ", async function () {
             let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await expect(mDeposit.connect(user1).stake2Node(0,5000)).revertedWith("Caller is not operator");
-            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
+            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5),reward.address);
             await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn);
             await  mDeposit.connect(user1).depositWithApproval(stake_torn);
             await mRootManger.connect(user1).approve(mDeposit.address,await mRootManger.balanceOf(user1.address));
-            await expect(mDeposit.connect(user1).withdraw_for_exit(await mRootManger.balanceOf(user1.address))).revertedWith("Caller is not exitQueue");
+            await expect(mDeposit.connect(user1).withdraw_for_exit(user3.address,await mRootManger.balanceOf(user1.address))).revertedWith("Caller is not exitQueue");
         });
 
     });
@@ -199,7 +201,7 @@ describe("test_deposit", function () {
         it("test isBalanceEnough", async function () {
             let stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await expect(mDeposit.connect(user1).stake2Node(0,5000)).revertedWith("Caller is not operator");
-            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
+            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5),reward.address);
             await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(500));
             await  mDeposit.connect(user1).depositWithApproval(stake_torn);
@@ -216,7 +218,7 @@ describe("test_deposit", function () {
         let stake_torn:BigNumber;
         beforeEach(async () => {
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
-            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5));
+            await  mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(5),stake_torn.mul(5),reward.address);
             await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn.mul(5000));
             await torn_erc20.connect(user2).approve(mDeposit.address,stake_torn.mul(5000));
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(500));
@@ -355,7 +357,7 @@ describe("test_deposit", function () {
             await torn_erc20.connect(user3).approve(mDeposit.address,stake_torn.mul(2));
             let staking_to_gov_1 = await mTornadoGovernanceStaking.lockedBalance(mDeposit.address);
             expect(staking_to_gov_1).to.be.equal(0);
-            await mDeposit.connect(operator).setMaxReservePara(500,500);
+            await mDeposit.connect(operator).setMaxReservePara(500,500,users.reward.address);
             await mDeposit.connect(user3).depositWithApproval(stake_torn);
             expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).to.be.equal(stake_torn);
             expect(await mDeposit.maxReserveTorn()).to.be.gt(await torn_erc20.balanceOf(mDeposit.address))
@@ -385,7 +387,7 @@ describe("test_deposit", function () {
             expect(await mRootManger.totalRelayerTorn()).to.be.equal(0);
             await torn_erc20.connect(user3).mint(user3.address,stake_torn.mul(50));
             await torn_erc20.connect(user3).approve(mDeposit.address,stake_torn.mul(10));
-            await mDeposit.connect(operator).setMaxReservePara(stake_torn.div(10),stake_torn);
+            await mDeposit.connect(operator).setMaxReservePara(stake_torn.div(10),stake_torn,reward.address);
             //_checkLock2Gov
             await expect(mDeposit.connect(user3).depositWithApproval(stake_torn)).to.be.emit(mDeposit, "lock_to_gov")
                 .withArgs(stake_torn);
@@ -426,13 +428,13 @@ describe("test_deposit", function () {
 
         it("case1 : : test Insufficient", async function () {
 
-            await expect(mDeposit.connect(user1).withDrawWithApproval(stake_torn)).to.be.revertedWith("balance Insufficient")
-            await expect(mDeposit.connect(user1).withDrawWithApproval(0)).to.be.revertedWith("error para")
+            await expect(mDeposit.connect(user1).withDrawWithApproval(stake_torn)).to.be.revertedWith("err root token")
+            await expect(mDeposit.connect(user1).withDrawWithApproval(0)).to.be.revertedWith("panic code 0x12")
         });
 
         it("case2 : : Queue is not empty or pool Insufficient", async function () {
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
-            await mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(10),500);
+            await mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(10),500,reward.address);
             await torn_erc20.mint(user1.address,stake_torn.mul(100));
             await torn_erc20.mint(user2.address,stake_torn.mul(100));
             await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn.mul(10))
@@ -462,9 +464,10 @@ describe("test_deposit", function () {
             await mDeposit.connect(user1).depositWithApproval(stake_torn);
             expect(await mRootManger.totalTorn()).equal(stake_torn);
              let  token = await mRootManger.balanceOf(user1.address);
-            expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).equal(stake_torn);
+             expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).equal(stake_torn);
             expect((await mDeposit.getValueShouldUnlock(token)).torn).equal(stake_torn) ;
-            await mDeposit.connect(user1).withDrawWithApproval(token);
+             console.log(await mRootManger.totalSupply());
+             await mDeposit.connect(user1).withDrawWithApproval(token);
            expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).equal(0);
 
         });
@@ -475,7 +478,7 @@ describe("test_deposit", function () {
             stake_torn = stake_torn.mul(2);
             await torn_erc20.mint(user1.address,stake_torn.mul(100));
             await torn_erc20.connect(user1).approve(mDeposit.address,stake_torn.mul(10))
-            await mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(10),500);
+            await mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(10),500,reward.address);
             await mDeposit.connect(user1).depositWithApproval(stake_torn);
             expect(await mRootManger.totalTorn()).equal(stake_torn);
             let  token = await mRootManger.balanceOf(user1.address);

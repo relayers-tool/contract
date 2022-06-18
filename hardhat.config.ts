@@ -51,6 +51,7 @@ const config: HardhatUserConfig = {
     dao_relayer2:14,
     dao_relayer3:15,
     owner:16,
+    reward:17,
 
 
   },

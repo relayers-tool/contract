@@ -13,6 +13,12 @@ import "./Interface/IDepositContract.sol";
 contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
 
 
+    struct QUEUE_INFO {
+        uint256 v;
+        address addr;
+    }
+
+
     address immutable public ROOT_MANAGER;
     address immutable  public TORN_CONTRACT;
 
@@ -20,7 +26,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     uint256 public preparedIndex=0;  //begin with 0
     uint256 public maxIndex = 0;   //begin with 0
     mapping(address => uint256) public addr2index;
-    mapping(uint256 => uint256) public index2value;
+    mapping(uint256 => QUEUE_INFO) public index2value;
 
     uint256 constant public  INDEX_ERR = 2**256 - 1;
     uint256 constant public  MAX_QUEUE_CANCEL = 100;
@@ -42,7 +48,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
 
     function address2Value(address addr) view public returns (uint256 v,bool prepared){
         uint256 index = addr2index[addr];
-        v = index2value[index];
+        v = index2value[index].v;
         prepared = preparedIndex >= index;
     }
 
@@ -59,7 +65,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
          // MAX_QUEUE_CANCEL avoid out of gas
         for(index = 1 ;index < MAX_QUEUE_CANCEL ;index++){
             next_index = preparedIndex_+index;
-            uint256 next_value = index2value[next_index];
+            uint256 next_value = index2value[next_index].v;
             if( maxIndex_ ==  next_index|| next_value > 0){
                 return index;
             }
@@ -80,9 +86,9 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     function addQueueWithApproval(uint256 _amount_token) override public  nonReentrant{
         maxIndex += 1;
         require(_amount_token > 0,"error para");
-        require(addr2index[_msgSender()] == 0 && index2value[maxIndex]==0,"have pending");
+        require(addr2index[_msgSender()] == 0 && index2value[maxIndex].v==0,"have pending");
         addr2index[_msgSender()] = maxIndex;
-        index2value[maxIndex] = _amount_token;
+        index2value[maxIndex] = QUEUE_INFO(_amount_token,_msgSender());
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_MANAGER),_msgSender(), address(this), _amount_token);
         emit add_queue(_amount_token);
     }
@@ -90,7 +96,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     event cancel_queue(address account, uint256 _amount_token);
     function  cancelQueue() override external  nonReentrant{
         uint256 index = addr2index[_msgSender()];
-        uint256 value = index2value[index];
+        uint256 value = index2value[index].v;
         require(value > 0,"empty");
         require(index > preparedIndex,"prepared");
         delete addr2index[_msgSender()];
@@ -106,8 +112,9 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         uint256 next = nextSkipIndex();
         require(INDEX_ERR != next,"too many skips");
         preparedIndex+=next;
-        value = IDepositContract(deposit_addr).withdraw_for_exit(index2value[preparedIndex]);
-        index2value[preparedIndex] = value;
+         QUEUE_INFO memory info = index2value[preparedIndex];
+        value = IDepositContract(deposit_addr).withdraw_for_exit(info.addr,info.v);
+        index2value[preparedIndex].v = value;
     }
 
     function  nextValue() override view external returns(uint256 value) {
@@ -118,7 +125,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         require(INDEX_ERR != next,"too many skips");
 
         // avoid the last one had canceled;
-        uint256 nextValue = index2value[preparedIndex+next];
+        uint256 nextValue = index2value[preparedIndex+next].v;
         if(nextValue == 0)
         {
             return 0;
@@ -129,7 +136,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     function  withDraw() override external nonReentrant {
         uint256 index =addr2index[_msgSender()];
         require(index <= preparedIndex,"not prepared");
-        uint256 value =index2value[index];
+        uint256 value =index2value[index].v;
         require(value > 0 ,"have no pending");
         delete addr2index[_msgSender()];
         delete index2value[index];

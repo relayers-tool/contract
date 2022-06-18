@@ -30,9 +30,9 @@ describe("main_process", function () {
     let stake1:SignerWithAddress,stake2:SignerWithAddress;
 
     let fix_info :Fixture;
-
+    let users: { relayer1: any; relayer2: any; relayer3: any; user1: any; user2: any; operator: any; stake1: any; stake2: any; reward: any; deployer1?: SignerWithAddress; deployer2?: SignerWithAddress; proxy_admin?: SignerWithAddress; user3?: SignerWithAddress; stake3?: SignerWithAddress; dao_relayer1?: SignerWithAddress; dao_relayer2?: SignerWithAddress; dao_relayer3?: SignerWithAddress; owner?: SignerWithAddress; };
     beforeEach(async () => {
-        let users = await get_user_fixture()
+        users = await get_user_fixture()
 
         fix_info = await set_up_fixture("test_net");
          usdc_erc20 = fix_info.usdc_erc20;
@@ -87,7 +87,7 @@ describe("main_process", function () {
             await  torn_erc20.connect( stake1).approve( mTornadoGovernanceStaking.address,stake_torn);
             await  mTornadoGovernanceStaking.connect( stake1).stake( stake_torn);
             // avoid to stake to govstaking
-            await mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(10000000),stake_torn.mul(1000000));
+            await mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(10000000),stake_torn.mul(1000000),users.reward.address);
             expect(await  mTornadoGovernanceStaking.connect( stake1).balanceOf( stake1.address)).to.equal(stake_torn);
             expect(await  mTornadoGovernanceStaking.connect( stake2).balanceOf( stake2.address)).to.equal(0);
             await  torn_erc20.connect( stake2).approve( mDeposit.address,stake_torn);

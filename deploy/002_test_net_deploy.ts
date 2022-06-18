@@ -1,6 +1,6 @@
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {Deposit, ExitQueue, MERC20, MTornadoGovernanceStaking, RootManger} from "../typechain-types";
+import {Deposit, ExitQueue, MERC20, MTornadoGovernanceStaking, ProfitRecord, RootManger} from "../typechain-types";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 
 
@@ -86,7 +86,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: users.deployer1.address,
         args: [ret_ProfitRecord_logic.address,users.proxy_admin.address,"0x"],
         log: true,
-        contract:"ProfitRecord"
+        contract:"RelayerDAOProxy"
     });
 
 
@@ -110,8 +110,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(ret_RootManger.address);
     let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(ret_Deposit.address);
+    let mProfitRecord = <ProfitRecord>await (await ethers.getContractFactory("ProfitRecord")).attach(ret_ProfitRecord.address);
     let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(ret_mExitQueue.address);
-
     let torn_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
     //give enough torn for swap
 
@@ -121,8 +121,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     try {
-        await mRootManger.connect(users.owner).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address);
+        await mRootManger.connect(users.owner).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address,ret_ProfitRecord.address);
         await mRootManger.connect(users.owner).setOperator(users.operator.address);
+    }
+    catch (e:any) {
+        console.log(e.reason)
+    }
+
+    try {
+        await mProfitRecord.connect(users.owner).__ProfitRecord_init();
     }
     catch (e:any) {
         console.log(e.reason)

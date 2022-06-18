@@ -20,7 +20,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
     address immutable public TORN_RELAYER_REGISTRY;
     address immutable public ROOT_MANAGER;
     address  public EXIT_QUEUE;
-    address public profitAddress;
+    address public rewardAddress;
     uint256 public profitRatio;
     uint256 public maxReserveTorn;
     uint256 public maxRewardInGov;
@@ -74,11 +74,11 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         emit lock_to_gov(balance);
     }
 
-    function setMaxReservePara(uint256 _amount,uint256 _maxRewardInGov,address _profitAddress) external onlyOperator {
+    function setMaxReservePara(uint256 _amount,uint256 _maxRewardInGov,address _rewardAddress) external onlyOperator {
         require(_amount > 0 &&  _maxRewardInGov > 0, 'Invalid para');
         maxReserveTorn = _amount;
         maxRewardInGov = _maxRewardInGov;
-        profitAddress  =_profitAddress;
+        rewardAddress = _rewardAddress;
     }
 
 // inorder to  reduce the complex the unlock only check the value
@@ -173,44 +173,54 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         }
     }
 
-    function _safeDrawWith(uint256 _amount_token) internal  returns (uint256)  {
-        require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
-        require(_amount_token > 0,"error para");
-        uint256  shortage;
-        uint256 torn;
-        (shortage,torn) = getValueShouldUnlock(_amount_token);
-        require(shortage != IN_SUFFICIENT, 'pool Insufficient');
-        if(shortage != SUFFICIENT) {
-            ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
-        }
-        IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
-        address profit_address = RootManger(ROOT_MANAGER).profitRecord();
-        uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender,_amount_token);
+   function _safeDrawWith_1(uint256 _amount_token) internal  returns (uint256){
+       require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
+       require(_amount_token > 0,"error para");
+       uint256  shortage;
+       uint256 torn;
+       (shortage,torn) = getValueShouldUnlock(_amount_token);
+       require(shortage != IN_SUFFICIENT, 'pool Insufficient');
+       if(shortage != SUFFICIENT) {
+           ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
+       }
+       IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
+       return torn;
+   }
+
+    function _safeSendTorn(uint256 _amount_token,uint256 torn,uint256 profit) internal returns(uint256 ret) {
+
         profit = profit*profitRatio/1000;
         //send to  profitAddress
         if(profit > 0){
-            IERC20Upgradeable(TORN_CONTRACT).safeTransfer(profitAddress, profit);
+            IERC20Upgradeable(TORN_CONTRACT).safeTransfer(rewardAddress, profit);
         }
+        ret = torn-profit;
         //send to  user address
-        IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, torn-profit);
-        return torn;
+        IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, ret);
     }
+
 
 
     function withDraw(uint256 _amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external nonReentrant {
         require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
         IERC20PermitUpgradeable(ROOT_MANAGER).permit(msg.sender, address(this), _amount, deadline, v, r, s);
-        _safeDrawWith(_amount);
+        withDrawWithApproval(_amount);
     }
 
-    function withDrawWithApproval(uint256 _amount_token) override external nonReentrant {
+    function withDrawWithApproval(uint256 _amount_token) override public  {
         require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
-        _safeDrawWith(_amount_token);
+        address profit_address = RootManger(ROOT_MANAGER).profitRecord();
+        uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender,_amount_token);
+        uint256 torn = _safeDrawWith_1(_amount_token);
+        _safeSendTorn(_amount_token,torn,profit);
     }
 
     //because of nonReentrant have to supply this function forn exitQueue
-    function withdraw_for_exit(uint256 _amount_token) override external onlyExitQueue returns (uint256) {
-      return _safeDrawWith(_amount_token);
+    function withdraw_for_exit(address addr,uint256 _amount_token) override external onlyExitQueue returns (uint256) {
+        address profit_address = RootManger(ROOT_MANAGER).profitRecord();
+        uint256 profit = ProfitRecord(profit_address).withDraw(addr,_amount_token);
+        uint256 torn = _safeDrawWith_1(_amount_token);
+        return _safeSendTorn(_amount_token,torn,profit);
     }
 
 

@@ -1,5 +1,5 @@
 pragma solidity ^0.8.0;
-
+import "hardhat/console.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -48,6 +48,7 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
         inComeContract=_inComeContract;
         depositContract = _depositContract;
         exitQueueContract = _exitQueueContract;
+        profitRecord = _profitRecord;
     }
 
     function addRelayer(address __relayer,uint256 index)  override external  onlyOwner
@@ -123,6 +124,18 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     }
 
     function valueForTorn(uint256 value_token) override  public view returns (uint256){
+//        console.log("value_token %d",value_token);
+//        console.log("this.totalTorn() %d",this.totalTorn());
+//        console.log("totalSupply() %d",totalSupply());
+
         return value_token*(this.totalTorn())/(totalSupply());
+    }
+
+
+    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+        address owner = _msgSender();
+        require(owner == exitQueueContract || to == exitQueueContract,"err transfer");
+        _transfer(owner, to, amount);
+        return true;
     }
 }

@@ -253,7 +253,10 @@ describe("ExitQueue", function () {
             await mRootManger.connect(user1).approve(mExitQueue.address,token.mul(5000));
              let max_queue = await mExitQueue.MAX_QUEUE_CANCEL();
              let conter_random = BigInt(Math.floor(Math.random()*100)) % max_queue.toBigInt();
-             for(let i = 0 ; i < conter_random ;i++){
+             if(conter_random >= max_queue.toBigInt()){
+                 conter_random = max_queue.sub(1).toBigInt();
+             }
+             for(let i = 0 ; i < conter_random  ;i++){
                  await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
                  await mExitQueue.connect(user1).cancelQueue();
              }
