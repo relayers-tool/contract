@@ -6,6 +6,7 @@ import "./Interface/ITornadoStakingRewards.sol";
 import "./Interface/ITornadoGovernanceStaking.sol";
 import "./Interface/IRelayerRegistry.sol";
 import "./RootManger.sol";
+import "./ProfitRecord.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -18,9 +19,11 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
     address immutable public TORN_GOVERNANCE_STAKING;
     address immutable public TORN_RELAYER_REGISTRY;
     address immutable public ROOT_MANAGER;
-
+    address immutable public PROFIT_RECORD;
     address  public EXIT_QUEUE;
 
+    uint256 public profitAddress;
+    uint256 public profitRatio;
     uint256 public maxReserveTorn;
     uint256 public maxRewardInGov;
     uint256 constant public  IN_SUFFICIENT = 2**256 - 1;
@@ -36,6 +39,7 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         TORN_GOVERNANCE_STAKING = _tornGovernanceStaking;
         TORN_RELAYER_REGISTRY = _tornRelayerRegistry;
         ROOT_MANAGER = _root_manager;
+        PROFIT_RECORD = _profit_record;
 
     }
 
@@ -133,8 +137,10 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
     function depositWithApproval(uint256 _qty) public nonReentrant {
         address _account = msg.sender;
         require(_qty > 0,"error para");
-        IRootManger(ROOT_MANAGER).safeDeposit(_account, _qty);
+        uint256 root_token = IRootManger(ROOT_MANAGER).safeDeposit(_account, _qty);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _qty);
+        //record the deposit
+        ProfitRecord(PROFIT_RECORD).newDeposit(msg.sender,_qty,root_token);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
@@ -181,7 +187,15 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
             ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
         }
         IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
-        IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, torn);
+
+        uint256 profit = ProfitRecord(PROFIT_RECORD).withDraw(msg.sender,_amount_token);
+        profit = profit*profitRatio/1000;
+        //send to  profitAddress
+        if(profit > 0){
+            IERC20Upgradeable(TORN_CONTRACT).safeTransfer(profitAddress, profit);
+        }
+        //send to  user address
+        IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, torn-profit);
         return torn;
     }
 

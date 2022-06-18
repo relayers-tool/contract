@@ -92,7 +92,7 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
         ret+= this.totalRelayerTorn();
     }
 
-    function safeDeposit(address account,uint256 value) override  onlyDepositContract external {
+    function safeDeposit(address account,uint256 value) override  onlyDepositContract external returns (uint256) {
         uint256 total = totalSupply();
         uint256 to_mint;
         if(total == uint256(0)){
@@ -102,6 +102,7 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
             to_mint =  total * value / this.totalTorn();
         }
         _mint(account,to_mint);
+        return to_mint;
     }
 
     function safeWithdraw(address account,uint256 to_burn) override onlyDepositContract public {
