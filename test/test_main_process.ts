@@ -12,7 +12,7 @@ import {
     RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
-import {get_user_fixture, set_up_fixture} from "./start_up";
+import {get_user_fixture, set_up_fixture, USER_FIX} from "./start_up";
 
 describe("main_process", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
@@ -30,7 +30,7 @@ describe("main_process", function () {
     let stake1:SignerWithAddress,stake2:SignerWithAddress;
 
     let fix_info :Fixture;
-    let users: { relayer1: any; relayer2: any; relayer3: any; user1: any; user2: any; operator: any; stake1: any; stake2: any; reward: any; deployer1?: SignerWithAddress; deployer2?: SignerWithAddress; proxy_admin?: SignerWithAddress; user3?: SignerWithAddress; stake3?: SignerWithAddress; dao_relayer1?: SignerWithAddress; dao_relayer2?: SignerWithAddress; dao_relayer3?: SignerWithAddress; owner?: SignerWithAddress; };
+    let users: USER_FIX;
     beforeEach(async () => {
         users = await get_user_fixture()
 
@@ -87,7 +87,8 @@ describe("main_process", function () {
             await  torn_erc20.connect( stake1).approve( mTornadoGovernanceStaking.address,stake_torn);
             await  mTornadoGovernanceStaking.connect( stake1).stake( stake_torn);
             // avoid to stake to govstaking
-            await mDeposit.connect(operator).setMaxReservePara(stake_torn.mul(10000000),stake_torn.mul(1000000),users.reward.address);
+            await mDeposit.connect(operator).setMaxReservePara(1,stake_torn.mul(10000000));
+            await mDeposit.connect(operator).setMaxReservePara(2,stake_torn.mul(10000000));
             expect(await  mTornadoGovernanceStaking.connect( stake1).balanceOf( stake1.address)).to.equal(stake_torn);
             expect(await  mTornadoGovernanceStaking.connect( stake2).balanceOf( stake2.address)).to.equal(0);
             await  torn_erc20.connect( stake2).approve( mDeposit.address,stake_torn);

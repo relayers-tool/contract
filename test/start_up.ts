@@ -9,7 +9,7 @@ import {
     MRelayerRegistry,
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
-    MTornRouter,
+    MTornRouter, ProfitRecord,
     RootManger
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
@@ -87,6 +87,7 @@ export  async function set_up_fixture(fix_name:string) {
         ExitQueue:(await deployments.get('ExitQueue')).address,
         Income:(await deployments.get('Income')).address,
         MTornRouter:(await deployments.get('MTornRouter')).address,
+        mProfitRecord:(await deployments.get('ProfitRecord')).address,
     };
 
     let owner:SignerWithAddress,proxy_admin:SignerWithAddress;
@@ -132,6 +133,7 @@ export  async function set_up_fixture(fix_name:string) {
     mDeposit = <Deposit> await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
 
     mExitQueue = <ExitQueue> await (await ethers.getContractFactory("ExitQueue")).attach(contracts.ExitQueue);
+    let mProfitRecord:ProfitRecord = <ProfitRecord> await (await ethers.getContractFactory("ProfitRecord")).attach(contracts.mProfitRecord);
 
     await config_check();
     // finally we return the whole object (including the tokenOwner set_up as a User object)
@@ -139,6 +141,6 @@ export  async function set_up_fixture(fix_name:string) {
         usdc_erc20,
         dai_erc20,
         weth_erc20,
-        torn_erc20,mockSwap,mRelayerRegistry,mTornadoStakingRewards,mTornadoGovernanceStaking,mRootManger,mIncome,mTornRouter,mDeposit,mExitQueue
+        torn_erc20,mockSwap,mRelayerRegistry,mTornadoStakingRewards,mTornadoGovernanceStaking,mRootManger,mIncome,mTornRouter,mDeposit,mExitQueue,mProfitRecord
     };
 }

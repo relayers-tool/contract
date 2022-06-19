@@ -7,7 +7,7 @@ import {
     MRelayerRegistry,
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
-    MTornRouter,
+    MTornRouter, ProfitRecord,
     RootManger
 } from "../typechain-types";
 import {BaseContract, BigNumber} from "ethers";
@@ -23,6 +23,7 @@ export interface Fixture {
     mExitQueue :ExitQueue;
     mIncome :Income;
     mockSwap :MockSwap;
+    mProfitRecord:ProfitRecord
 }
 
 const delay = (ms: number) => new Promise((resolve, reject) => setTimeout(resolve, ms))

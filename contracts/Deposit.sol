@@ -74,11 +74,25 @@ contract Deposit is Initializable, IDepositContract, ReentrancyGuardUpgradeable 
         emit lock_to_gov(balance);
     }
 
-    function setMaxReservePara(uint256 _amount,uint256 _maxRewardInGov,address _rewardAddress) external onlyOperator {
-        require(_amount > 0 &&  _maxRewardInGov > 0, 'Invalid para');
-        maxReserveTorn = _amount;
-        maxRewardInGov = _maxRewardInGov;
-        rewardAddress = _rewardAddress;
+    // index 1 maxReserveTorn;
+    // index 2 _maxRewardInGov;
+    // index 3 _rewardAddress
+    // index 3 profitRatio  x/1000
+    function setMaxReservePara(uint256 index,uint256 value) external onlyOperator {
+        require(value > 0,"Invalid para");
+        if(index ==1){
+            maxReserveTorn = value;
+        }else if(index == 2){
+            maxRewardInGov = value;
+        }else if(index == 3){
+            rewardAddress = address(uint160(value));
+        }else  if(index == 4){
+            profitRatio = value;
+        }
+        else{
+            require(false,"Invalid para");
+        }
+
     }
 
 // inorder to  reduce the complex the unlock only check the value
