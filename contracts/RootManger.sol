@@ -53,7 +53,7 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     // save gas
     function addRelayer(address __relayer,uint256 index)  override external  onlyOwner
     {
-         require(index <= MAX_RELAYER_COUNTER+1,"too large index");
+         require(index <= MAX_RELAYER_COUNTER,"too large index");
 
         uint256 counter = MAX_RELAYER_COUNTER; //save gas
         for(uint256 i = 0 ;i < counter ;i++){

@@ -107,6 +107,8 @@ describe("RootManger", function () {
 
     // console.log(await mRootManger._relayers(0));
     await mRootManger.connect(owner).addRelayer(user1.address,lastone);
+    await expect(mRootManger.connect(owner).addRelayer(user1.address,lastone.add(5))).revertedWith("too large index");
+
     expect(await mRootManger._relayers(lastone)).equal(user1.address);
     expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(1));
     await expect(mRootManger.connect(owner).addRelayer(user1.address,lastone.add(1))).revertedWith("repeated");
@@ -140,10 +142,14 @@ describe("RootManger", function () {
     await mRootManger.connect(owner).removeRelayer(0);
     await expect(mRootManger.connect(owner).removeRelayer(0)).revertedWith("index err");
     await mRootManger.connect(owner).addRelayer(relayer1.address,0);
+    await expect(mRootManger.connect(owner).addRelayer(relayer2.address,0)).revertedWith("index err");
     await expect(mRootManger.connect(owner).addRelayer(relayer1.address,0)).revertedWith("repeated");
     let lastone =await mRootManger.connect(user1).MAX_RELAYER_COUNTER();
     await mRootManger.connect(owner).removeRelayer(lastone.sub(1));
     expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.sub(1));
+    lastone= await mRootManger.connect(user1).MAX_RELAYER_COUNTER();
+    await expect( mRootManger.connect(owner).removeRelayer(lastone.add(1))).revertedWith("too large index");
+
   });
 
   it("test transfer", async function () {
