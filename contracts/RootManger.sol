@@ -16,7 +16,7 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     address  public override inComeContract;
     address public  override operator;
     address public  profitRecord;
-    uint256 public constant MAX_RELAYER_COUNTER = 10;
+    uint256 public  MAX_RELAYER_COUNTER ;
     mapping(uint256 => address) public override _relayers;
 
     address immutable public TORN_CONTRACT;
@@ -50,17 +50,34 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
         exitQueueContract = _exitQueueContract;
         profitRecord = _profitRecord;
     }
-
+    // save gas
     function addRelayer(address __relayer,uint256 index)  override external  onlyOwner
     {
-         require(index < MAX_RELAYER_COUNTER,"too large index");
+         require(index <= MAX_RELAYER_COUNTER+1,"too large index");
+
+        uint256 counter = MAX_RELAYER_COUNTER; //save gas
+        for(uint256 i = 0 ;i < counter ;i++){
+            require(_relayers[i] != __relayer,"repeated");
+        }
+
+         if(index == MAX_RELAYER_COUNTER){
+             MAX_RELAYER_COUNTER += 1;
+         }
+
          require(_relayers[index] == address(0),"index err");
-         _relayers[index]=__relayer;
+
+         _relayers[index] = __relayer;
     }
 
     function removeRelayer(uint256 index)  override external  onlyOwner
     {
         require(index < MAX_RELAYER_COUNTER,"too large index");
+
+        // save gas
+        if(index == MAX_RELAYER_COUNTER+1){
+            MAX_RELAYER_COUNTER -= 1;
+        }
+
         require(_relayers[index] != address(0),"index err");
         delete _relayers[index];
     }
@@ -78,7 +95,8 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     function totalRelayerTorn() override external view returns (uint256 ret){
         ret = 0;
         address relay ;
-        for(uint256 i = 0 ;i < MAX_RELAYER_COUNTER ;i++){
+        uint256 counter = MAX_RELAYER_COUNTER; //save gas
+        for(uint256 i = 0 ;i < counter ;i++){
              relay = _relayers[i];
             if(relay!= address(0)){
                 ret += IRelayerRegistry(TORN_RELAYER_REGISTRY).getRelayerBalance(relay);
@@ -107,10 +125,6 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     }
 
     function safeWithdraw(address account,uint256 to_burn) override onlyDepositContract public {
-//        uint256 total = totalSupply();
-//        uint256 to_burn;
-//        // to_burn = totalSupply() * value / totalTorn()
-//        to_burn =  total.mul(value_token).div(this.totalTorn());
         _burn(account,to_burn);
     }
 
@@ -124,14 +138,10 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     }
 
     function valueForTorn(uint256 value_token) override  public view returns (uint256){
-//        console.log("value_token %d",value_token);
-//        console.log("this.totalTorn() %d",this.totalTorn());
-//        console.log("totalSupply() %d",totalSupply());
-
         return value_token*(this.totalTorn())/(totalSupply());
     }
 
-
+    // overwite this function inorder to prevent user transfer root token
     function transfer(address to, uint256 amount) public virtual override returns (bool) {
         address owner = _msgSender();
         require(owner == exitQueueContract || to == exitQueueContract,"err transfer");

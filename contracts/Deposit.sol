@@ -78,7 +78,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     // index 2 _maxRewardInGov;
     // index 3 _rewardAddress
     // index 3 profitRatio  x/1000
-    function setMaxReservePara(uint256 index,uint256 value) external onlyOperator {
+    function setPara(uint256 index,uint256 value) external onlyOperator {
         require(value > 0,"Invalid para");
         if(index ==1){
             maxReserveTorn = value;
