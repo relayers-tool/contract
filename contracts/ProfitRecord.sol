@@ -87,6 +87,8 @@ contract ProfitRecord is Initializable, ReentrancyGuardUpgradeable{
 
         require(userStore.amount >= amount_root_token,"err root token");
         uint256 value = IRootManger(ROOT_MANAGER).valueForTorn(amount_root_token);
+//        console.log("value:%d",value);
+//        console.log(" (userStore.price*amount_root_token/10**18):%d", (userStore.price*amount_root_token/10**18));
         profit = value - (userStore.price*amount_root_token/10**18);
     }
 

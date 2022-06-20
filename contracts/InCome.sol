@@ -52,7 +52,7 @@ contract Income is IinComeContract {
 
 
     function swapETHForTorn(uint256 _amount, uint256 _minAmountOut) external payable onlyOperator {
-       require(msg.value == _amount, "unconformity value");
+//       require(msg.value == _amount, "unconformity value");
         ISwapRouter(SWAP_ROUTE).exactInputSingle{value: _amount}(ISwapRouter.ExactInputSingleParams({
             tokenIn: WETH,
             tokenOut: TORN_CONTRACT,
