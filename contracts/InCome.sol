@@ -9,9 +9,6 @@ import "./Interface/IinComeContract.sol";
 
 contract Income is IinComeContract {
     using SafeERC20Upgradeable for IERC20Upgradeable;
-
-    address immutable public WETH;
-    address immutable public SWAP_ROUTE;
     address immutable public TORN_CONTRACT;
     address immutable public ROOT_MANAGER;
 
