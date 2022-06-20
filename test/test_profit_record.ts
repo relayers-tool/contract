@@ -101,13 +101,6 @@ describe("test_income", function () {
         }
         let income_eth = await banlancOf(fix_info,"eth", mIncome);
 
-        console.log(2,await mDeposit.totalBalanceOfTorn());
-        console.log(1,await mRootManger.totalRelayerTorn());
-
-
-        console.log(await mRootManger._relayers(0));
-        console.log(await mRootManger._relayers(1));
-        console.log(await users.dao_relayer1.address);
 
        await expect(mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token)).revertedWith("panic code 17");
 

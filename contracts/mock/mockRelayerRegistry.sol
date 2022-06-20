@@ -44,14 +44,13 @@ contract MRelayerRegistry is IRelayerRegistry{
         return  stakeValue[relayer];
     }
 
-    function notice_tron_router_withdraw(uint256 value) external returns (address relay){
+    function notice_tron_router_withdraw(uint256 value) external returns (address relayer){
         uint256 tempTime = block.timestamp;
-        address relayer = array[tempTime%counter];
+        relayer = array[tempTime%counter];
         while(stakeValue[relayer] <value){
             tempTime += 1;
             relayer = array[tempTime%counter];
         }
-        relay = relayer;
         stakeValue[relayer] =  stakeValue[relayer] -value;
         ERC20(TORN_CONTRACT).approve(TORN_STAKING_REWARDS,value);
         MTornadoGovernanceStaking(TORN_STAKING_REWARDS).addRewardAmount(value);
