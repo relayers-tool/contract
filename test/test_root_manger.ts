@@ -101,21 +101,20 @@ describe("RootManger", function () {
 
 
   it("test addRelayer", async function () {
-
+    let lastone =await mRootManger.connect(user1).MAX_RELAYER_COUNTER();
     await expect(mRootManger.connect(user1).addRelayer(relayer1.address,0)).revertedWith("Ownable: caller is not the owner");
-    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(1);
+    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone);
 
     // console.log(await mRootManger._relayers(0));
-    await mRootManger.connect(owner).addRelayer(relayer2.address,1);
-    expect(await mRootManger._relayers(1)).equal(relayer2.address);
-    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(2);
-    await expect(mRootManger.connect(owner).addRelayer(relayer1.address,1)).revertedWith("repeated");
-    await expect(mRootManger.connect(owner).addRelayer(relayer1.address,(await mRootManger.MAX_RELAYER_COUNTER()).add(1))).revertedWith("repeated");
-     await mRootManger.connect(owner).addRelayer(relayer3.address,2);
-    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(3);
-     expect(await mRootManger._relayers(2)).equal(relayer3.address);
-    await expect( mRootManger.connect(owner).addRelayer(relayer3.address,(await mRootManger.MAX_RELAYER_COUNTER()).sub(1))).revertedWith("repeated");;
-    expect(await mRootManger._relayers((await mRootManger.MAX_RELAYER_COUNTER()).sub(1))).equal(relayer3.address);
+    await mRootManger.connect(owner).addRelayer(user1.address,lastone);
+    expect(await mRootManger._relayers(lastone)).equal(user1.address);
+    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(1));
+    await expect(mRootManger.connect(owner).addRelayer(user1.address,lastone.add(1))).revertedWith("repeated");
+
+   await mRootManger.connect(owner).addRelayer(user2.address,lastone.add(1));
+   expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(2));
+    expect(await mRootManger._relayers(lastone.add(1))).equal(user2.address);
+
 
   });
 
@@ -139,14 +138,12 @@ describe("RootManger", function () {
     await expect(mRootManger.connect(user1).removeRelayer(0)).revertedWith("Ownable: caller is not the owner");
 
     await mRootManger.connect(owner).removeRelayer(0);
-    await expect(mRootManger.connect(owner).removeRelayer(0)).revertedWith("too large index");
+    await expect(mRootManger.connect(owner).removeRelayer(0)).revertedWith("index err");
     await mRootManger.connect(owner).addRelayer(relayer1.address,0);
     await expect(mRootManger.connect(owner).addRelayer(relayer1.address,0)).revertedWith("repeated");
-    await expect(mRootManger.connect(owner).removeRelayer(3)).revertedWith("too large index");
-    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(1);
-      await mRootManger.connect(owner).removeRelayer(0);
-    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(0);
-
+    let lastone =await mRootManger.connect(user1).MAX_RELAYER_COUNTER();
+    await mRootManger.connect(owner).removeRelayer(lastone.sub(1));
+    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.sub(1));
   });
 
   it("test transfer", async function () {
