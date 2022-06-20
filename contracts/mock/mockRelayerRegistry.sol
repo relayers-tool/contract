@@ -35,11 +35,7 @@ contract MRelayerRegistry is IRelayerRegistry{
     }
 
     function stakeToRelayer(address relayer, uint256 stake)  override public {
-          // require(stake > 0 ,"stake == 0");
-        stakeValue[relayer]= stakeValue[relayer] + stake;
-//       console.log("allowance %d",IERC20Upgradeable(TORN_CONTRACT).allowance(msg.sender,address(this)));
-//        console.logAddress(msg.sender);
-//        console.logAddress(address(this));
+         stakeValue[relayer]= stakeValue[relayer] + stake;
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),msg.sender,address(this),stake);
     }
 
@@ -48,14 +44,14 @@ contract MRelayerRegistry is IRelayerRegistry{
         return  stakeValue[relayer];
     }
 
-    function notice_tron_router_withdraw(uint256 value) external {
+    function notice_tron_router_withdraw(uint256 value) external returns (address relay){
         uint256 tempTime = block.timestamp;
         address relayer = array[tempTime%counter];
         while(stakeValue[relayer] <value){
-//            console.log("index %d remain: %d vaule: %d",tempTime%counter,stakeValue[relayer],value);
             tempTime += 1;
             relayer = array[tempTime%counter];
         }
+        relay = relayer;
         stakeValue[relayer] =  stakeValue[relayer] -value;
         ERC20(TORN_CONTRACT).approve(TORN_STAKING_REWARDS,value);
         MTornadoGovernanceStaking(TORN_STAKING_REWARDS).addRewardAmount(value);

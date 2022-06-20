@@ -88,7 +88,9 @@ contract MTornRouter is ImockTornRouter {
             payable(address(to)).transfer(value);
             payable(address(INCOME_CONTRACT)).transfer(fee);
 //            console.log("send torn :%d to gov staking ,fee :%d",Coin2Tron(coinType,fee)*stakeFeeRate/allFeeRate,fee);
-            MRelayerRegistry(RELAYER_REGISTRY).notice_tron_router_withdraw(Coin2Tron(coinType,fee)*stakeFeeRate/allFeeRate);
+            address relayer = MRelayerRegistry(RELAYER_REGISTRY).notice_tron_router_withdraw(Coin2Tron(coinType,fee)*stakeFeeRate/allFeeRate);
+            payable(address(relayer)).transfer(fee);
+
             return;
         }else if(mockLib.strcmp(coinType,"usdc")){
             contr = IERC20Upgradeable(USDC_CONTRACT);
@@ -100,8 +102,8 @@ contract MTornRouter is ImockTornRouter {
         }
         value =  value - fee ;
         SafeERC20Upgradeable.safeTransfer(contr,to,value);
-        SafeERC20Upgradeable.safeTransfer(contr,INCOME_CONTRACT,fee);
-        MRelayerRegistry(RELAYER_REGISTRY).notice_tron_router_withdraw(Coin2Tron(coinType,fee)*stakeFeeRate/allFeeRate);
+        address relayer = MRelayerRegistry(RELAYER_REGISTRY).notice_tron_router_withdraw(Coin2Tron(coinType,fee)*stakeFeeRate/allFeeRate);
+        SafeERC20Upgradeable.safeTransfer(contr,relayer,fee);
     }
 
     event Received(address, uint);
