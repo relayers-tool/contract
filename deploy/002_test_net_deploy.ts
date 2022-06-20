@@ -38,7 +38,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_Income_logic =  await deploy('Income_logic', {
         from: users.deployer1.address,
-        args: [contracts.mockSwap,contracts.mock_weth,contracts.mock_torn,ret_RootManger.address],
+        args: [contracts.mock_torn,ret_RootManger.address],
         log: true,
         contract:"Income"
     });

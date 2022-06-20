@@ -92,31 +92,15 @@ describe("test_income", function () {
         let eth = ethers.utils.parseUnits("100000",18);
         let counter = 20
 
-        console.log(1,await mDeposit.totalBalanceOfTorn());
-        console.log(1,await mRootManger.totalRelayerTorn());
-
         for(let i = 0 ; i < counter ; i++) {
             await  mTornRouter.connect( users.user1).deposit("eth", eth, {value: eth});
             await  mTornRouter.connect( users.user1).withdraw("eth", eth,  users.user1.address);
         }
         let income_eth = await banlancOf(fix_info,"eth", mIncome);
 
-
        await expect(mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token)).revertedWith("panic code 17");
 
         let torn =await Coin2Tron(fix_info,"eth",income_eth);
-        await mIncome.connect(users.operator).swapETHForTorn(income_eth,torn);
-        console.log(await mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token));
-
-        // for(let i = 0 ; i < counter ; i++) {
-        //     await  mTornRouter.connect( users.user1).deposit("eth", eth, {value: eth});
-        //     await  mTornRouter.connect( users.user1).withdraw("eth", eth,  users.user1.address);
-        // }
-        // let income_eth = await banlancOf(fix_info,"eth", mIncome);
-        //
-        // let getProfit = await mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token);
-        // await mDeposit.connect(users.user3).depositWithApproval(stake_torn.add(getProfit));
-        // expect(about(await mProfitRecord.connect(users.user3).getProfit(users.user3.address, await mRootManger.balanceOf(users.user3.address)),getProfit)).equal(true);
 
     });
 

@@ -60,40 +60,15 @@ describe("test_income", function () {
 
     });
 
-    it("test only operator can withdraw", async function () {
-         let usdc_value = await banlancOf(fix_info,"usdc",mIncome);
-         let eth_value = await banlancOf(fix_info,"eth",mIncome);
-         expect(usdc_value.gt(0)).to.be.true;
-         expect(eth_value.gt(0)).to.be.true;
-         await expect( mIncome.connect(user1).withdraw(usdc_erc20.address,usdc_value)).to.be.revertedWith("Caller is not operator");
 
-         //event
-         await expect(mIncome.connect(operator).withdraw(usdc_erc20.address,usdc_value)).to.be.emit(mIncome, "with_draw")
-             .withArgs(usdc_erc20.address,operator.address, usdc_value);
-         await expect(mIncome.connect(operator).withdraw("0x0000000000000000000000000000000000000000",eth_value)).to.be.emit(mIncome, "with_draw")
-             .withArgs("0x0000000000000000000000000000000000000000",operator.address, eth_value);
-        await expect(mIncome.connect(operator).withdraw("0x0000000000000000000000000000000000000000",eth_value.mul(2))).revertedWith("Insufficient balance");
-         expect(await  usdc_erc20.balanceOf(operator.address)).to.equal(usdc_value);
 
-    });
-
-    it("test swap", async function () {
-        let eth_value = await banlancOf(fix_info,"eth",mIncome);
-        let torn =await Coin2Tron(fix_info,"eth",eth_value);
-        await expect( mIncome.connect(user1).swapETHForTorn(eth_value,torn,{value:eth_value})).to.be.revertedWith("Caller is not operator");
-        await  expect(mIncome.connect(operator).swapETHForTorn(eth_value,torn)).to.be.revertedWith("unconformity value");
-        await  mIncome.connect(operator).swapETHForTorn(eth_value,torn,{value:eth_value});
-        expect(await banlancOf(fix_info,"torn",mIncome)).to.gte(torn);
-    });
 
     it("test distribute_torn", async function () {
         let eth_value = await banlancOf(fix_info,"eth",mIncome);
         let torn =await Coin2Tron(fix_info,"eth",eth_value);
-        await  mIncome.connect(operator).swapETHForTorn(eth_value,torn,{value:eth_value});
         await expect( mIncome.connect(user1).distributeTorn(torn)).to.be.revertedWith("Caller is not operator");
         await expect(mIncome.connect(operator).distributeTorn(torn)).to.be.emit(mIncome, "distribute_torn")
             .withArgs(mDeposit.address,torn);
-
     });
 
 

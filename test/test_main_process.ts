@@ -54,17 +54,15 @@ describe("main_process", function () {
 
         //register relayers
         //give torn to relayers
-        await  torn_erc20.mint( relayer1.address, ethers.utils.parseUnits("10000",18));
+        await  torn_erc20.mint( relayer1.address, ethers.utils.parseUnits("100000000000",18));
         await  torn_erc20.mint( relayer2.address, ethers.utils.parseUnits("10000",18));
         await  torn_erc20.mint( relayer3.address, ethers.utils.parseUnits("10000",18));
 
         let stake_value = ethers.utils.parseUnits("5000",18);
         await  torn_erc20.connect( relayer1).approve( mRelayerRegistry.address,stake_value);
         await  mRelayerRegistry.connect( relayer1).register( relayer1.address,stake_value);
-        await  torn_erc20.connect( relayer2).approve( mRelayerRegistry.address,stake_value);
-        await  mRelayerRegistry.connect( relayer2).register( relayer2.address,stake_value);
-
-
+        // await  torn_erc20.connect( relayer2).approve( mRelayerRegistry.address,stake_value);
+        // await  mRelayerRegistry.connect( relayer2).register( relayer2.address,stake_value);
 
 
          await  torn_erc20.mint( user1.address, ethers.utils.parseUnits("10000",18));
@@ -103,9 +101,10 @@ describe("main_process", function () {
             await  mTornRouter.connect( user1).withdraw("usdc",usdc, user2.address);
 
 
-            let income = await banlancOf(fix_info,"usdc", mIncome);
+            let income = await banlancOf(fix_info,"usdc", relayer1);
             let reward = await getGovRelayerReward(fix_info,"usdc",usdc);
             expect(income).to.equal(reward);
+            let banlance1 = await banlancOf(fix_info,"eth", relayer1);
 
             //deposit eth for test
             let eth = ethers.utils.parseUnits("1000",18);
@@ -115,13 +114,14 @@ describe("main_process", function () {
                 await  mTornRouter.connect( user1).deposit("eth", eth, {value: eth});
                 await  mTornRouter.connect( user1).withdraw("eth", eth,  user2.address);
             }
-            let income_eth = await banlancOf(fix_info,"eth", mIncome);
+            let income_eth = await banlancOf(fix_info,"eth", relayer1);
 
-            expect(await banlancOf(fix_info,"eth", mIncome)).to.equal(await  getGovRelayerReward(fix_info,"eth",eth.mul(20)));
+            expect((await banlancOf(fix_info,"eth", relayer1)).sub(banlance1)).to.equal(await  getGovRelayerReward(fix_info,"eth",eth.mul(20)));
 
             //swap income eth to torn
             let eth_to_torn = await   mTornRouter.Coin2Tron("eth",income_eth);
-            await  mIncome.connect( operator).swapETHForTorn(income_eth,eth_to_torn,{value:income_eth});
+            await torn_erc20.connect(relayer1).approve(mIncome.address,eth_to_torn);
+            await torn_erc20.connect(relayer1).transfer(mIncome.address,eth_to_torn);
             await  mIncome.connect( operator).distributeTorn(eth_to_torn);
 
             expect(await  mRootManger.connect(stake2).balanceOfTorn(stake2.address)).to.equal(stake_torn.add(eth_to_torn));
