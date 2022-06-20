@@ -18,13 +18,9 @@ contract Income is IinComeContract {
 
     /** ---------- constructor ---------- **/
     constructor(
-        address _swapRoute,
-        address _weth,
         address _tornContract,
         address _root_manager
     ) {
-        SWAP_ROUTE = _swapRoute;
-        WETH = _weth;
         TORN_CONTRACT = _tornContract;
         ROOT_MANAGER = _root_manager;
     }
@@ -35,35 +31,6 @@ contract Income is IinComeContract {
         _;
     }
 
-
-    event with_draw(address, address,uint256);
-    function withdraw(address _token, uint256 _amount) external payable onlyOperator {
-
-        emit with_draw(_token,msg.sender,_amount);
-
-        if (_token == address(0)) {
-            require(address(this).balance >= _amount, 'Insufficient balance');
-            AddressUpgradeable.sendValue(payable(msg.sender), _amount);
-        } else {
-            //require(IERC20Upgradeable(_token).balanceOf(address(this)) >= _amount, 'Insufficient balance');
-            IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
-        }
-    }
-
-
-    function swapETHForTorn(uint256 _amount, uint256 _minAmountOut) external payable onlyOperator {
-//       require(msg.value == _amount, "unconformity value");
-        ISwapRouter(SWAP_ROUTE).exactInputSingle{value: _amount}(ISwapRouter.ExactInputSingleParams({
-            tokenIn: WETH,
-            tokenOut: TORN_CONTRACT,
-            fee: 10000,
-            recipient: address(this),
-            deadline: block.timestamp + 60,
-            amountIn: _amount,
-            amountOutMinimum: _minAmountOut,
-            sqrtPriceLimitX96: 0
-        }));
-    }
 
     event distribute_torn(address,uint256);
     function distributeTorn(uint256 _amount) external onlyOperator {
