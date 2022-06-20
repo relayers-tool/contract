@@ -16,7 +16,7 @@ import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, set_up_fixture, USER_FIX} from "./start_up";
 import {BigNumber} from "ethers";
 
-describe("test_income", function () {
+describe("test_ProfitRecord", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
 
 
@@ -114,7 +114,7 @@ describe("test_income", function () {
         await  mDeposit.connect(users.operator).setPara(1, ethers.utils.parseUnits("500000000000",18) );
         await mDeposit.connect(users.user3).depositWithApproval(stake_torn);
 
-        console.log(await torn_erc20.balanceOf(mDeposit.address),stake_torn);
+
         await mDeposit.connect(users.operator).stake2Node(0,stake_torn.div(3));
         await mDeposit.connect(users.operator).stake2Node(1,stake_torn.div(3));
 

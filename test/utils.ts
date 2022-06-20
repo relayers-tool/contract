@@ -60,7 +60,6 @@ export  async function  getGovRelayerReward(info:Fixture, type:string, value:Big
 }
 
 export  function about ( value1:BigNumber,value2:BigNumber)  {
-    console.log(value1,value2);
     if(value1.sub(value2).abs().gt(200)){
         return false;
     }

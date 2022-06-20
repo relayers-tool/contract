@@ -74,7 +74,7 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
         require(index < MAX_RELAYER_COUNTER,"too large index");
 
         // save gas
-        if(index == MAX_RELAYER_COUNTER+1){
+        if(index+1 == MAX_RELAYER_COUNTER){
             MAX_RELAYER_COUNTER -= 1;
         }
 
