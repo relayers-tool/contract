@@ -85,8 +85,8 @@ describe("main_process", function () {
             await  torn_erc20.connect( stake1).approve( mTornadoGovernanceStaking.address,stake_torn);
             await  mTornadoGovernanceStaking.connect( stake1).stake( stake_torn);
             // avoid to stake to govstaking
-            await mDeposit.connect(operator).setMaxReservePara(1,stake_torn.mul(10000000));
-            await mDeposit.connect(operator).setMaxReservePara(2,stake_torn.mul(10000000));
+            await mDeposit.connect(operator).setPara(1,stake_torn.mul(10000000));
+            await mDeposit.connect(operator).setPara(2,stake_torn.mul(10000000));
             expect(await  mTornadoGovernanceStaking.connect( stake1).balanceOf( stake1.address)).to.equal(stake_torn);
             expect(await  mTornadoGovernanceStaking.connect( stake2).balanceOf( stake2.address)).to.equal(0);
             await  torn_erc20.connect( stake2).approve( mDeposit.address,stake_torn);
