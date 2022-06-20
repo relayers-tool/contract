@@ -107,6 +107,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address, 0));
     }
 
+    if((await mRelayerRegistry.stakeValue(users.dao_relayer2.address)) <= BigNumber.from(0)){
+        (await mRelayerRegistry.connect(dao_relayer1).register(users.dao_relayer2.address, 0));
+    }
+
+    if((await mRelayerRegistry.stakeValue(users.dao_relayer3.address)) <= BigNumber.from(0)){
+        (await mRelayerRegistry.connect(dao_relayer1).register(users.dao_relayer3.address, 0));
+    }
+
     if((await mRootManger.connect(owner).owner()) != owner.address){
         await mRootManger.connect(deployer2).transferOwnership(owner.address);
     }
@@ -116,7 +124,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (await mRootManger.connect(owner).addRelayer(dao_relayer1.address, 0));
     }
 
+    addr = await mRootManger.connect(owner)._relayers(1);
+    if(addr != users.dao_relayer2.address){
+        (await mRootManger.connect(owner).addRelayer(users.dao_relayer2.address, 1));
+    }
 
+    addr = await mRootManger.connect(owner)._relayers(2);
+    if(addr != users.dao_relayer3.address){
+        (await mRootManger.connect(owner).addRelayer(users.dao_relayer3.address, 2));
+    }
+
+    await mRootManger.connect(owner).removeRelayer(1);
 
 
     //initialize fist stake avoid dive 0

@@ -149,5 +149,19 @@ describe("RootManger", function () {
 
   });
 
+  it("test transfer", async function () {
+
+    await torn_erc20.connect(user1).mint(user1.address,50000);
+    await torn_erc20.connect(user1).approve(mDeposit.address,50000);
+    await mDeposit.connect(user1).depositWithApproval(5000);
+
+    expect(await mRootManger.balanceOf(user1.address)).gt(0);
+    await expect(mRootManger.connect(user1).transfer(user2.address,1)).revertedWith("err transfer");
+
+  });
+
+
+
+
 
 });
