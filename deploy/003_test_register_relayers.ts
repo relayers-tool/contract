@@ -84,72 +84,90 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         (await torn_erc20.connect(relayer1).approve(mRelayerRegistry.address,stake_value.mul(500)));
     }
 
-    if((await mRelayerRegistry.stakeValue(relayer1.address)) <= BigNumber.from(0)){
+
+    try {
         (await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_value.mul(10)))
+    } catch (e:any) {
+        console.log(e.reason)
     }
+
 
 
     allowance = await torn_erc20.connect(relayer2).allowance(relayer2.address,mRelayerRegistry.address);
     if(allowance <stake_value.mul(1000)){
-        (await torn_erc20.connect(relayer2).approve(mRelayerRegistry.address,stake_value.mul(5000)));
+        await (await torn_erc20.connect(relayer2).approve(mRelayerRegistry.address,stake_value.mul(5000))).wait(1);
     }
-    if((await mRelayerRegistry.stakeValue(relayer2.address)) <= BigNumber.from(0)){
-        (await mRelayerRegistry.connect(relayer2).register(relayer2.address, stake_value.mul(10)));
+     try {
+        await (await mRelayerRegistry.connect(relayer2).register(relayer2.address, stake_value.mul(10))).wait(1);
+    } catch (e:any) {
+        console.log(e.reason)
     }
 
 
     allowance = await torn_erc20.connect(dao_relayer1).allowance(dao_relayer1.address,mRelayerRegistry.address);
     if(allowance < (stake_value.mul(50))){
-        (await torn_erc20.connect(dao_relayer1).approve(mRelayerRegistry.address,stake_value.mul(600)));
+        await (await torn_erc20.connect(dao_relayer1).approve(mRelayerRegistry.address,stake_value.mul(600))).wait(1);
     }
-    if((await mRelayerRegistry.stakeValue(dao_relayer1.address)) <= BigNumber.from(0)){
-
-        (await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address, 0));
-    }
-
-    if((await mRelayerRegistry.stakeValue(users.dao_relayer2.address)) <= BigNumber.from(0)){
-        (await mRelayerRegistry.connect(dao_relayer1).register(users.dao_relayer2.address, 0));
+     try {
+        await (await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address, 0)).wait(1);
+    } catch (e:any) {
+        console.log(e.reason)
     }
 
-    if((await mRelayerRegistry.stakeValue(users.dao_relayer3.address)) <= BigNumber.from(0)){
-        (await mRelayerRegistry.connect(dao_relayer1).register(users.dao_relayer3.address, 0));
+
+    try {
+        await (await mRelayerRegistry.connect(dao_relayer1).register(users.dao_relayer2.address, 0)).wait(1);
+    } catch (e:any) {
+        console.log(e.reason)
     }
+
+
+    try {
+        await (await mRelayerRegistry.connect(dao_relayer1).register(users.dao_relayer3.address, 0)).wait(1);
+    } catch (e:any) {
+        console.log(e.reason)
+    }
+
 
     if((await mRootManger.connect(owner).owner()) != owner.address){
-        await mRootManger.connect(deployer2).transferOwnership(owner.address);
+        await (await mRootManger.connect(deployer2).transferOwnership(owner.address)).wait(1);
     }
 
     let addr = await mRootManger.connect(owner)._relayers(0);
     if(addr != dao_relayer1.address){
-        (await mRootManger.connect(owner).addRelayer(dao_relayer1.address, 0));
+        await (await mRootManger.connect(owner).addRelayer(dao_relayer1.address, 0)).wait(1);
     }
 
     addr = await mRootManger.connect(owner)._relayers(1);
     if(addr != users.dao_relayer2.address){
-        (await mRootManger.connect(owner).addRelayer(users.dao_relayer2.address, 1));
+        await (await mRootManger.connect(owner).addRelayer(users.dao_relayer2.address, 1)).wait(1);
     }
 
     addr = await mRootManger.connect(owner)._relayers(2);
     if(addr != users.dao_relayer3.address){
-        (await mRootManger.connect(owner).addRelayer(users.dao_relayer3.address, 2));
+        await (await mRootManger.connect(owner).addRelayer(users.dao_relayer3.address, 2)).wait(1);
     }
 
-    await mRootManger.connect(owner).removeRelayer(1);
+    addr = await mRootManger.connect(owner)._relayers(1);
+    if(addr == users.dao_relayer2.address){
+        await (await mRootManger.connect(owner).removeRelayer(1)).wait(1);
+    }
+
 
 
     //initialize fist stake avoid dive 0
     let stake_torn=ethers.utils.parseUnits("1",18);
 
     if((await torn_erc20.balanceOf(stake1.address)).lte(stake_torn.mul(5))){
-        (await torn_erc20.mint(stake1.address,stake_torn.mul(50)));
+        await (await torn_erc20.mint(stake1.address,stake_torn.mul(50))).wait(1);
     }
 
     if((await torn_erc20.allowance(stake1.address,contracts.mTornadoGovernanceStaking)).lte(stake_torn)){
-        (await  torn_erc20.connect(stake1).approve(contracts.mTornadoGovernanceStaking,stake_torn.mul(5)));
+        await (await  torn_erc20.connect(stake1).approve(contracts.mTornadoGovernanceStaking,stake_torn.mul(5))).wait(1);
     }
 
     if((await mTornadoGovernanceStaking.balanceOf(stake1.address)).lte(stake_torn)){
-        (await  mTornadoGovernanceStaking.connect(stake1).stake(stake_torn));
+        await (await  mTornadoGovernanceStaking.connect(stake1).stake(stake_torn)).wait(1);
     }
     // let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
     // await torn_erc20.mint(users.reward.address,stake_torn.mul(100));
