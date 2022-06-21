@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {ethers} from "hardhat";
 
-import {about, almost, banlancOf, Coin2Tron, Fixture} from "./utils";
+import {about, almost, banlancOf, Coin2Tron, Fixture, getGovRelayerReward, getGovStakingReward} from "./utils";
 import {
     Deposit,
     Income,
@@ -68,7 +68,7 @@ describe("test_ProfitRecord", function () {
 
     });
 
-    it("case1: fisrt newDeposit", async function () {
+    it("case1: newDeposit", async function () {
 
         let stake_torn = ethers.utils.parseUnits("50000",18);
         await torn_erc20.connect(users.user3).mint(users.user3.address,stake_torn.mul(50000));
@@ -135,9 +135,71 @@ describe("test_ProfitRecord", function () {
 
        await expect(mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token)).revertedWith("panic code 17");
 
-        let torn =await Coin2Tron(fix_info,"eth",income_eth);
 
     });
+
+
+    it("case3:  newDeposit", async function () {
+
+        await  mDeposit.connect(users.operator).setPara(1, ethers.utils.parseUnits("500000000000",18) );
+
+        let stake_torn = ethers.utils.parseUnits("5000",18);
+        await torn_erc20.connect(users.user3).mint(users.user3.address,stake_torn.mul(500));
+        await torn_erc20.connect(users.user3).approve(mDeposit.address,stake_torn.mul(100));
+
+        await mDeposit.connect(users.user3).depositWithApproval(stake_torn);
+        expect(await mDeposit.balanceOfStakingOnGov()).equal(0);
+        expect(await mDeposit.checkRewardOnGov()).equal(0);
+
+        await mDeposit.connect(users.operator).stake2Node(0,stake_torn.div(3));
+        await mDeposit.connect(users.operator).stake2Node(1,stake_torn.div(3));
+
+        let root_token = mRootManger.balanceOf(users.user3.address);
+
+        await torn_erc20.connect(users.user3).mint(users.user3.address,stake_torn);
+        await torn_erc20.connect(users.user3).approve(mTornadoGovernanceStaking.address,stake_torn);
+        await  mTornadoGovernanceStaking.connect(users.user3).lockWithApproval(stake_torn);
+
+        //deposit eth for test
+        let eth = ethers.utils.parseUnits("1000",18);
+        let counter = 20
+
+        let lastTorn =  await mRootManger.totalTorn()
+
+        for(let i = 0 ; i < counter ; i++) {
+            await  mTornRouter.connect( users.user1).deposit("eth", eth, {value: eth});
+            await  mTornRouter.connect( users.user1).withdraw("eth", eth,  users.user1.address);
+        }
+
+        let relayer_reward = await getGovRelayerReward(fix_info,"eth",eth.mul(20));
+        let staking_reward = await getGovStakingReward(fix_info,"eth",eth.mul(20));
+        let staking_reward_torn = staking_reward.mul(2000).div(35);
+        expect(about(staking_reward_torn,await mTornadoGovernanceStaking.checkReward(users.user3.address))).true;
+        let relayer_reward_torn = relayer_reward.mul(2000).div(35);
+        await torn_erc20.mint(mIncome.address,relayer_reward_torn);
+        let profit = await mProfitRecord.connect(users.user3).getProfit(users.user3.address,root_token);
+        expect(about(profit,relayer_reward_torn.sub(staking_reward_torn))).true;
+
+
+        //prepare to withdraw
+        await torn_erc20.connect(users.user2).mint(users.user2.address,stake_torn.mul(500));
+        await torn_erc20.connect(users.user2).approve(mDeposit.address,stake_torn.mul(100));
+        await mDeposit.connect(users.user2).depositWithApproval(stake_torn.mul(3));
+
+        await mRootManger.connect(users.user3).approve(mDeposit.address,root_token);
+        let last_banlance = await torn_erc20.balanceOf(users.user3.address);
+        await mDeposit.connect(users.user3).withDrawWithApproval(root_token);
+        let this_banlance = await torn_erc20.balanceOf(users.user3.address);
+        expect(about(this_banlance.sub(last_banlance).sub(stake_torn),profit.mul(800).div(1000))).true;
+        expect(about(profit.mul(200).div(1000),await torn_erc20.balanceOf(users.reward.address))).true;
+
+
+    });
+    it("case4:  test onlyDepositContract", async function () {
+        await expect(mProfitRecord.connect(users.user3).withDraw(users.user3.address,500)).revertedWith("Caller is not depositContract");
+        await expect(mProfitRecord.connect(users.user3).newDeposit(users.user3.address,500,200)).revertedWith("Caller is not depositContract");
+    })
+
 
 
 });

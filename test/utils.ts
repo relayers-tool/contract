@@ -58,12 +58,22 @@ export  async function  getGovRelayerReward(info:Fixture, type:string, value:Big
     return ( (value.mul(allFeeRate).div(10000)));
 
 }
+export  async function  getGovStakingReward(info:Fixture, type:string, value:BigNumber) {
+    let allFeeRate =  await info.mTornRouter.stakeFeeRate();
+    return ( (value.mul(allFeeRate).div(10000)));
+}
+
 
 export  function about ( value1:BigNumber,value2:BigNumber)  {
     if(value1.sub(value2).abs().gt(200)){
+        console.log("value1",value1,"value2",value2);
         return false;
     }
-    return value1.sub(value2).abs().lte(value1.div(10**10))&&value1.sub(value2).abs().lte(value2.div(10**10));
+    let ret =  value1.sub(value2).abs().lte(value1.div(10**10))&&value1.sub(value2).abs().lte(value2.div(10**10));
+    if(!ret){
+        console.log("value1",value1,"value2",value2);
+    }
+    return ret;
 }
 export  function almost ( value1:BigNumber,value2:BigNumber)  {
     if(value1.sub(value2).abs().lte(50)){

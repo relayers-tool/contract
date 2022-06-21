@@ -310,6 +310,18 @@ describe("test_deposit", function () {
 
         });
 
+        it("test balance Insufficient and 0 root token", async function () {
+            let laset_token = await mRootManger.balanceOf(user1.address);
+
+            //transfer to queue
+            await torn_erc20.mint(user1.address,laset_token.mul(100000));
+            await torn_erc20.approve(mDeposit.address,laset_token.mul(100000))
+            // await expect(mDeposit.connect(user1).withDrawWithApproval(laset_token.mul(2))).revertedWith("balance Insufficient");
+            await expect(mDeposit.connect(user1).withDrawWithApproval(0)).revertedWith("error para");
+
+
+        });
+
 
     });
 
