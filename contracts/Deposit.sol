@@ -188,7 +188,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     }
 
    function _safeDrawWith_1(uint256 _amount_token) internal  returns (uint256){
-       require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
+//       require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
        require(_amount_token > 0,"error para");
        uint256  shortage;
        uint256 torn;
