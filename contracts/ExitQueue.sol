@@ -80,7 +80,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     }
 
     event add_queue(uint256 _amount_token);
-    function addQueueWithApproval(uint256 _amount_token) override public  nonReentrant{
+    function addQueue(uint256 _amount_token) override public  nonReentrant{
         maxIndex += 1;
         require(_amount_token > 0,"error para");
         require(addr2index[_msgSender()] == 0 && index2value[maxIndex].v==0,"have pending");

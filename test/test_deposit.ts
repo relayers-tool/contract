@@ -185,7 +185,7 @@ describe("test_deposit", function () {
             await  mDeposit.connect(user1).depositWithApproval(stake_torn);
             expect(await mDeposit.isBalanceEnough(500)).true;
             let token = await mRootManger.balanceOf(user1.address);
-            await mExitQueue.connect(user1).addQueueWithApproval(token );
+            await mExitQueue.connect(user1).addQueue(token );
             expect(await mDeposit.isBalanceEnough(500)).false;
         });
 
@@ -235,7 +235,7 @@ describe("test_deposit", function () {
 
             expect(await mDeposit.isBalanceEnough(new_token.sub(laset_token))).true;
 
-            await mExitQueue.connect(user1).addQueueWithApproval(new_token.sub(laset_token));
+            await mExitQueue.connect(user1).addQueue(new_token.sub(laset_token));
             //unlock the torn form gov
             await mDeposit.connect(user2).depositWithApproval(501);
             expect(await mRootManger.balanceOf(mExitQueue.address)).equal(new_token.sub(laset_token));
@@ -254,7 +254,7 @@ describe("test_deposit", function () {
             let mDeposit_tron = await torn_erc20.balanceOf(mDeposit.address);
             await mDeposit.connect(operator).stake2Node(0,mDeposit_tron);
 
-            await mExitQueue.connect(user1).addQueueWithApproval(laset_token);
+            await mExitQueue.connect(user1).addQueue(laset_token);
             await mDeposit.connect(user2).depositWithApproval(500);
             expect(await mDeposit.getValueShouldUnlockFromGov()).equal(await mDeposit.IN_SUFFICIENT());
 
@@ -267,7 +267,7 @@ describe("test_deposit", function () {
             let new_token = await mRootManger.balanceOf(user1.address);
 
 
-            await mExitQueue.connect(user1).addQueueWithApproval(new_token.sub(laset_token).div(5));
+            await mExitQueue.connect(user1).addQueue(new_token.sub(laset_token).div(5));
             expect(await mDeposit.getValueShouldUnlockFromGov()).lt(await mDeposit.IN_SUFFICIENT());
             //transfer to queue
             await mDeposit.connect(user2).depositWithApproval(500);
@@ -386,7 +386,7 @@ describe("test_deposit", function () {
 
           expect(await torn_erc20.balanceOf(mDeposit.address)).to.be.equal(0);
            let token = await mRootManger.balanceOf(user3.address);
-         await expect(mExitQueue.connect(user3).addQueueWithApproval(token)).to
+         await expect(mExitQueue.connect(user3).addQueue(token)).to
                .be.emit(mExitQueue,"add_queue").withArgs(token);
             expect(await mExitQueue.nextValue()).to.be.equal(stake_torn);
             let shortage = await mDeposit.getValueShouldUnlockFromGov();
@@ -441,7 +441,7 @@ describe("test_deposit", function () {
             expect((await mDeposit.getValueShouldUnlock(token)).torn).equal(stake_torn) ;
             await expect(mDeposit.connect(user1).withDraw(token)).to.revertedWith("pool Insufficient");
 
-            await mExitQueue.connect(user1).addQueueWithApproval(token);
+            await mExitQueue.connect(user1).addQueue(token);
 
             expect((await mDeposit.getValueShouldUnlock(token)).torn).equal(stake_torn) ;
             await expect(mDeposit.connect(user1).withDraw(token)).to.revertedWith("Queue not empty");
