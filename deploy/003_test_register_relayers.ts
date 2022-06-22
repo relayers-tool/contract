@@ -44,7 +44,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     let users:USER_FIX = await get_user_fixture();
-    let deployer2 = users.deployer2;
+    let deployer1 = users.deployer1;
     let relayer1 = users.relayer1;
     let relayer2 = users.relayer2;
     let relayer3 = users.relayer3;
@@ -130,7 +130,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     if((await mRootManger.connect(owner).owner()) != owner.address){
-        await (await mRootManger.connect(deployer2).transferOwnership(owner.address)).wait(1);
+        await (await mRootManger.connect(deployer1).transferOwnership(owner.address)).wait(1);
     }
 
     let addr = await mRootManger.connect(owner)._relayers(0);

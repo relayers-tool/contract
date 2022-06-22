@@ -22,7 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let users:USER_FIX = await get_user_fixture();
     deployer1 = users.deployer1;
-    deployer2 = users.deployer2;
+
 
     let ret_RootManger_logic =  await deploy('RootManger_logic', {
         from: deployer1.address,
@@ -33,7 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_RootManger =  await deploy('RootManger', {
         from: deployer1.address,
-        args: [ret_RootManger_logic.address,deployer1.address,"0x"],
+        args: [ret_RootManger_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
@@ -48,7 +48,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_mIncome =  await deploy('Income', {
         from: deployer1.address,
-        args: [ret_Income_logic.address,deployer1.address,"0x"],
+        args: [ret_Income_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
@@ -62,7 +62,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_Deposit =  await deploy('Deposit', {
         from: deployer1.address,
-        args: [ret_mDeposit_logic.address,deployer1.address,"0x"],
+        args: [ret_mDeposit_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
@@ -76,7 +76,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_mExitQueue =  await deploy('ExitQueue', {
         from: deployer1.address,
-        args: [ret_mExitQueue_logic.address,deployer1.address,"0x"],
+        args: [ret_mExitQueue_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
@@ -91,7 +91,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_profitRecord =  await deploy('profitRecord', {
         from: deployer1.address,
-        args: [ret_profitRecord_logic.address,deployer1.address,"0x"],
+        args: [ret_profitRecord_logic.address,users.proxy_admin.address,"0x"],
         log: true,
         contract:"RelayerDAOProxy"
     });
@@ -99,23 +99,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     if(ret_RootManger.newlyDeployed){
         let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(ret_RootManger.address);
-        await mRootManger.connect(deployer2).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address,ret_profitRecord.address);
-        await mRootManger.connect(deployer2).setOperator(operator);
+        await mRootManger.connect(users.owner).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address,ret_profitRecord.address);
+        await mRootManger.connect(users.owner).setOperator(operator);
     }
 
    if(ret_Deposit.newlyDeployed){
        let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(ret_Deposit.address);
-       await mDeposit.connect(deployer2).__Deposit_init();
+       await mDeposit.connect(users.owner).__Deposit_init();
    }
 
     if(ret_mExitQueue.newlyDeployed){
         let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(ret_mExitQueue.address);
-        await mExitQueue.connect(deployer2).__ExitQueue_init();
+        await mExitQueue.connect(users.owner).__ExitQueue_init();
     }
 
     if(ret_profitRecord.newlyDeployed){
         let mProfitRecord = <ProfitRecord>await (await ethers.getContractFactory("ProfitRecord")).attach(ret_profitRecord.address);
-        await mProfitRecord.connect(deployer2).__ProfitRecord_init();
+        await mProfitRecord.connect(users.owner).__ProfitRecord_init();
     }
 
 };

@@ -35,7 +35,7 @@ const config: HardhatUserConfig = {
   },
   namedAccounts: {
     deployer1:0,
-    deployer2:1,
+    owner:1,
     proxy_admin:2,
     relayer1:3,
     relayer2:4,
@@ -50,7 +50,7 @@ const config: HardhatUserConfig = {
     dao_relayer1:13,
     dao_relayer2:14,
     dao_relayer3:15,
-    owner:16,
+    owner2:16,
     reward:17,
 
 

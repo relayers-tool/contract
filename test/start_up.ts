@@ -45,22 +45,22 @@ async function config_check(){
 
 export interface USER_FIX {
      owner:SignerWithAddress,proxy_admin:SignerWithAddress;
-     deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
+     deployer1:SignerWithAddress,relayer1:SignerWithAddress;
      relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
      stake1:SignerWithAddress,stake2:SignerWithAddress,stake3:SignerWithAddress;
-     dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress,reward:SignerWithAddress;
+     dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress,reward:SignerWithAddress; owner2:SignerWithAddress
 }
 
 export  async function get_user_fixture(){
-    let owner:SignerWithAddress,proxy_admin:SignerWithAddress;
-    let deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
+    let owner2:SignerWithAddress,proxy_admin:SignerWithAddress;
+    let deployer1:SignerWithAddress,owner:SignerWithAddress,relayer1:SignerWithAddress;
     let relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
     let stake1:SignerWithAddress,stake2:SignerWithAddress,stake3:SignerWithAddress;
     let dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress,reward:SignerWithAddress;
     // @ts-ignore
-    [deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner,reward] = await ethers.getSigners();
+    [deployer1,owner,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner2,reward] = await ethers.getSigners();
     return {
-        deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner,reward
+        deployer1,owner,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner2,reward
     };
 
 }
