@@ -41,10 +41,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         ROOT_MANAGER = _root_manager;
     }
 
-    function  addQueue(uint256 _amount_token, uint256 deadline, uint8 v, bytes32 r, bytes32 s) override external {
-        IERC20PermitUpgradeable(ROOT_MANAGER).permit(_msgSender(), address(this), _amount_token, deadline, v, r, s);
-        addQueueWithApproval(_amount_token);
-    }
+
 
     function address2Value(address addr) view public returns (uint256 v,bool prepared){
         uint256 index = addr2index[addr];

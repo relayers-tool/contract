@@ -18,7 +18,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         mTornadoGovernanceStaking:(await deployments.get('MTornadoGovernanceStaking')).address,
         mRelayerRegistry:(await deployments.get('MRelayerRegistry')).address,
         mTornadoStakingRewards:(await deployments.get('MTornadoStakingRewards')).address,
-        mockSwap:(await deployments.get('MockSwap')).address,
     };
 
     let ret_RootManger_logic =  await deploy('RootManger_logic', {
@@ -115,10 +114,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let torn_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
     //give enough torn for swap
 
-    if(await torn_erc20.balanceOf(contracts.mockSwap) < ethers.utils.parseUnits("100000",18)){
-        await torn_erc20.mint(contracts.mockSwap, ethers.utils.parseUnits("1000000",18));
-    }
-
 
     try {
         await mRootManger.connect(users.owner).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address,ret_ProfitRecord.address);
@@ -148,12 +143,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         await mExitQueue.connect(users.owner).__ExitQueue_init();
     } catch (e:any) {
         console.log(e.reason);
-    }
-
-    //give enough torn for swap
-    if((await torn_erc20.balanceOf(contracts.mockSwap)).lte(ethers.utils.parseUnits("500000",18)))
-    {
-        await torn_erc20.mint(contracts.mockSwap, ethers.utils.parseUnits("1000000",18));
     }
 
 

@@ -5,7 +5,6 @@ import {
     ExitQueue,
     Income,
     MERC20,
-    MockSwap,
     MRelayerRegistry,
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
@@ -25,7 +24,6 @@ async function config_check(){
         mTornadoGovernanceStaking:(await deployments.get('MTornadoGovernanceStaking')).address,
         mRelayerRegistry:(await deployments.get('MRelayerRegistry')).address,
         mTornadoStakingRewards:(await deployments.get('MTornadoStakingRewards')).address,
-        mockSwap:(await deployments.get('MockSwap')).address,
         Deposit:(await deployments.get('Deposit')).address,
         RootManger:(await deployments.get('RootManger')).address,
         ExitQueue:(await deployments.get('ExitQueue')).address,
@@ -81,7 +79,6 @@ export  async function set_up_fixture(fix_name:string) {
         mTornadoGovernanceStaking:(await deployments.get('MTornadoGovernanceStaking')).address,
         mRelayerRegistry:(await deployments.get('MRelayerRegistry')).address,
         mTornadoStakingRewards:(await deployments.get('MTornadoStakingRewards')).address,
-        mockSwap:(await deployments.get('MockSwap')).address,
         Deposit:(await deployments.get('Deposit')).address,
         RootManger:(await deployments.get('RootManger')).address,
         ExitQueue:(await deployments.get('ExitQueue')).address,
@@ -112,13 +109,12 @@ export  async function set_up_fixture(fix_name:string) {
     let mExitQueue :ExitQueue;
     let mIncome :Income;
 
-    let mockSwap :MockSwap;
 
     torn_erc20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
     usdc_erc20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_usdc);
     dai_erc20  = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_dai);
     weth_erc20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_weth);
-    mockSwap =  <MockSwap>(await ethers.getContractFactory("MockSwap")).attach(contracts.mockSwap);
+
     mRelayerRegistry = <MRelayerRegistry>(await ethers.getContractFactory("MRelayerRegistry")).attach(contracts.mRelayerRegistry);
     mTornadoStakingRewards = <MTornadoStakingRewards>(await ethers.getContractFactory("MTornadoStakingRewards")).attach(contracts.mTornadoStakingRewards);
     mTornadoGovernanceStaking = <MTornadoGovernanceStaking>(await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(contracts.mTornadoGovernanceStaking);
@@ -141,6 +137,6 @@ export  async function set_up_fixture(fix_name:string) {
         usdc_erc20,
         dai_erc20,
         weth_erc20,
-        torn_erc20,mockSwap,mRelayerRegistry,mTornadoStakingRewards,mTornadoGovernanceStaking,mRootManger,mIncome,mTornRouter,mDeposit,mExitQueue,mProfitRecord
+        torn_erc20,mRelayerRegistry,mTornadoStakingRewards,mTornadoGovernanceStaking,mRootManger,mIncome,mTornRouter,mDeposit,mExitQueue,mProfitRecord
     };
 }

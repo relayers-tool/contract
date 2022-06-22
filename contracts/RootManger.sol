@@ -9,7 +9,7 @@ import "./Interface/IDepositContract.sol";
 import "./Interface/IinComeContract.sol";
 import "./Interface/IRelayerRegistry.sol";
 
-contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
+contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
 
     address public  override exitQueueContract;
     address  public override depositContract;
@@ -40,7 +40,6 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
     function __RootManger_init(address _inComeContract,address _depositContract,address _exitQueueContract,address _profitRecord) public initializer {
         __RootManger_init_unchained(_inComeContract,_depositContract,_exitQueueContract,_profitRecord);
         __ERC20_init("relayer_dao", "relayer_dao_token");
-        __ERC20Permit_init("relayer_dao");
         __Ownable_init();
     }
 
@@ -148,4 +147,25 @@ contract RootManger is OwnableUpgradeable,ERC20PermitUpgradeable,IRootManger{
         _transfer(owner, to, amount);
         return true;
     }
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
+        address spender = _msgSender();
+        require(spender == exitQueueContract ,"err transferFrom");
+        //_spendAllowance(from, spender, amount); to save gas
+        _transfer(from, to, amount);
+        return true;
+    }
+
+    function approve(address spender, uint256 amount) public virtual override returns (bool) {
+        address owner = _msgSender();
+        require(false ,"err approve");
+        return true;
+    }
+
+
+
 }

@@ -90,14 +90,12 @@ describe("ExitQueue", function () {
 
         it("case1 :  test Insufficient", async function () {
              let token = await mRootManger.balanceOf(user1.address);
-             await mRootManger.connect(user1).approve(mExitQueue.address,token);
-             await expect(mExitQueue.connect(user1).addQueueWithApproval(token.add(1))).to.revertedWith("ERC20: insufficient allowance");
+             await expect(mExitQueue.connect(user1).addQueueWithApproval(token.add(1))).to.revertedWith("ERC20: transfer amount exceeds balance");
              await mExitQueue.connect(user1).addQueueWithApproval(token);
         });
 
         it("case2 : add normally and check reslut", async function () {
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
             await mExitQueue.connect(user1).addQueueWithApproval(token);
             expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn);
             expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token);
@@ -106,7 +104,6 @@ describe("ExitQueue", function () {
 
         it("case : add the second time  when not prepared ", async function () {
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
             expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
@@ -115,13 +112,11 @@ describe("ExitQueue", function () {
 
         it("case : add 0", async function () {
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
             await expect(mExitQueue.connect(user1).addQueueWithApproval(0)).revertedWith("error para");
         });
 
         it("case : add the second time  when prepared ", async function () {
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
             expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
@@ -141,8 +136,7 @@ describe("ExitQueue", function () {
 
         it("case1 :  test not prepared", async function () {
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
-            await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
+               await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
             expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
             await expect(mExitQueue.connect(user1).withDraw()).revertedWith("not prepared");
@@ -150,7 +144,6 @@ describe("ExitQueue", function () {
 
         it("case2 : test when prepared", async function () {
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
             expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
@@ -166,28 +159,27 @@ describe("ExitQueue", function () {
 
     });
 
-    describe("addQueue(uint256 _amount_token, uint256 deadline, uint8 v, bytes32 r, bytes32 s)", function () {
-
-        it("case1 :  test addQueue", async function () {
-          let token =await mRootManger.balanceOf(user1.address);
-           const allowanceParameters = await signERC2612Permit(user1, mRootManger.address,user1.address, mExitQueue.address, token.div(2).toBigInt().toString()); //Sign operation
-            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(0);
-            await mExitQueue.connect(user1).addQueue(token.div(2),allowanceParameters.deadline,allowanceParameters.v,allowanceParameters.r,allowanceParameters.s);
-            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
-            await expect(mExitQueue.connect(user1).withDraw()).revertedWith("not prepared");
-
-            await expect(mExitQueue.connect(user1).addQueue(token.div(3),allowanceParameters.deadline,allowanceParameters.v,allowanceParameters.r,allowanceParameters.s))
-            .revertedWith("ERC20Permit: invalid signature");
-        });
-
-    });
+    // describe("addQueue(uint256 _amount_token, uint256 deadline, uint8 v, bytes32 r, bytes32 s)", function () {
+    //
+    //     it("case1 :  test addQueue", async function () {
+    //       let token =await mRootManger.balanceOf(user1.address);
+    //        const allowanceParameters = await signERC2612Permit(user1, mRootManger.address,user1.address, mExitQueue.address, token.div(2).toBigInt().toString()); //Sign operation
+    //         expect(await mRootManger.balanceOf(mExitQueue.address)).equal(0);
+    //         await mExitQueue.connect(user1).addQueue(token.div(2),allowanceParameters.deadline,allowanceParameters.v,allowanceParameters.r,allowanceParameters.s);
+    //         expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
+    //         await expect(mExitQueue.connect(user1).withDraw()).revertedWith("not prepared");
+    //
+    //         await expect(mExitQueue.connect(user1).addQueue(token.div(3),allowanceParameters.deadline,allowanceParameters.v,allowanceParameters.r,allowanceParameters.s))
+    //         .revertedWith("ERC20Permit: invalid signature");
+    //     });
+    //
+    // });
 
     describe(" cancelQueue()", function () {
 
         it("case1,2 :  test not prepared coins", async function () {
 
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
             expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
@@ -217,7 +209,6 @@ describe("ExitQueue", function () {
 
         it("case3 :  test not multiple cancel ", async function () {
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             await expect(mExitQueue.connect(user1).cancelQueue()).emit(mExitQueue,"cancel_queue").withArgs(user1.address,token.div(2));
             expect(mExitQueue.connect(user1).cancelQueue()).revertedWith("empty")
@@ -226,7 +217,6 @@ describe("ExitQueue", function () {
 
         it("case4 :  test  prepared coins", async function () {
             let token = await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token);
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             expect(await mExitQueue.preparedIndex()).equal(0);
             await mDeposit.connect(user2).depositWithApproval(5000000);
@@ -250,7 +240,6 @@ describe("ExitQueue", function () {
             let token = await mRootManger.balanceOf(user1.address);
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(5000));
-            await mRootManger.connect(user1).approve(mExitQueue.address,token.mul(5000));
              let max_queue = await mExitQueue.MAX_QUEUE_CANCEL();
              let conter_random = BigInt(Math.floor(Math.random()*100)) % max_queue.toBigInt();
              if(conter_random >= max_queue.toBigInt()){
@@ -278,7 +267,6 @@ describe("ExitQueue", function () {
             let token = await mRootManger.balanceOf(user1.address);
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(5000));
-            await mRootManger.connect(user1).approve(mExitQueue.address,token.mul(5000));
             let max_queue = await mExitQueue.MAX_QUEUE_CANCEL();
             let conter_random = BigInt(Math.floor(Math.random()*100)) % max_queue.toBigInt();
             for(let i = 0 ; i < conter_random ;i++){
@@ -312,7 +300,6 @@ describe("ExitQueue", function () {
             let token1 = await mRootManger.balanceOf(user1.address);
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(5000));
-            await mRootManger.connect(user1).approve(mExitQueue.address,token1.mul(5000));
 
             let max_queue = await mExitQueue.MAX_QUEUE_CANCEL();
             await expect(mExitQueue.connect(user2).executeQueue()).revertedWith("no pending");
@@ -323,7 +310,6 @@ describe("ExitQueue", function () {
             }
 
             await torn_erc20.connect(user2).mint(user2.address,stake_torn.mul(5000));
-            await mRootManger.connect(user2).approve(mExitQueue.address,token1.mul(5000));
 
             let token2 = await mRootManger.balanceOf(user2.address);
             for(let i = 0 ; i < max_queue.add(10).toNumber() ;i++){
@@ -343,9 +329,6 @@ describe("ExitQueue", function () {
 
         it("case1 :  multi addQueue and cancel and  the  cancel counter in MAX_QUEUE_CANCEL ", async function () {
             let token =await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token.mul(500))
-            await mRootManger.connect(user2).approve(mExitQueue.address,token.mul(500))
-            await mRootManger.connect(user3).approve(mExitQueue.address,token.mul(500))
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             await mExitQueue.connect(user2).addQueueWithApproval(token.div(2));
             await mExitQueue.connect(user3).addQueueWithApproval(token.div(2));
@@ -399,9 +382,6 @@ describe("ExitQueue", function () {
 
         it("case2 :  multi addQueue and cancel and  the  cancel counter out of MAX_QUEUE_CANCEL ", async function () {
             let token =await mRootManger.balanceOf(user1.address);
-            await mRootManger.connect(user1).approve(mExitQueue.address,token.mul(500))
-            await mRootManger.connect(user2).approve(mExitQueue.address,token.mul(500))
-            await mRootManger.connect(user3).approve(mExitQueue.address,token.mul(500))
             await mExitQueue.connect(user1).addQueueWithApproval(token.div(2));
             await mExitQueue.connect(user2).addQueueWithApproval(token.div(2));
             await mExitQueue.connect(user3).addQueueWithApproval(token.div(2));

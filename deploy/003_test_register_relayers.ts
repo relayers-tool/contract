@@ -27,7 +27,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         mTornadoGovernanceStaking:(await deployments.get('MTornadoGovernanceStaking')).address,
         mRelayerRegistry:(await deployments.get('MRelayerRegistry')).address,
         mTornadoStakingRewards:(await deployments.get('MTornadoStakingRewards')).address,
-        mockSwap:(await deployments.get('MockSwap')).address,
         Deposit:(await deployments.get('Deposit')).address,
         RootManger:(await deployments.get('RootManger')).address,
         ExitQueue:(await deployments.get('ExitQueue')).address,

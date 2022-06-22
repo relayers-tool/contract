@@ -3,7 +3,6 @@ import {
     ExitQueue,
     Income,
     MERC20,
-    MockSwap,
     MRelayerRegistry,
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
@@ -22,7 +21,6 @@ export interface Fixture {
     mDeposit :Deposit;
     mExitQueue :ExitQueue;
     mIncome :Income;
-    mockSwap :MockSwap;
     mProfitRecord:ProfitRecord
 }
 

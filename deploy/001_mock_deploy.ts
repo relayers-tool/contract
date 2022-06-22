@@ -41,12 +41,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let addr =  (await deployments.get('mock_weth')).address;
 
-    await deploy('MockSwap', {
-        from: deployer1,
-        args: [addr],
-        log: true,
-        contract:"MockSwap"
-    });
 
     let torn_erc20_addr =  (await deployments.get('mock_torn')).address;
 
