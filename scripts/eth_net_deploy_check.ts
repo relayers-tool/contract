@@ -12,6 +12,7 @@ async function main() {
         RootManger:"",
         ExitQueue:"",
         Income:"",
+        profitRecord:"",
     };
 
     let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(contracts.RootManger);
@@ -23,7 +24,7 @@ async function main() {
 
     if((await mRootManger.connect(users.owner).owner()) != users.owner.address){
         console.log("__RootManger_init");
-        await mRootManger.connect(users.owner).__RootManger_init(contracts.Income, contracts.Deposit, contracts.ExitQueue);
+        await mRootManger.connect(users.owner).__RootManger_init(contracts.Income, contracts.Deposit, contracts.ExitQueue,contracts.profitRecord);
         await mRootManger.connect(users.owner).setOperator(users.operator.address);
     }
 

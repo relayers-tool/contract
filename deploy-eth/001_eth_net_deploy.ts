@@ -1,7 +1,7 @@
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 
-import {Deposit, ExitQueue, Income, RootManger} from "../typechain-types";
+import {Deposit, ExitQueue, Income, ProfitRecord, RootManger} from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 
@@ -84,9 +84,24 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
 
+    let ret_profitRecord_logic =  await deploy('profitRecord_logic', {
+        from: deployer1.address,
+        args: [address_torn_erc20,ret_RootManger.address],
+        log: true,
+        contract:"ProfitRecord"
+    });
+
+    let ret_profitRecord =  await deploy('profitRecord', {
+        from: deployer1.address,
+        args: [ret_profitRecord_logic.address,deployer1.address,"0x"],
+        log: true,
+        contract:"RelayerDAOProxy"
+    });
+
+
     if(ret_RootManger.newlyDeployed){
         let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(ret_RootManger.address);
-        await mRootManger.connect(deployer2).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address);
+        await mRootManger.connect(deployer2).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address,ret_profitRecord.address);
         await mRootManger.connect(deployer2).setOperator(operator);
     }
 
@@ -98,6 +113,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if(ret_mExitQueue.newlyDeployed){
         let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(ret_mExitQueue.address);
         await mExitQueue.connect(deployer2).__ExitQueue_init();
+    }
+
+    if(ret_profitRecord.newlyDeployed){
+        let mProfitRecord = <ProfitRecord>await (await ethers.getContractFactory("ProfitRecord")).attach(ret_profitRecord.address);
+        await mProfitRecord.connect(deployer2).__ProfitRecord_init();
     }
 
 };
