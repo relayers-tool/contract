@@ -214,7 +214,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     }
 
     event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
-    function withDrawWithApproval(uint256 _amount_token) override public nonReentrant {
+    function withDraw(uint256 _amount_token) override public nonReentrant {
         require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
         address profit_address = RootManger(ROOT_MANAGER).profitRecord();
         uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender,_amount_token);

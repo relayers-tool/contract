@@ -187,7 +187,7 @@ describe("test_ProfitRecord", function () {
         await mDeposit.connect(users.user2).depositWithApproval(stake_torn.mul(3));
 
         let last_banlance = await torn_erc20.balanceOf(users.user3.address);
-        await mDeposit.connect(users.user3).withDrawWithApproval(root_token);
+        await mDeposit.connect(users.user3).withDraw(root_token);
         let this_banlance = await torn_erc20.balanceOf(users.user3.address);
         expect(about(this_banlance.sub(last_banlance).sub(stake_torn),profit.mul(800).div(1000))).true;
         expect(about(profit.mul(200).div(1000),await torn_erc20.balanceOf(users.reward.address))).true;
