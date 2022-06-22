@@ -14,11 +14,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let deployer1:SignerWithAddress,deployer2:SignerWithAddress;
     let address_torn_erc20 =  '0x77777FeDdddFfC19Ff86DB637967013e6C6A116C';
-    let address_SwapRouter =  '0xE592427A0AEce92De3Edee1F18E0157C05861564';
     let address_TornadoGovernanceStaking =  '0x5efda50f22d34f262c29268506c5fa42cb56a1ce';
     let address_RelayerRegistry =  '0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2';
-    let address_TornadoStakingRewards =  '0x2fc93484614a34f26f7970cbb94615ba109bb4bf';
-    let address_weth ="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+
 
     const {operator} = await getNamedAccounts();
 
@@ -43,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_Income_logic =  await deploy('Income_logic', {
         from: deployer1.address,
-        args: [address_SwapRouter,address_weth,address_torn_erc20,ret_RootManger.address],
+        args: [address_torn_erc20,ret_RootManger.address],
         log: true,
         contract:"Income"
     });
