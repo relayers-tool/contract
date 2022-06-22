@@ -213,13 +213,6 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
         IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, ret);
     }
 
-
-
-    function withDraw(uint256 _amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external  {
-        require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
-        IERC20PermitUpgradeable(ROOT_MANAGER).permit(msg.sender, address(this), _amount, deadline, v, r, s);
-        withDrawWithApproval(_amount);
-    }
     event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
     function withDrawWithApproval(uint256 _amount_token) override public nonReentrant {
         require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");

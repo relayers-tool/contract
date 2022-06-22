@@ -100,6 +100,15 @@ describe("RootManger", function () {
   });
 
 
+  it("test approve", async function () {
+    await expect(mRootManger.connect(owner).approve(mExitQueue.address,500)).revertedWith("err approve");
+  });
+
+  it("test transferFrom", async function () {
+    await expect(mRootManger.connect(owner).transferFrom(user1.address,mExitQueue.address,500)).revertedWith("err transferFrom");
+  });
+
+
   it("test addRelayer", async function () {
     let lastone =await mRootManger.connect(user1).MAX_RELAYER_COUNTER();
     await expect(mRootManger.connect(user1).addRelayer(relayer1.address,0)).revertedWith("Ownable: caller is not the owner");

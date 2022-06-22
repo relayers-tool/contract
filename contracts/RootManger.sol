@@ -153,17 +153,16 @@ contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
         address to,
         uint256 amount
     ) public virtual override returns (bool) {
-        address spender = _msgSender();
-        require(spender == exitQueueContract ,"err transferFrom");
+        // only approve to exitQueueContract to save gas
+        require(_msgSender() == exitQueueContract ,"err transferFrom");
         //_spendAllowance(from, spender, amount); to save gas
         _transfer(from, to, amount);
         return true;
     }
 
     function approve(address spender, uint256 amount) public virtual override returns (bool) {
-        address owner = _msgSender();
         require(false ,"err approve");
-        return true;
+        return false;
     }
 
 

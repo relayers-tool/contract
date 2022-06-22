@@ -186,7 +186,6 @@ describe("test_ProfitRecord", function () {
         await torn_erc20.connect(users.user2).approve(mDeposit.address,stake_torn.mul(100));
         await mDeposit.connect(users.user2).depositWithApproval(stake_torn.mul(3));
 
-        await mRootManger.connect(users.user3).approve(mDeposit.address,root_token);
         let last_banlance = await torn_erc20.balanceOf(users.user3.address);
         await mDeposit.connect(users.user3).withDrawWithApproval(root_token);
         let this_banlance = await torn_erc20.balanceOf(users.user3.address);
