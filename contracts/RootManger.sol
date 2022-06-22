@@ -160,9 +160,9 @@ contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
         return true;
     }
 
-    function approve(address spender, uint256 amount) public virtual override returns (bool) {
+    function approve(address spender, uint256 amount) public virtual override returns (bool ret) {
+        ret =  false;
         require(false ,"err approve");
-        return false;
     }
 
 
