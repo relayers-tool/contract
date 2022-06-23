@@ -37,13 +37,13 @@ const config: HardhatUserConfig = {
     deployer1:0,
     owner:1,
     proxy_admin:2,
-    relayer1:3,
-    relayer2:4,
-    relayer3:5,
-    user1:6,
-    user2:7,
-    user3:8,
-    operator:9,
+    operator:3,
+    relayer1:4,
+    relayer2:5,
+    relayer3:6,
+    user1:7,
+    user2:8,
+    user3:9,
     stake1:10,
     stake2:11,
     stake3:12,
@@ -80,6 +80,17 @@ const config: HardhatUserConfig = {
       gasMultiplier:1.3,
       accounts: {
         mnemonic:process.env.PRIVATE_MNEMONIC?process.env.PRIVATE_MNEMONIC:"test test test test test test test test test test test junk",
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 18
+      }
+    },
+    eth: {
+      url: process.env.ETH_RPC_URL,
+      chainId: 1,
+      gasMultiplier:1.5,
+      accounts: {
+        mnemonic:process.env.ETH_MNEMONIC?process.env.ETH_MNEMONIC:"test test test test test test test test test test test junk",
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 18
