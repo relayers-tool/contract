@@ -16,7 +16,7 @@ contract MRelayerRegistry is IRelayerRegistry{
     address immutable  public TORN_STAKING_REWARDS;
     uint256 public counter;
     mapping(address => uint256) public stakeValue;
-    address[] array;
+    address[] public array;
 
     constructor(address gov_staking_rewards,address torn_address){
         TORN_STAKING_REWARDS = gov_staking_rewards;

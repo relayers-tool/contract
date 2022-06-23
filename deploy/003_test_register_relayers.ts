@@ -80,14 +80,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let allowance = await torn_erc20.connect(relayer1).allowance(relayer1.address,mRelayerRegistry.address);
 
     if(allowance < stake_value.mul(50)){
-        (await torn_erc20.connect(relayer1).approve(mRelayerRegistry.address,stake_value.mul(500)));
+       await ((await torn_erc20.connect(relayer1).approve(mRelayerRegistry.address,stake_value.mul(500)))).wait(1);
     }
 
 
     try {
-        (await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_value.mul(10)))
+        await ((await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_value.mul(10))).wait(1))
     } catch (e:any) {
         console.log(e.reason)
+    }
+
+    if((await mRootManger.operator())!= users.operator.address){
+        await (await mRootManger.connect(owner).setOperator(users.operator.address)).wait(1);
     }
 
 

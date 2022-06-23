@@ -139,6 +139,11 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
         IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, _amount);
     }
 
+    function depositIni(address addr) external onlyOperator {
+        uint256 root_token = IRootManger(ROOT_MANAGER).safeDeposit(addr, 300*(10**18));
+        ProfitRecord(RootManger(ROOT_MANAGER).profitRecord()).newDeposit(addr,300*(10**18),root_token);
+    }
+
 
     function deposit(uint256 _amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external {
         IERC20PermitUpgradeable(TORN_CONTRACT).permit(msg.sender, address(this), _amount, deadline, v, r, s);
