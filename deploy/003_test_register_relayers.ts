@@ -11,13 +11,11 @@ import {
     RootDB
 } from "../typechain-types";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
-import {BigNumber} from "ethers";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     // @ts-ignore
     const {deployments,ethers} = hre;
-    const {deploy} = deployments;
 
     const contracts = {
         mock_torn: (await deployments.get('mock_torn')).address,
@@ -136,27 +134,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         await (await mRootManger.connect(deployer1).transferOwnership(owner.address)).wait(1);
     }
 
-    let addr = await mRootManger.connect(owner)._relayers(0);
+    let addr = await mRootManger.connect(owner).mRelayers(0);
     if(addr != dao_relayer1.address){
         await (await mRootManger.connect(owner).addRelayer(dao_relayer1.address, 0)).wait(1);
     }
 
-    addr = await mRootManger.connect(owner)._relayers(1);
+    addr = await mRootManger.connect(owner).mRelayers(1);
     if(addr != users.dao_relayer2.address){
         await (await mRootManger.connect(owner).addRelayer(users.dao_relayer2.address, 1)).wait(1);
     }
 
-    addr = await mRootManger.connect(owner)._relayers(2);
+    addr = await mRootManger.connect(owner).mRelayers(2);
     if(addr != users.dao_relayer3.address){
         await (await mRootManger.connect(owner).addRelayer(users.dao_relayer3.address, 2)).wait(1);
     }
 
-    addr = await mRootManger.connect(owner)._relayers(1);
+    addr = await mRootManger.connect(owner).mRelayers(1);
     if(addr == users.dao_relayer2.address){
         await (await mRootManger.connect(owner).removeRelayer(1)).wait(1);
     }
-
-
 
     //initialize fist stake avoid dive 0
     let stake_torn=ethers.utils.parseUnits("1",18);
@@ -172,10 +168,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if((await mTornadoGovernanceStaking.balanceOf(stake1.address)).lte(stake_torn)){
         await (await  mTornadoGovernanceStaking.connect(stake1).stake(stake_torn)).wait(1);
     }
-    // let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
-    // await torn_erc20.mint(users.reward.address,stake_torn.mul(100));
-    // await torn_erc20.connect(users.reward).approve(mDeposit.address,stake_torn.mul(10))
-    // await mDeposit.connect(users.reward).depositWithApproval(stake_torn);
+
 
 };
 export default func;

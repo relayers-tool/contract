@@ -118,15 +118,13 @@ describe("RootManger", function () {
     await mRootDb.connect(owner).addRelayer(user1.address,lastone);
     await expect(mRootDb.connect(owner).addRelayer(user1.address,lastone.add(5))).revertedWith("too large index");
 
-    expect(await mRootDb._relayers(lastone)).equal(user1.address);
+    expect(await mRootDb.mRelayers(lastone)).equal(user1.address);
     expect(await mRootDb.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(1));
     await expect(mRootDb.connect(owner).addRelayer(user1.address,lastone.add(1))).revertedWith("repeated");
 
    await mRootDb.connect(owner).addRelayer(user2.address,lastone.add(1));
    expect(await mRootDb.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(2));
-    expect(await mRootDb._relayers(lastone.add(1))).equal(user2.address);
-
-
+    expect(await mRootDb.mRelayers(lastone.add(1))).equal(user2.address);
   });
 
   it("test onlyDepositContract", async function () {

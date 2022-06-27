@@ -17,7 +17,8 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     address immutable public TORN_GOVERNANCE_STAKING;
     address immutable public TORN_RELAYER_REGISTRY;
     address immutable public ROOT_DB;
-    address  public EXIT_QUEUE;
+
+
     address public rewardAddress;
     uint256 public profitRatio;
     uint256 public maxReserveTorn;
@@ -26,14 +27,14 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     uint256 constant public  SUFFICIENT = 2**256 - 2;
     /** ---------- constructor ---------- **/
     constructor(
-        address _tornContract,
-        address _tornGovernanceStaking,
-        address _tornRelayerRegistry,
+        address _torn_contract,
+        address _torn_governance_staking,
+        address _torn_relayer_registry,
         address _root_manager
     ) {
-        TORN_CONTRACT = _tornContract;
-        TORN_GOVERNANCE_STAKING = _tornGovernanceStaking;
-        TORN_RELAYER_REGISTRY = _tornRelayerRegistry;
+        TORN_CONTRACT = _torn_contract;
+        TORN_GOVERNANCE_STAKING = _torn_governance_staking;
+        TORN_RELAYER_REGISTRY = _torn_relayer_registry;
         ROOT_DB = _root_manager;
     }
 
@@ -51,7 +52,6 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     /** ---------- init ---------- **/
     function __Deposit_init() public initializer {
         __ReentrancyGuard_init();
-        EXIT_QUEUE = RootDB(ROOT_DB).exitQueueContract();
     }
 
 
@@ -93,19 +93,24 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     }
 
+    function  _nextExitQueueValue()  view internal returns(uint256 value){
+        value = ExitQueue(RootDB(ROOT_DB).exitQueueContract()).nextValue();
+    }
+
+
 // inorder to  reduce the complex the unlock only check the value
     function getValueShouldUnlockFromGov() public view returns (uint256) {
 
-        uint256 t = ExitQueue(EXIT_QUEUE).nextValue();
-        if(t == 0 ){
+        uint256 next_value = _nextExitQueueValue();
+        if(next_value == 0 ){
             return 0;
         }
         uint256 this_balance = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
 
-        if(t <= this_balance){
+        if(next_value <= this_balance){
             return 0;
         }
-        uint256 shortage =  t -IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this)) ;
+        uint256 shortage =  next_value -IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this)) ;
         if(shortage <= ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockedBalance(address(this)))
         {
             return shortage;
@@ -121,16 +126,16 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
 
     function isNeedTransfer2Queue() public view returns (bool) {
-       uint256 t = ExitQueue(EXIT_QUEUE).nextValue();
-        if(t == 0 ){
+       uint256 next_value = _nextExitQueueValue();
+        if(next_value == 0 ){
             return false;
         }
-        return IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this)) > t ;
+        return IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this)) > next_value;
     }
 
 
     function stake2Node(uint256 _index, uint256 _amount) external onlyOperator {
-        address _relayer = RootDB(ROOT_DB)._relayers(_index);
+        address _relayer = RootDB(ROOT_DB).mRelayers(_index);
         require(_relayer != address(0), 'Invalid index');
         SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, _amount);
         IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, _amount);
@@ -138,7 +143,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     function depositIni(address addr) external onlyOperator {
         uint256 root_token = RootDB(ROOT_DB).safeDeposit(addr, 300*(10**18));
-        ProfitRecord(RootDB(ROOT_DB).profitRecord()).newDeposit(addr,300*(10**18),root_token);
+        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).newDeposit(addr,300*(10**18),root_token);
     }
 
 
@@ -153,11 +158,11 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         uint256 root_token = RootDB(ROOT_DB).safeDeposit(_account, _qty);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _qty);
         //record the deposit
-        ProfitRecord(RootDB(ROOT_DB).profitRecord()).newDeposit(msg.sender,_qty,root_token);
+        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).newDeposit(msg.sender,_qty,root_token);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
-             ExitQueue(EXIT_QUEUE).executeQueue();
+             ExitQueue(RootDB(ROOT_DB).exitQueueContract()).executeQueue();
         }else if(isNeedClaimFromGov()){
              _claimRewardFromGov();
          } else{
@@ -217,8 +222,8 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
     function withDraw(uint256 _amount_token)  public nonReentrant {
-        require(ExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
-        address profit_address = RootDB(ROOT_DB).profitRecord();
+        require( _nextExitQueueValue() == 0,"Queue not empty");
+        address profit_address = RootDB(ROOT_DB).profitRecordContract();
         uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender,_amount_token);
         uint256 torn = _safeDrawWith_1(_amount_token);
         _safeSendTorn(_amount_token,torn,profit);
@@ -227,7 +232,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     //because of nonReentrant have to supply this function forn exitQueue
     function withdraw_for_exit(address addr,uint256 _amount_token)  external onlyExitQueue returns (uint256) {
-        address profit_address = RootDB(ROOT_DB).profitRecord();
+        address profit_address = RootDB(ROOT_DB).profitRecordContract();
         uint256 profit = ProfitRecord(profit_address).withDraw(addr,_amount_token);
         uint256 torn = _safeDrawWith_1(_amount_token);
         return _safeSendTorn(_amount_token,torn,profit);
@@ -242,7 +247,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     }
 
     function isBalanceEnough(uint256 _amount_token)  external view returns (bool) {
-        if(ExitQueue(EXIT_QUEUE).nextValue() != 0){
+        if( _nextExitQueueValue() != 0){
             return false;
         }
         uint256  shortage;
