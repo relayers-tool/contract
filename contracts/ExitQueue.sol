@@ -6,11 +6,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol";
-import "./Interface/IExitQueue.sol";
-import "./Interface/IDepositContract.sol";
 import "./RootDB.sol";
+import "./Deposit.sol";
 
-contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
+contract ExitQueue is OwnableUpgradeable, ReentrancyGuardUpgradeable{
 
 
     struct QUEUE_INFO {
@@ -80,7 +79,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     }
 
     event add_queue(uint256 _amount_token);
-    function addQueue(uint256 _amount_token) override public  nonReentrant{
+    function addQueue(uint256 _amount_token)  public  nonReentrant{
         maxIndex += 1;
         require(_amount_token > 0,"error para");
         require(addr2index[_msgSender()] == 0 && index2value[maxIndex].v==0,"have pending");
@@ -91,7 +90,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     }
 
     event cancel_queue(address account, uint256 _amount_token);
-    function  cancelQueue() override external  nonReentrant{
+    function  cancelQueue()  external  nonReentrant{
         uint256 index = addr2index[_msgSender()];
         uint256 value = index2value[index].v;
         require(value > 0,"empty");
@@ -102,7 +101,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         emit cancel_queue(_msgSender(),value);
     }
 
-    function  executeQueue() override external  nonReentrant{
+    function  executeQueue()  external  nonReentrant{
         address deposit_addr = RootDB(ROOT_DB).depositContract();
         uint256 value = 0;
         require(maxIndex >=  preparedIndex+1,"no pending");
@@ -110,11 +109,11 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         require(INDEX_ERR != next,"too many skips");
         preparedIndex+=next;
          QUEUE_INFO memory info = index2value[preparedIndex];
-        value = IDepositContract(deposit_addr).withdraw_for_exit(info.addr,info.v);
+        value = Deposit(deposit_addr).withdraw_for_exit(info.addr,info.v);
         index2value[preparedIndex].v = value;
     }
 
-    function  nextValue() override view external returns(uint256 value) {
+    function  nextValue()  view external returns(uint256 value) {
         uint256 next = nextSkipIndex();
         if(next == 0) {
             return 0;
@@ -130,7 +129,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
 
        return RootDB(ROOT_DB).valueForTorn(nextValue);
     }
-    function  withDraw() override external nonReentrant {
+    function  withDraw()  external nonReentrant {
         uint256 index =addr2index[_msgSender()];
         require(index <= preparedIndex,"not prepared");
         uint256 value =index2value[index].v;

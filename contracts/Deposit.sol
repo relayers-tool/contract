@@ -1,17 +1,16 @@
 pragma solidity ^0.8.0;
-import "./Interface/IDepositContract.sol";
-import "./Interface/IExitQueue.sol";
 import "./Interface/ITornadoStakingRewards.sol";
 import "./Interface/ITornadoGovernanceStaking.sol";
 import "./Interface/IRelayerRegistry.sol";
 import "./RootDB.sol";
 import "./ProfitRecord.sol";
+import "./ExitQueue.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
+contract Deposit is  ReentrancyGuardUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     address immutable public TORN_CONTRACT;
@@ -97,7 +96,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
 // inorder to  reduce the complex the unlock only check the value
     function getValueShouldUnlockFromGov() public view returns (uint256) {
 
-        uint256 t = IExitQueue(EXIT_QUEUE).nextValue();
+        uint256 t = ExitQueue(EXIT_QUEUE).nextValue();
         if(t == 0 ){
             return 0;
         }
@@ -122,7 +121,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
 
 
     function isNeedTransfer2Queue() public view returns (bool) {
-       uint256 t = IExitQueue(EXIT_QUEUE).nextValue();
+       uint256 t = ExitQueue(EXIT_QUEUE).nextValue();
         if(t == 0 ){
             return false;
         }
@@ -158,7 +157,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
-           IExitQueue(EXIT_QUEUE).executeQueue();
+             ExitQueue(EXIT_QUEUE).executeQueue();
         }else if(isNeedClaimFromGov()){
              _claimRewardFromGov();
          } else{
@@ -217,8 +216,8 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     }
 
     event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
-    function withDraw(uint256 _amount_token) override public nonReentrant {
-        require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
+    function withDraw(uint256 _amount_token)  public nonReentrant {
+        require(ExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
         address profit_address = RootDB(ROOT_DB).profitRecord();
         uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender,_amount_token);
         uint256 torn = _safeDrawWith_1(_amount_token);
@@ -227,7 +226,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     }
 
     //because of nonReentrant have to supply this function forn exitQueue
-    function withdraw_for_exit(address addr,uint256 _amount_token) override external onlyExitQueue returns (uint256) {
+    function withdraw_for_exit(address addr,uint256 _amount_token)  external onlyExitQueue returns (uint256) {
         address profit_address = RootDB(ROOT_DB).profitRecord();
         uint256 profit = ProfitRecord(profit_address).withDraw(addr,_amount_token);
         uint256 torn = _safeDrawWith_1(_amount_token);
@@ -236,14 +235,14 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
 
 
     /** ---------- public getting ---------- **/
-    function totalBalanceOfTorn() override external view returns (uint256 _t) {
+    function totalBalanceOfTorn()  external view returns (uint256 _t) {
         _t  = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
         _t += balanceOfStakingOnGov();
         _t += checkRewardOnGov();
     }
 
     function isBalanceEnough(uint256 _amount_token)  external view returns (bool) {
-        if(IExitQueue(EXIT_QUEUE).nextValue() != 0){
+        if(ExitQueue(EXIT_QUEUE).nextValue() != 0){
             return false;
         }
         uint256  shortage;
@@ -255,7 +254,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
         t =ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockedBalance(address(this));
     }
 
-    function checkRewardOnGov() override public view returns (uint256) {
+    function checkRewardOnGov()  public view returns (uint256) {
         return ITornadoStakingRewards(ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).Staking()).checkReward(address(this));
     }
 

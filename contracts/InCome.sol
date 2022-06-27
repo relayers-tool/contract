@@ -3,10 +3,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "./Interface/IinComeContract.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "./RootDB.sol";
-contract Income is IinComeContract , ContextUpgradeable{
+contract Income is  ContextUpgradeable{
     using SafeERC20Upgradeable for IERC20Upgradeable;
     address immutable public TORN_CONTRACT;
     address immutable public ROOT_DB;

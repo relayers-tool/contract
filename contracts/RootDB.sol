@@ -1,21 +1,19 @@
 pragma solidity ^0.8.0;
-import "hardhat/console.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "./Interface/IDepositContract.sol";
-import "./Interface/IinComeContract.sol";
 import "./Interface/IRelayerRegistry.sol";
+import "./Deposit.sol";
 
 contract RootDB is OwnableUpgradeable,ERC20Upgradeable{
 
     address public   exitQueueContract;
-    address  public  depositContract;
-    address  public  inComeContract;
+    address public   depositContract;
+    address public   inComeContract;
     address public   operator;
-    address public  profitRecord;
-    uint256 public  MAX_RELAYER_COUNTER ;
+    address public   profitRecord;
+    uint256 public   MAX_RELAYER_COUNTER ;
     mapping(uint256 => address) public  _relayers;
 
     address immutable public TORN_CONTRACT;
@@ -104,7 +102,7 @@ contract RootDB is OwnableUpgradeable,ERC20Upgradeable{
 
     //  Deposit torn + eInCome torn + totalRelayerTorn
     function totalTorn() public view returns (uint256 ret){
-        ret =  IDepositContract(depositContract).totalBalanceOfTorn();
+        ret =  Deposit(depositContract).totalBalanceOfTorn();
         ret += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
         ret+= this.totalRelayerTorn();
     }
