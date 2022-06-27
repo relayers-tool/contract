@@ -7,7 +7,7 @@ import {
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
     MTornRouter, ProfitRecord,
-    RootManger
+    RootDB
 } from "../typechain-types";
 import {BaseContract, BigNumber} from "ethers";
 
@@ -17,7 +17,7 @@ export interface Fixture {
     mRelayerRegistry :MRelayerRegistry;
     mTornadoStakingRewards :MTornadoStakingRewards;
     mTornRouter :MTornRouter;
-    mRootManger:RootManger;
+    mRootDb:RootDB;
     mDeposit :Deposit;
     mExitQueue :ExitQueue;
     mIncome :Income;

@@ -8,7 +8,7 @@ import {
   MTornadoGovernanceStaking,
   MTornadoStakingRewards,
   MTornRouter,
-  RootManger
+  RootDB
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {about} from "./utils";
@@ -22,7 +22,7 @@ describe("RootManger", function () {
   let mTornRouter :MTornRouter;
 
   let mDeposit :Deposit;
-  let mRootManger :RootManger;
+  let mRootDb :RootDB;
   let mIncome :Income;
 
   let user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
@@ -48,7 +48,7 @@ describe("RootManger", function () {
     operator = users.operator;
     stake1 = users.stake1;
     mTornadoGovernanceStaking = fix_info.mTornadoGovernanceStaking;
-    mRootManger = fix_info.mRootManger;
+    mRootDb = fix_info.mRootDb;
     mExitQueue = fix_info.mExitQueue;
     mTornadoStakingRewards = fix_info.mTornadoStakingRewards;
 
@@ -79,85 +79,85 @@ describe("RootManger", function () {
     await torn_erc20.connect(user3).mint(user3.address,stake_torn);
     await torn_erc20.connect(user3).approve(mDeposit.address,stake_torn);
     await mDeposit.connect(user3).depositWithApproval(stake_torn);
-    expect(await mRootManger.balanceOfTorn(user3.address)).equal(stake_torn);
-    expect(await mRootManger.valueForTorn(await mRootManger.balanceOf(user3.address))).equal(stake_torn);
+    expect(await mRootDb.balanceOfTorn(user3.address)).equal(stake_torn);
+    expect(await mRootDb.valueForTorn(await mRootDb.balanceOf(user3.address))).equal(stake_torn);
 
     let stake_torn1 = ethers.utils.parseUnits(Math.random()*100+"",18);
     await torn_erc20.connect(user2).mint(user2.address,stake_torn1);
     await torn_erc20.connect(user2).approve(mDeposit.address,stake_torn1);
     await mDeposit.connect(user2).depositWithApproval(stake_torn1);
 
-    expect(about(await mRootManger.balanceOfTorn(user2.address),stake_torn1)).true;
-    expect(about(await mRootManger.valueForTorn(await mRootManger.balanceOf(user3.address)),stake_torn)).true;
+    expect(about(await mRootDb.balanceOfTorn(user2.address),stake_torn1)).true;
+    expect(about(await mRootDb.valueForTorn(await mRootDb.balanceOf(user3.address)),stake_torn)).true;
   });
 
   it("test setOperator", async function () {
-    await mRootManger.connect(owner).transferOwnership(user1.address);
-    expect(await  mRootManger.owner()).equal(user1.address);
-    await expect(mRootManger.connect(owner).setOperator(user1.address)).revertedWith("Ownable: caller is not the owner");
-    await mRootManger.connect(user1).setOperator(user2.address);
-    expect(await mRootManger.operator()).equal(user2.address);
+    await mRootDb.connect(owner).transferOwnership(user1.address);
+    expect(await  mRootDb.owner()).equal(user1.address);
+    await expect(mRootDb.connect(owner).setOperator(user1.address)).revertedWith("Ownable: caller is not the owner");
+    await mRootDb.connect(user1).setOperator(user2.address);
+    expect(await mRootDb.operator()).equal(user2.address);
   });
 
 
   it("test approve", async function () {
-    await expect(mRootManger.connect(owner).approve(mExitQueue.address,500)).revertedWith("err approve");
+    await expect(mRootDb.connect(owner).approve(mExitQueue.address,500)).revertedWith("err approve");
   });
 
   it("test transferFrom", async function () {
-    await expect(mRootManger.connect(owner).transferFrom(user1.address,mExitQueue.address,500)).revertedWith("err transferFrom");
+    await expect(mRootDb.connect(owner).transferFrom(user1.address,mExitQueue.address,500)).revertedWith("err transferFrom");
   });
 
 
   it("test addRelayer", async function () {
-    let lastone =await mRootManger.connect(user1).MAX_RELAYER_COUNTER();
-    await expect(mRootManger.connect(user1).addRelayer(relayer1.address,0)).revertedWith("Ownable: caller is not the owner");
-    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone);
+    let lastone =await mRootDb.connect(user1).MAX_RELAYER_COUNTER();
+    await expect(mRootDb.connect(user1).addRelayer(relayer1.address,0)).revertedWith("Ownable: caller is not the owner");
+    expect(await mRootDb.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone);
 
-    // console.log(await mRootManger._relayers(0));
-    await mRootManger.connect(owner).addRelayer(user1.address,lastone);
-    await expect(mRootManger.connect(owner).addRelayer(user1.address,lastone.add(5))).revertedWith("too large index");
+    // console.log(await mRootDb._relayers(0));
+    await mRootDb.connect(owner).addRelayer(user1.address,lastone);
+    await expect(mRootDb.connect(owner).addRelayer(user1.address,lastone.add(5))).revertedWith("too large index");
 
-    expect(await mRootManger._relayers(lastone)).equal(user1.address);
-    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(1));
-    await expect(mRootManger.connect(owner).addRelayer(user1.address,lastone.add(1))).revertedWith("repeated");
+    expect(await mRootDb._relayers(lastone)).equal(user1.address);
+    expect(await mRootDb.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(1));
+    await expect(mRootDb.connect(owner).addRelayer(user1.address,lastone.add(1))).revertedWith("repeated");
 
-   await mRootManger.connect(owner).addRelayer(user2.address,lastone.add(1));
-   expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(2));
-    expect(await mRootManger._relayers(lastone.add(1))).equal(user2.address);
+   await mRootDb.connect(owner).addRelayer(user2.address,lastone.add(1));
+   expect(await mRootDb.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.add(2));
+    expect(await mRootDb._relayers(lastone.add(1))).equal(user2.address);
 
 
   });
 
   it("test onlyDepositContract", async function () {
 
-    await expect(mRootManger.connect(user1).safeDeposit(relayer1.address,5000)).revertedWith("Caller is not depositContract");
-    await expect(mRootManger.connect(user1).safeDeposit(user1.address,5000)).revertedWith("Caller is not depositContract");
-    await expect(mRootManger.connect(user1).safeWithdraw(user1.address,5000)).revertedWith("Caller is not depositContract");
-    await expect(mRootManger.connect(relayer1).safeWithdraw(relayer1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootDb.connect(user1).safeDeposit(relayer1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootDb.connect(user1).safeDeposit(user1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootDb.connect(user1).safeWithdraw(user1.address,5000)).revertedWith("Caller is not depositContract");
+    await expect(mRootDb.connect(relayer1).safeWithdraw(relayer1.address,5000)).revertedWith("Caller is not depositContract");
 
   });
 
   it("test onlyInComeContract", async function () {
-    await expect(mRootManger.connect(user1).addIncome(5000)).revertedWith("Caller is not inComeContract");
+    await expect(mRootDb.connect(user1).addIncome(5000)).revertedWith("Caller is not inComeContract");
 
   });
 
 
   it("test removeRelayer", async function () {
 
-    await expect(mRootManger.connect(user1).removeRelayer(0)).revertedWith("Ownable: caller is not the owner");
+    await expect(mRootDb.connect(user1).removeRelayer(0)).revertedWith("Ownable: caller is not the owner");
 
-    await mRootManger.connect(owner).removeRelayer(0);
-    await expect(mRootManger.connect(owner).removeRelayer(0)).revertedWith("index err");
-    await mRootManger.connect(owner).addRelayer(relayer1.address,0);
-    await expect(mRootManger.connect(owner).addRelayer(relayer2.address,0)).revertedWith("index err");
-    await expect(mRootManger.connect(owner).addRelayer(relayer1.address,0)).revertedWith("repeated");
-    let lastone =await mRootManger.connect(user1).MAX_RELAYER_COUNTER();
-    await mRootManger.connect(owner).removeRelayer(lastone.sub(1));
-    expect(await mRootManger.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.sub(1));
-    lastone= await mRootManger.connect(user1).MAX_RELAYER_COUNTER();
-    await expect( mRootManger.connect(owner).removeRelayer(lastone.add(1))).revertedWith("too large index");
+    await mRootDb.connect(owner).removeRelayer(0);
+    await expect(mRootDb.connect(owner).removeRelayer(0)).revertedWith("index err");
+    await mRootDb.connect(owner).addRelayer(relayer1.address,0);
+    await expect(mRootDb.connect(owner).addRelayer(relayer2.address,0)).revertedWith("index err");
+    await expect(mRootDb.connect(owner).addRelayer(relayer1.address,0)).revertedWith("repeated");
+    let lastone =await mRootDb.connect(user1).MAX_RELAYER_COUNTER();
+    await mRootDb.connect(owner).removeRelayer(lastone.sub(1));
+    expect(await mRootDb.connect(user1).MAX_RELAYER_COUNTER()).equal(lastone.sub(1));
+    lastone= await mRootDb.connect(user1).MAX_RELAYER_COUNTER();
+    await expect( mRootDb.connect(owner).removeRelayer(lastone.add(1))).revertedWith("too large index");
 
   });
 
@@ -167,8 +167,8 @@ describe("RootManger", function () {
     await torn_erc20.connect(user1).approve(mDeposit.address,50000);
     await mDeposit.connect(user1).depositWithApproval(5000);
 
-    expect(await mRootManger.balanceOf(user1.address)).gt(0);
-    await expect(mRootManger.connect(user1).transfer(user2.address,1)).revertedWith("err transfer");
+    expect(await mRootDb.balanceOf(user1.address)).gt(0);
+    await expect(mRootDb.connect(user1).transfer(user2.address,1)).revertedWith("err transfer");
 
   });
 

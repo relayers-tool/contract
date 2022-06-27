@@ -1,4 +1,4 @@
-import {Deposit, ExitQueue, ProfitRecord, RootManger} from "../typechain-types";
+import {Deposit, ExitQueue, ProfitRecord, RootDB} from "../typechain-types";
 
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 
@@ -15,7 +15,7 @@ async function main() {
         profitRecord:"0xb1eB9a41d45b5CDEf4ca8586e05Cc5C001AAEdB8",
     };
 
-    let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(contracts.RootManger);
+    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
     let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
     let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(contracts.ExitQueue);
     let mProfitRecord = <ProfitRecord>await (await ethers.getContractFactory("ProfitRecord")).attach(contracts.profitRecord);
@@ -25,17 +25,17 @@ async function main() {
 
         console.log("__RootManger_init");
         try {
-           let tx = await mRootManger.connect(users.owner).__RootManger_init(contracts.Income, contracts.Deposit, contracts.ExitQueue,contracts.profitRecord);
+           let tx = await mRootDb.connect(users.owner).__RootManger_init(contracts.Income, contracts.Deposit, contracts.ExitQueue,contracts.profitRecord);
            await tx.wait(1);
         } catch (e:any) {
             console.log(e.reason)
         }
 
 
-    if((await mRootManger.operator()) != users.operator.address){
+    if((await mRootDb.operator()) != users.operator.address){
         try {
             console.log("setOperator")
-           let tx = await mRootManger.connect(users.owner).setOperator(users.operator.address);
+           let tx = await mRootDb.connect(users.owner).setOperator(users.operator.address);
            await tx.wait(1);
         } catch (e:any) {
             console.log(e.reason)

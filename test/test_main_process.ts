@@ -9,7 +9,7 @@ import {
     MRelayerRegistry,
     MTornadoGovernanceStaking,
     MTornRouter,
-    RootManger
+    RootDB
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, set_up_fixture, USER_FIX} from "./start_up";
@@ -21,7 +21,7 @@ describe("main_process", function () {
 
 
     let mTornRouter :MTornRouter;
-    let mRootManger:RootManger;
+    let mRootDb:RootDB;
     let mDeposit :Deposit;
 
     let mIncome :Income;
@@ -40,7 +40,7 @@ describe("main_process", function () {
         mTornadoGovernanceStaking = fix_info.mTornadoGovernanceStaking;
         mRelayerRegistry = fix_info.mRelayerRegistry;
         mTornRouter = fix_info.mTornRouter;
-        mRootManger = fix_info.mRootManger;
+        mRootDb = fix_info.mRootDb;
         mDeposit = fix_info.mDeposit;
         mIncome = fix_info.mIncome;
         relayer1 = users.relayer1;
@@ -92,7 +92,7 @@ describe("main_process", function () {
             await  torn_erc20.connect( stake2).approve( mDeposit.address,stake_torn);
             await  mDeposit.connect( stake2).depositWithApproval(stake_torn);
 
-            expect(stake_torn).to.equal(await  mRootManger.connect( stake2).balanceOfTorn( stake2.address));
+            expect(stake_torn).to.equal(await  mRootDb.connect( stake2).balanceOfTorn( stake2.address));
 
             // deposit usdc for test
             let usdc = ethers.utils.parseUnits("1",6);
@@ -124,7 +124,7 @@ describe("main_process", function () {
             await torn_erc20.connect(relayer1).transfer(mIncome.address,eth_to_torn);
             await  mIncome.connect( operator).distributeTorn(eth_to_torn);
 
-            expect(await  mRootManger.connect(stake2).balanceOfTorn(stake2.address)).to.equal(stake_torn.add(eth_to_torn));
+            expect(await  mRootDb.connect(stake2).balanceOfTorn(stake2.address)).to.equal(stake_torn.add(eth_to_torn));
             let relay_lost =  (await  mRelayerRegistry.getRelayerBalance( relayer1.address)).add(await  mRelayerRegistry.getRelayerBalance( relayer2.address));
 
 

@@ -8,7 +8,7 @@ import {
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
     MTornRouter,
-    RootManger
+    RootDB
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {about} from "./utils";
@@ -23,7 +23,7 @@ describe("ExitQueue", function () {
     let mTornRouter :MTornRouter;
 
     let mDeposit :Deposit;
-    let mRootManger :RootManger;
+    let mRootDb :RootDB;
     let mIncome :Income;
 
     let user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
@@ -49,7 +49,7 @@ describe("ExitQueue", function () {
         operator = users.operator;
         stake1 = users.stake1;
         mTornadoGovernanceStaking = fix_info.mTornadoGovernanceStaking;
-        mRootManger = fix_info.mRootManger;
+        mRootDb = fix_info.mRootDb;
         mExitQueue = fix_info.mExitQueue;
         mTornadoStakingRewards = fix_info.mTornadoStakingRewards;
         dao_relayer1 = users.dao_relayer1;
@@ -89,37 +89,37 @@ describe("ExitQueue", function () {
     describe("addQueueWithApproval(uint256 _amount_token)", function () {
 
         it("case1 :  test Insufficient", async function () {
-             let token = await mRootManger.balanceOf(user1.address);
+             let token = await mRootDb.balanceOf(user1.address);
              await expect(mExitQueue.connect(user1).addQueue(token.add(1))).to.revertedWith("ERC20: transfer amount exceeds balance");
              await mExitQueue.connect(user1).addQueue(token);
         });
 
         it("case2 : add normally and check reslut", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token);
-            expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn);
-            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token);
+            expect(await mRootDb.balanceOfTorn(mExitQueue.address)).equal(stake_torn);
+            expect(await mRootDb.balanceOf(mExitQueue.address)).equal(token);
         });
 
 
         it("case : add the second time  when not prepared ", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
-            expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
-            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
+            expect(await mRootDb.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
+            expect(await mRootDb.balanceOf(mExitQueue.address)).equal(token.div(2));
             await expect(mExitQueue.connect(user1).addQueue(token.div(2))).revertedWith("have pending");
         });
 
         it("case : add 0", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             await expect(mExitQueue.connect(user1).addQueue(0)).revertedWith("error para");
         });
 
         it("case : add the second time  when prepared ", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
-            expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
-            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
+            expect(await mRootDb.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
+            expect(await mRootDb.balanceOf(mExitQueue.address)).equal(token.div(2));
             expect(await mExitQueue.nextValue()).equal(stake_torn.div(2));
             await mDeposit.connect(user1).depositWithApproval(500000000);
             //triger the executeQueue
@@ -135,18 +135,18 @@ describe("ExitQueue", function () {
     describe("withDraw()", function () {
 
         it("case1 :  test not prepared", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
                await mExitQueue.connect(user1).addQueue(token.div(2));
-            expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
-            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
+            expect(await mRootDb.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
+            expect(await mRootDb.balanceOf(mExitQueue.address)).equal(token.div(2));
             await expect(mExitQueue.connect(user1).withDraw()).revertedWith("not prepared");
         });
 
         it("case2 : test when prepared", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
-            expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
-            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
+            expect(await mRootDb.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
+            expect(await mRootDb.balanceOf(mExitQueue.address)).equal(token.div(2));
             expect(await mExitQueue.nextValue()).equal(stake_torn.div(2));
             await mDeposit.connect(user1).depositWithApproval(500000000);
             //triger the executeQueue
@@ -163,11 +163,11 @@ describe("ExitQueue", function () {
 
         it("case1,2 :  test not prepared coins", async function () {
 
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
-            expect(await mRootManger.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
-            expect(await mRootManger.balanceOf(mExitQueue.address)).equal(token.div(2));
-            let torn_value = await mRootManger.valueForTorn(token.div(2));
+            expect(await mRootDb.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
+            expect(await mRootDb.balanceOf(mExitQueue.address)).equal(token.div(2));
+            let torn_value = await mRootDb.valueForTorn(token.div(2));
             expect(await mExitQueue.nextValue()).equal(torn_value);
             expect(await mExitQueue.maxIndex()).equal(1);
             expect(await mExitQueue.preparedIndex()).equal(0);
@@ -179,7 +179,7 @@ describe("ExitQueue", function () {
             expect(await mExitQueue.preparedIndex()).equal(0);
             expect(await mExitQueue.nextSkipIndex()).equal(1);
             await mExitQueue.connect(user1).addQueue(token.div(4));
-             torn_value = await mRootManger.valueForTorn(token.div(4));
+             torn_value = await mRootDb.valueForTorn(token.div(4));
 
             let ret = await mExitQueue.connect(user1).address2Value(user1.address);
             expect(ret.v).equal(token.div(4));
@@ -192,7 +192,7 @@ describe("ExitQueue", function () {
         });
 
         it("case3 :  test not multiple cancel ", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
             await expect(mExitQueue.connect(user1).cancelQueue()).emit(mExitQueue,"cancel_queue").withArgs(user1.address,token.div(2));
             expect(mExitQueue.connect(user1).cancelQueue()).revertedWith("empty")
@@ -200,7 +200,7 @@ describe("ExitQueue", function () {
         });
 
         it("case4 :  test  prepared coins", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
             expect(await mExitQueue.preparedIndex()).equal(0);
             await mDeposit.connect(user2).depositWithApproval(5000000);
@@ -221,7 +221,7 @@ describe("ExitQueue", function () {
     describe("executeQueue", function () {
 
         it("case1-1 :  test cancel counter in MAX_QUEUE_CANCEL and executeQueue", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(5000));
              let max_queue = await mExitQueue.MAX_QUEUE_CANCEL();
@@ -248,7 +248,7 @@ describe("ExitQueue", function () {
 
         });
         it("case1-2 ,1-3 :  test cancel counter out of MAX_QUEUE_CANCEL and call UpdateSkipIndex before executeQueue", async function () {
-            let token = await mRootManger.balanceOf(user1.address);
+            let token = await mRootDb.balanceOf(user1.address);
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(5000));
             let max_queue = await mExitQueue.MAX_QUEUE_CANCEL();
@@ -281,7 +281,7 @@ describe("ExitQueue", function () {
     });
     describe("multi executeQueue()  nextValue() UpdateSkipIndex()", function () {
         it("case1:", async function () {
-            let token1 = await mRootManger.balanceOf(user1.address);
+            let token1 = await mRootDb.balanceOf(user1.address);
             stake_torn = ethers.utils.parseUnits(Math.random()*100+"",18);
             await torn_erc20.connect(user1).mint(user1.address,stake_torn.mul(5000));
 
@@ -295,7 +295,7 @@ describe("ExitQueue", function () {
 
             await torn_erc20.connect(user2).mint(user2.address,stake_torn.mul(5000));
 
-            let token2 = await mRootManger.balanceOf(user2.address);
+            let token2 = await mRootDb.balanceOf(user2.address);
             for(let i = 0 ; i < max_queue.add(10).toNumber() ;i++){
                 await mExitQueue.connect(user2).addQueue(token2.div(2));
                 await mExitQueue.connect(user2).cancelQueue();
@@ -312,14 +312,14 @@ describe("ExitQueue", function () {
     describe("multi addQueue and cancel", function () {
 
         it("case1 :  multi addQueue and cancel and  the  cancel counter in MAX_QUEUE_CANCEL ", async function () {
-            let token =await mRootManger.balanceOf(user1.address);
+            let token =await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
             await mExitQueue.connect(user2).addQueue(token.div(2));
             await mExitQueue.connect(user3).addQueue(token.div(2));
 
 
-            expect(stake_torn.div(2)).equal(await mRootManger.valueForTorn(token.div(2)));
-            expect(await mExitQueue.nextValue()).equal(await mRootManger.valueForTorn(token.div(2)));
+            expect(stake_torn.div(2)).equal(await mRootDb.valueForTorn(token.div(2)));
+            expect(await mExitQueue.nextValue()).equal(await mRootDb.valueForTorn(token.div(2)));
 
             expect(await mExitQueue.maxIndex()).equal(3);
             expect(await mExitQueue.preparedIndex()).equal(0);
@@ -332,15 +332,15 @@ describe("ExitQueue", function () {
             await mDeposit.connect(user1).depositWithApproval(50000);
 
             //  trigger executeQueue
-            let last_toltal = await mRootManger.totalTorn();
+            let last_toltal = await mRootDb.totalTorn();
 
             await mDeposit.connect(user1).depositWithApproval(50000);
 
-            expect(about(await mRootManger.totalTorn(),last_toltal.sub(stake_torn.div(2)).add(50000))).true;
+            expect(about(await mRootDb.totalTorn(),last_toltal.sub(stake_torn.div(2)).add(50000))).true;
 
             expect(await mExitQueue.maxIndex()).equal(3);
             expect(await mExitQueue.preparedIndex()).equal(1);
-            expect(await mExitQueue.nextValue()).equal(await mRootManger.valueForTorn(token.div(2)));
+            expect(await mExitQueue.nextValue()).equal(await mRootDb.valueForTorn(token.div(2)));
 
             expect(about(await mExitQueue.nextValue(),stake_torn.div(2))).equal(true);
             let torn_last = await torn_erc20.connect(user1).balanceOf(user1.address);
@@ -365,14 +365,14 @@ describe("ExitQueue", function () {
 
 
         it("case2 :  multi addQueue and cancel and  the  cancel counter out of MAX_QUEUE_CANCEL ", async function () {
-            let token =await mRootManger.balanceOf(user1.address);
+            let token =await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
             await mExitQueue.connect(user2).addQueue(token.div(2));
             await mExitQueue.connect(user3).addQueue(token.div(2));
 
 
-            expect(stake_torn.div(2)).equal(await mRootManger.valueForTorn(token.div(2)));
-            expect(await mExitQueue.nextValue()).equal(await mRootManger.valueForTorn(token.div(2)));
+            expect(stake_torn.div(2)).equal(await mRootDb.valueForTorn(token.div(2)));
+            expect(await mExitQueue.nextValue()).equal(await mRootDb.valueForTorn(token.div(2)));
 
             expect(await mExitQueue.maxIndex()).equal(3);
             expect(await mExitQueue.preparedIndex()).equal(0);
@@ -398,7 +398,7 @@ describe("ExitQueue", function () {
             await mDeposit.connect(user1).depositWithApproval(50000);
             await expect(mExitQueue.connect(user1).UpdateSkipIndex()).revertedWith("skip is too short");
             //  trigger executeQueue
-            let last_toltal = await mRootManger.totalTorn();
+            let last_toltal = await mRootDb.totalTorn();
 
             await mDeposit.connect(user1).depositWithApproval(50000);
 

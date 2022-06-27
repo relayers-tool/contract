@@ -1,6 +1,6 @@
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import {Deposit, ExitQueue, MERC20, MTornadoGovernanceStaking, ProfitRecord, RootManger} from "../typechain-types";
+import {Deposit, ExitQueue, MERC20, MTornadoGovernanceStaking, ProfitRecord, RootDB} from "../typechain-types";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 
 
@@ -24,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: users.deployer1.address,
         args: [contracts.mRelayerRegistry,contracts.mock_torn],
         log: true,
-        contract:"RootManger"
+        contract:"RootDB"
     });
 
     let ret_RootManger =  await deploy('RootManger', {
@@ -107,7 +107,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
 
-    let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(ret_RootManger.address);
+    let mRootManger = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(ret_RootManger.address);
     let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(ret_Deposit.address);
     let mProfitRecord = <ProfitRecord>await (await ethers.getContractFactory("ProfitRecord")).attach(ret_ProfitRecord.address);
     let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(ret_mExitQueue.address);

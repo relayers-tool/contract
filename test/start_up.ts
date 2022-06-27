@@ -9,7 +9,7 @@ import {
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
     MTornRouter, ProfitRecord,
-    RootManger
+    RootDB
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {expect} from "chai";
@@ -30,14 +30,14 @@ async function config_check(){
         Income:(await deployments.get('Income')).address,
         MTornRouter:(await deployments.get('MTornRouter')).address,
     };
-   let  mRootManger =<RootManger> await (await ethers.getContractFactory("RootManger")).attach(contracts.RootManger);
+   let  mRootDb =<RootDB> await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
 
-    expect(await mRootManger.exitQueueContract()).equal(contracts.ExitQueue);
-    expect(await mRootManger.TORN_CONTRACT()).equal(contracts.mock_torn);
-    expect(await mRootManger.TORN_RELAYER_REGISTRY()).equal(contracts.mRelayerRegistry);
-    expect(await mRootManger.inComeContract()).equal(contracts.Income);
-    expect(await mRootManger.exitQueueContract()).equal(contracts.ExitQueue);
-    expect(await mRootManger.depositContract()).equal(contracts.Deposit);
+    expect(await mRootDb.exitQueueContract()).equal(contracts.ExitQueue);
+    expect(await mRootDb.TORN_CONTRACT()).equal(contracts.mock_torn);
+    expect(await mRootDb.TORN_RELAYER_REGISTRY()).equal(contracts.mRelayerRegistry);
+    expect(await mRootDb.inComeContract()).equal(contracts.Income);
+    expect(await mRootDb.exitQueueContract()).equal(contracts.ExitQueue);
+    expect(await mRootDb.depositContract()).equal(contracts.Deposit);
 
 }
 
@@ -104,7 +104,7 @@ export  async function set_up_fixture(fix_name:string) {
     let mTornadoStakingRewards :MTornadoStakingRewards;
 
     let mTornRouter :MTornRouter;
-    let mRootManger:RootManger;
+    let mRootDb:RootDB;
     let mDeposit :Deposit;
     let mExitQueue :ExitQueue;
     let mIncome :Income;
@@ -120,7 +120,7 @@ export  async function set_up_fixture(fix_name:string) {
     mTornadoGovernanceStaking = <MTornadoGovernanceStaking>(await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(contracts.mTornadoGovernanceStaking);
 
 
-    mRootManger =<RootManger> await (await ethers.getContractFactory("RootManger")).attach(contracts.RootManger);
+    mRootDb =<RootDB> await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
 
     mIncome = <Income> await (await ethers.getContractFactory("Income")).attach(contracts.Income);
 
@@ -137,6 +137,6 @@ export  async function set_up_fixture(fix_name:string) {
         usdc_erc20,
         dai_erc20,
         weth_erc20,
-        torn_erc20,mRelayerRegistry,mTornadoStakingRewards,mTornadoGovernanceStaking,mRootManger,mIncome,mTornRouter,mDeposit,mExitQueue,mProfitRecord
+        torn_erc20,mRelayerRegistry,mTornadoStakingRewards,mTornadoGovernanceStaking,mRootDb,mIncome,mTornRouter,mDeposit,mExitQueue,mProfitRecord
     };
 }

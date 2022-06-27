@@ -10,7 +10,7 @@ import {
     MTornadoGovernanceStaking,
     MTornRouter,
     ProfitRecord,
-    RootManger
+    RootDB
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, set_up_fixture, USER_FIX} from "./start_up";
@@ -30,7 +30,7 @@ describe("test_ProfitRecord", function () {
 
     let fix_info: Fixture;
     let users :USER_FIX;
-    let mRootManger :RootManger;
+    let mRootDb :RootDB;
     let mRelayerRegistry:MRelayerRegistry;
     beforeEach(async () => {
         fix_info = await set_up_fixture("test_net");
@@ -41,7 +41,7 @@ describe("test_ProfitRecord", function () {
         mDeposit =fix_info.mDeposit;
         mIncome =  fix_info.mIncome;
         mProfitRecord = fix_info.mProfitRecord;
-        mRootManger = fix_info.mRootManger;
+        mRootDb = fix_info.mRootDb;
         mRelayerRegistry = fix_info.mRelayerRegistry;
         mTornadoGovernanceStaking = fix_info.mTornadoGovernanceStaking;
         await  mDeposit.connect(users.operator).setPara(1, ethers.utils.parseUnits("50000",18) );
@@ -61,8 +61,8 @@ describe("test_ProfitRecord", function () {
         await mRelayerRegistry.connect(users.dao_relayer1).register(users.dao_relayer1.address, 0);
 
 
-        await mRootManger.connect(users.owner).addRelayer(users.dao_relayer1.address, 0);
-        await mRootManger.connect(users.owner).addRelayer(users.relayer2.address, 1);
+        await mRootDb.connect(users.owner).addRelayer(users.dao_relayer1.address, 0);
+        await mRootDb.connect(users.owner).addRelayer(users.relayer2.address, 1);
 
 
 
@@ -78,7 +78,7 @@ describe("test_ProfitRecord", function () {
         await mDeposit.connect(users.user3).depositWithApproval(stake_torn.mul(500));
         await mDeposit.connect(users.operator).stake2Node(0,stake_torn.mul(250));
         await mDeposit.connect(users.operator).stake2Node(1,stake_torn.mul(250));
-        let root_token = mRootManger.balanceOf(users.user3.address);
+        let root_token = mRootDb.balanceOf(users.user3.address);
         expect(almost(await mProfitRecord.connect(users.user3).getProfit(users.user3.address,root_token),BigNumber.from(0))).true;
 
 
@@ -94,7 +94,7 @@ describe("test_ProfitRecord", function () {
 
         let getProfit = await mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token);
         await mDeposit.connect(users.user3).depositWithApproval(stake_torn.add(getProfit));
-        expect(about(await mProfitRecord.connect(users.user3).getProfit(users.user3.address, await mRootManger.balanceOf(users.user3.address)),getProfit)).equal(true);
+        expect(about(await mProfitRecord.connect(users.user3).getProfit(users.user3.address, await mRootDb.balanceOf(users.user3.address)),getProfit)).equal(true);
 
     });
 
@@ -118,7 +118,7 @@ describe("test_ProfitRecord", function () {
         await mDeposit.connect(users.operator).stake2Node(0,stake_torn.div(3));
         await mDeposit.connect(users.operator).stake2Node(1,stake_torn.div(3));
 
-        let root_token = mRootManger.balanceOf(users.user3.address);
+        let root_token = mRootDb.balanceOf(users.user3.address);
         expect(await mDeposit.checkRewardOnGov()).equal(0);
 
        await mDeposit.connect(users.operator).stake2Node(0,stake_torn.div(3));
@@ -154,7 +154,7 @@ describe("test_ProfitRecord", function () {
         await mDeposit.connect(users.operator).stake2Node(0,stake_torn.div(3));
         await mDeposit.connect(users.operator).stake2Node(1,stake_torn.div(3));
 
-        let root_token = mRootManger.balanceOf(users.user3.address);
+        let root_token = mRootDb.balanceOf(users.user3.address);
 
         await torn_erc20.connect(users.user3).mint(users.user3.address,stake_torn);
         await torn_erc20.connect(users.user3).approve(mTornadoGovernanceStaking.address,stake_torn);
@@ -164,7 +164,7 @@ describe("test_ProfitRecord", function () {
         let eth = ethers.utils.parseUnits("1000",18);
         let counter = 20
 
-        let lastTorn =  await mRootManger.totalTorn()
+        let lastTorn =  await mRootDb.totalTorn()
 
         for(let i = 0 ; i < counter ; i++) {
             await  mTornRouter.connect( users.user1).deposit("eth", eth, {value: eth});

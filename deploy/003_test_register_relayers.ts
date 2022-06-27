@@ -8,7 +8,7 @@ import {
     MRelayerRegistry,
     MTornadoGovernanceStaking,
     MTornRouter,
-    RootManger
+    RootDB
 } from "../typechain-types";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 import {BigNumber} from "ethers";
@@ -34,11 +34,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         MTornRouter:(await deployments.get('MTornRouter')).address,
     };
 
-    let mRootManger:RootManger;
+    let mRootManger:RootDB;
 
 
     let torn_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
-    mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(contracts.RootManger);
+    mRootManger = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
 
 
 

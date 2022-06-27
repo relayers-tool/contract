@@ -5,7 +5,7 @@ import {
     MTornadoGovernanceStaking,
     MTornadoStakingRewards, MTornRouter,
     RelayerDAOProxy,
-    RootManger
+    RootDB
 } from "../typechain-types";
 
 import {get_user_fixture, USER_FIX} from "../test/start_up";
@@ -72,7 +72,7 @@ async function main() {
         ]
     };
 
-    let mRootManger = <RootManger>await (await ethers.getContractFactory("RootManger")).attach(contracts.RootManger);
+    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
     let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
     let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(contracts.ExitQueue);
     let mIncome = <Income>await (await ethers.getContractFactory("Income")).attach(contracts.Income);
@@ -88,7 +88,7 @@ async function main() {
 
     let mDeposit_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.Deposit);
     let mExitQueue_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.ExitQueue);
-    let mRootManger_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.RootManger);
+    let mRootDb_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.RootManger);
     let Income_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.Income);
 
     let users:USER_FIX = await get_user_fixture();

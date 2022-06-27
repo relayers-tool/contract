@@ -1,7 +1,7 @@
 import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 
-import {Deposit, ExitQueue, Income, ProfitRecord, RootManger} from "../typechain-types";
+import {Deposit, ExitQueue, Income, ProfitRecord, RootDB} from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 
@@ -30,7 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: users.deployer1.address,
         args: [contracts.mRelayerRegistry,contracts.mock_torn],
         log: true,
-        contract:"RootManger"
+        contract:"RootDB"
     });
 
     let ret_RootManger =  await deploy('RootManger', {
