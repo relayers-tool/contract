@@ -134,11 +134,11 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     }
 
 
-    function stake2Node(uint256 _index, uint256 _amount) external onlyOperator {
-        address _relayer = RootDB(ROOT_DB).mRelayers(_index);
+    function stake2Node(uint256 index, uint256 qty) external onlyOperator {
+        address _relayer = RootDB(ROOT_DB).mRelayers(index);
         require(_relayer != address(0), 'Invalid index');
-        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, _amount);
-        IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, _amount);
+        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, qty);
+        IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, qty);
     }
 
     function depositIni(address addr) external onlyOperator {
@@ -147,9 +147,9 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     }
 
 
-    function deposit(uint256 _amount,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external {
-        IERC20PermitUpgradeable(TORN_CONTRACT).permit(msg.sender, address(this), _amount, deadline, v, r, s);
-        depositWithApproval(_amount);
+    function deposit(uint256 qty,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external {
+        IERC20PermitUpgradeable(TORN_CONTRACT).permit(msg.sender, address(this), qty, deadline, v, r, s);
+        depositWithApproval(qty);
     }
 
     function depositWithApproval(uint256 _qty) public nonReentrant {
