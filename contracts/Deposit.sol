@@ -6,12 +6,10 @@ import "./RootDB.sol";
 import "./ProfitRecord.sol";
 import "./ExitQueue.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 contract Deposit is  ReentrancyGuardUpgradeable {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     address immutable public TORN_CONTRACT;
     address immutable public TORN_GOVERNANCE_STAKING;
@@ -67,7 +65,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
             return ;
         }
 
-        IERC20Upgradeable(TORN_CONTRACT).safeApprove(TORN_GOVERNANCE_STAKING, balance);
+        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_GOVERNANCE_STAKING, balance);
         ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockWithApproval(balance);
         emit lock_to_gov(balance);
     }
@@ -132,7 +130,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     function stake2Node(uint256 _index, uint256 _amount) external onlyOperator {
         address _relayer = RootDB(ROOT_DB)._relayers(_index);
         require(_relayer != address(0), 'Invalid index');
-        IERC20Upgradeable(TORN_CONTRACT).safeApprove(TORN_RELAYER_REGISTRY, _amount);
+        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, _amount);
         IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, _amount);
     }
 
@@ -208,11 +206,11 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         profit = profit*profitRatio/1000;
         //send to  profitAddress
         if(profit > 0){
-            IERC20Upgradeable(TORN_CONTRACT).safeTransfer(rewardAddress, profit);
+            SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT),rewardAddress, profit);
         }
         ret = torn-profit;
         //send to  user address
-        IERC20Upgradeable(TORN_CONTRACT).safeTransfer(msg.sender, ret);
+        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT),msg.sender, ret);
     }
 
     event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
