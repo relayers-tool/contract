@@ -50,14 +50,14 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         profitRecordContract = _profit_record_contract;
     }
     // save gas
-    function addRelayer(address _relayer, uint256 index) external onlyOwner
+    function addRelayer(address relayer, uint256 index) external onlyOwner
     {
         require(index <= MAX_RELAYER_COUNTER, "too large index");
 
         uint256 counter = MAX_RELAYER_COUNTER;
         //save gas
         for (uint256 i = 0; i < counter; i++) {
-            require(mRelayers[i] != _relayer, "repeated");
+            require(mRelayers[i] != relayer, "repeated");
         }
 
         if (index == MAX_RELAYER_COUNTER) {
@@ -66,7 +66,7 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
 
         require(mRelayers[index] == address(0), "index err");
 
-        mRelayers[index] = _relayer;
+        mRelayers[index] = relayer;
     }
 
     function removeRelayer(uint256 index) external onlyOwner
@@ -106,27 +106,27 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     }
 
     //  Deposit torn + eInCome torn + totalRelayerTorn
-    function totalTorn() public view returns (uint256 ret){
-        ret = Deposit(depositContract).totalBalanceOfTorn();
-        ret += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
-        ret += this.totalRelayerTorn();
+    function totalTorn() public view returns (uint256 qty){
+        qty = Deposit(depositContract).totalBalanceOfTorn();
+        qty += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
+        qty += this.totalRelayerTorn();
     }
 
-    function safeDeposit(address account, uint256 value) onlyDepositContract external returns (uint256) {
+    function safeDeposit(address account, uint256 qty) onlyDepositContract external returns (uint256) {
         uint256 total = totalSupply();
         uint256 to_mint;
         if (total == uint256(0)) {
             to_mint = 10 * 10 ** decimals();
         }
         else {// valve / ( totalTorn() + value) = to_mint/(totalSupply()+ to_mint)
-            to_mint = total * value / this.totalTorn();
+            to_mint = total * qty / this.totalTorn();
         }
         _mint(account, to_mint);
         return to_mint;
     }
 
-    function safeWithdraw(address account, uint256 _to_burn) onlyDepositContract public {
-        _burn(account, _to_burn);
+    function safeWithdraw(address account, uint256 to_burn) onlyDepositContract public {
+        _burn(account, to_burn);
     }
 
 
@@ -138,8 +138,8 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         return valueForTorn(this.balanceOf(account));
     }
 
-    function valueForTorn(uint256 value_token) public view returns (uint256){
-        return value_token * (this.totalTorn()) / (totalSupply());
+    function valueForTorn(uint256 token_qty) public view returns (uint256){
+        return token_qty * (this.totalTorn()) / (totalSupply());
     }
 
     // overwite this function inorder to prevent user transfer root token

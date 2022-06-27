@@ -6,9 +6,9 @@ contract RelayerDAOProxy is TransparentUpgradeableProxy {
 
     constructor(
         address _logic,
-        address admin_,
+        address _admin,
         bytes memory _data
-    ) TransparentUpgradeableProxy(_logic, admin_, _data) { }
+    ) TransparentUpgradeableProxy(_logic, _admin, _data) { }
 
     receive() override external payable  {
         //_fallback();
