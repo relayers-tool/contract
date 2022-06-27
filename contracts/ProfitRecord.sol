@@ -1,11 +1,11 @@
 pragma solidity ^0.8.0;
 import "./Interface/IDepositContract.sol";
-import "./Interface/IRootManger.sol";
+import "./RootDB.sol";
 import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 contract ProfitRecord is ContextUpgradeable{
 
-    address immutable public ROOT_MANAGER;
+    address immutable public ROOT_DB;
     address immutable public TORN_CONTRACT;
 
     struct PRICE_STORE {
@@ -17,15 +17,15 @@ contract ProfitRecord is ContextUpgradeable{
 
 
       modifier onlyDepositContract() {
-        require(msg.sender == IRootManger(ROOT_MANAGER).depositContract(), "Caller is not depositContract");
+        require(msg.sender == RootDB(ROOT_DB).depositContract(), "Caller is not depositContract");
         _;
     }
 
 
     /** ---------- constructor ---------- **/
-    constructor(address _tornContract, address _root_manager ) {
-        TORN_CONTRACT = _tornContract;
-        ROOT_MANAGER = _root_manager;
+    constructor(address _torn_contract, address _root_db ) {
+        TORN_CONTRACT = _torn_contract;
+        ROOT_DB = _root_db;
     }
 
     /** ---------- init ---------- **/
@@ -49,7 +49,6 @@ contract ProfitRecord is ContextUpgradeable{
     }
 
     function  withDraw(address addr,uint256 amount_root_token)  onlyDepositContract public returns (uint256 profit) {
-
         profit = getProfit(addr,amount_root_token);
         if(profitStore[addr].amount > amount_root_token){
             profitStore[addr].amount -= amount_root_token;
@@ -62,7 +61,7 @@ contract ProfitRecord is ContextUpgradeable{
     function  getProfit(address addr,uint256 amount_root_token) public view returns (uint256 profit){
         PRICE_STORE memory userStore = profitStore[addr];
         require(userStore.amount >= amount_root_token,"err root token");
-        uint256 value = IRootManger(ROOT_MANAGER).valueForTorn(amount_root_token);
+        uint256 value = RootDB(ROOT_DB).valueForTorn(amount_root_token);
         profit = value - (userStore.price*amount_root_token/10**18);
     }
 

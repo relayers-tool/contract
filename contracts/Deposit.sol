@@ -1,11 +1,10 @@
 pragma solidity ^0.8.0;
 import "./Interface/IDepositContract.sol";
-import "./Interface/IRootManger.sol";
 import "./Interface/IExitQueue.sol";
 import "./Interface/ITornadoStakingRewards.sol";
 import "./Interface/ITornadoGovernanceStaking.sol";
 import "./Interface/IRelayerRegistry.sol";
-import "./RootManger.sol";
+import "./RootDB.sol";
 import "./ProfitRecord.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
@@ -18,7 +17,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     address immutable public TORN_CONTRACT;
     address immutable public TORN_GOVERNANCE_STAKING;
     address immutable public TORN_RELAYER_REGISTRY;
-    address immutable public ROOT_MANAGER;
+    address immutable public ROOT_DB;
     address  public EXIT_QUEUE;
     address public rewardAddress;
     uint256 public profitRatio;
@@ -36,24 +35,24 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
         TORN_CONTRACT = _tornContract;
         TORN_GOVERNANCE_STAKING = _tornGovernanceStaking;
         TORN_RELAYER_REGISTRY = _tornRelayerRegistry;
-        ROOT_MANAGER = _root_manager;
+        ROOT_DB = _root_manager;
     }
 
     /** ---------- modifier ---------- **/
     modifier onlyOperator() {
-        require(msg.sender == IRootManger(ROOT_MANAGER).operator(), "Caller is not operator");
+        require(msg.sender == RootDB(ROOT_DB).operator(), "Caller is not operator");
         _;
     }
 
     modifier onlyExitQueue() {
-        require(msg.sender == IRootManger(ROOT_MANAGER).exitQueueContract(), "Caller is not exitQueue");
+        require(msg.sender == RootDB(ROOT_DB).exitQueueContract(), "Caller is not exitQueue");
         _;
     }
 
     /** ---------- init ---------- **/
     function __Deposit_init() public initializer {
         __ReentrancyGuard_init();
-        EXIT_QUEUE = IRootManger(ROOT_MANAGER).exitQueueContract();
+        EXIT_QUEUE = RootDB(ROOT_DB).exitQueueContract();
     }
 
 
@@ -128,20 +127,19 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
             return false;
         }
         return IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this)) > t ;
-
     }
 
 
     function stake2Node(uint256 _index, uint256 _amount) external onlyOperator {
-        address _relayer = IRootManger(ROOT_MANAGER)._relayers(_index);
+        address _relayer = RootDB(ROOT_DB)._relayers(_index);
         require(_relayer != address(0), 'Invalid index');
         IERC20Upgradeable(TORN_CONTRACT).safeApprove(TORN_RELAYER_REGISTRY, _amount);
         IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, _amount);
     }
 
     function depositIni(address addr) external onlyOperator {
-        uint256 root_token = IRootManger(ROOT_MANAGER).safeDeposit(addr, 300*(10**18));
-        ProfitRecord(RootManger(ROOT_MANAGER).profitRecord()).newDeposit(addr,300*(10**18),root_token);
+        uint256 root_token = RootDB(ROOT_DB).safeDeposit(addr, 300*(10**18));
+        ProfitRecord(RootDB(ROOT_DB).profitRecord()).newDeposit(addr,300*(10**18),root_token);
     }
 
 
@@ -153,10 +151,10 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     function depositWithApproval(uint256 _qty) public nonReentrant {
         address _account = msg.sender;
         require(_qty > 0,"error para");
-        uint256 root_token = IRootManger(ROOT_MANAGER).safeDeposit(_account, _qty);
+        uint256 root_token = RootDB(ROOT_DB).safeDeposit(_account, _qty);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _qty);
         //record the deposit
-        ProfitRecord(RootManger(ROOT_MANAGER).profitRecord()).newDeposit(msg.sender,_qty,root_token);
+        ProfitRecord(RootDB(ROOT_DB).profitRecord()).newDeposit(msg.sender,_qty,root_token);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
@@ -180,7 +178,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     function getValueShouldUnlock(uint256 _amount_token)  public view  returns (uint256 shortage,uint256 torn){
         uint256 this_balance_tron = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
         // _amount_token
-         torn = IRootManger(ROOT_MANAGER).valueForTorn(_amount_token);
+         torn = RootDB(ROOT_DB).valueForTorn(_amount_token);
         if(this_balance_tron >= torn){
             shortage = SUFFICIENT;
             return (shortage,torn);
@@ -193,7 +191,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     }
 
    function _safeDrawWith_1(uint256 _amount_token) internal  returns (uint256){
-//       require(RootManger(ROOT_MANAGER).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
+//       require(RootDB(ROOT_DB).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
        require(_amount_token > 0,"error para");
        uint256  shortage;
        uint256 torn;
@@ -202,7 +200,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
        if(shortage != SUFFICIENT) {
            ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
        }
-       IRootManger(ROOT_MANAGER).safeWithdraw(msg.sender, _amount_token);
+       RootDB(ROOT_DB).safeWithdraw(msg.sender, _amount_token);
        return torn;
    }
 
@@ -221,7 +219,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
     event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
     function withDraw(uint256 _amount_token) override public nonReentrant {
         require(IExitQueue(EXIT_QUEUE).nextValue() == 0,"Queue not empty");
-        address profit_address = RootManger(ROOT_MANAGER).profitRecord();
+        address profit_address = RootDB(ROOT_DB).profitRecord();
         uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender,_amount_token);
         uint256 torn = _safeDrawWith_1(_amount_token);
         _safeSendTorn(_amount_token,torn,profit);
@@ -230,7 +228,7 @@ contract Deposit is IDepositContract, ReentrancyGuardUpgradeable {
 
     //because of nonReentrant have to supply this function forn exitQueue
     function withdraw_for_exit(address addr,uint256 _amount_token) override external onlyExitQueue returns (uint256) {
-        address profit_address = RootManger(ROOT_MANAGER).profitRecord();
+        address profit_address = RootDB(ROOT_DB).profitRecord();
         uint256 profit = ProfitRecord(profit_address).withDraw(addr,_amount_token);
         uint256 torn = _safeDrawWith_1(_amount_token);
         return _safeSendTorn(_amount_token,torn,profit);

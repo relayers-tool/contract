@@ -4,20 +4,19 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "./Interface/IRootManger.sol";
 import "./Interface/IDepositContract.sol";
 import "./Interface/IinComeContract.sol";
 import "./Interface/IRelayerRegistry.sol";
 
-contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
+contract RootDB is OwnableUpgradeable,ERC20Upgradeable{
 
-    address public  override exitQueueContract;
-    address  public override depositContract;
-    address  public override inComeContract;
-    address public  override operator;
+    address public   exitQueueContract;
+    address  public  depositContract;
+    address  public  inComeContract;
+    address public   operator;
     address public  profitRecord;
     uint256 public  MAX_RELAYER_COUNTER ;
-    mapping(uint256 => address) public override _relayers;
+    mapping(uint256 => address) public  _relayers;
 
     address immutable public TORN_CONTRACT;
     address immutable public TORN_RELAYER_REGISTRY;
@@ -50,7 +49,7 @@ contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
         profitRecord = _profitRecord;
     }
     // save gas
-    function addRelayer(address __relayer,uint256 index)  override external  onlyOwner
+    function addRelayer(address __relayer,uint256 index)   external  onlyOwner
     {
          require(index <= MAX_RELAYER_COUNTER,"too large index");
 
@@ -68,7 +67,7 @@ contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
          _relayers[index] = __relayer;
     }
 
-    function removeRelayer(uint256 index)  override external  onlyOwner
+    function removeRelayer(uint256 index)   external  onlyOwner
     {
         require(index < MAX_RELAYER_COUNTER,"too large index");
 
@@ -91,7 +90,7 @@ contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
         _;
     }
 
-    function totalRelayerTorn() override external view returns (uint256 ret){
+    function totalRelayerTorn()  external view returns (uint256 ret){
         ret = 0;
         address relay ;
         uint256 counter = MAX_RELAYER_COUNTER; //save gas
@@ -104,13 +103,13 @@ contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
     }
 
     //  Deposit torn + eInCome torn + totalRelayerTorn
-    function totalTorn() override public view returns (uint256 ret){
+    function totalTorn() public view returns (uint256 ret){
         ret =  IDepositContract(depositContract).totalBalanceOfTorn();
         ret += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
         ret+= this.totalRelayerTorn();
     }
 
-    function safeDeposit(address account,uint256 value) override  onlyDepositContract external returns (uint256) {
+    function safeDeposit(address account,uint256 value)  onlyDepositContract external returns (uint256) {
         uint256 total = totalSupply();
         uint256 to_mint;
         if(total == uint256(0)){
@@ -123,20 +122,20 @@ contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
         return to_mint;
     }
 
-    function safeWithdraw(address account,uint256 to_burn) override onlyDepositContract public {
+    function safeWithdraw(address account,uint256 to_burn)  onlyDepositContract public {
         _burn(account,to_burn);
     }
 
     event Income(address from, uint vaule);
-    function addIncome(uint256 amount) override onlyInComeContract external {
+    function addIncome(uint256 amount)  onlyInComeContract external {
         emit Income(msg.sender,amount);
     }
 
-    function balanceOfTorn(address account) override public view returns (uint256){
+    function balanceOfTorn(address account)  public view returns (uint256){
        return valueForTorn(this.balanceOf(account));
     }
 
-    function valueForTorn(uint256 value_token) override  public view returns (uint256){
+    function valueForTorn(uint256 value_token)   public view returns (uint256){
         return value_token*(this.totalTorn())/(totalSupply());
     }
 
@@ -164,7 +163,6 @@ contract RootManger is OwnableUpgradeable,ERC20Upgradeable,IRootManger{
         ret =  false;
         require(false ,"err approve");
     }
-
 
 
 }

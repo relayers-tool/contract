@@ -7,8 +7,8 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol";
 import "./Interface/IExitQueue.sol";
-import "./Interface/IRootManger.sol";
 import "./Interface/IDepositContract.sol";
+import "./RootDB.sol";
 
 contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
 
@@ -19,7 +19,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     }
 
 
-    address immutable public ROOT_MANAGER;
+    address immutable public ROOT_DB;
     address immutable  public TORN_CONTRACT;
 
 
@@ -38,7 +38,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
     /** ---------- constructor ---------- **/
     constructor(address _tornContract, address _root_manager ) {
         TORN_CONTRACT = _tornContract;
-        ROOT_MANAGER = _root_manager;
+        ROOT_DB = _root_manager;
     }
 
 
@@ -86,7 +86,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         require(addr2index[_msgSender()] == 0 && index2value[maxIndex].v==0,"have pending");
         addr2index[_msgSender()] = maxIndex;
         index2value[maxIndex] = QUEUE_INFO(_amount_token,_msgSender());
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_MANAGER),_msgSender(), address(this), _amount_token);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_DB),_msgSender(), address(this), _amount_token);
         emit add_queue(_amount_token);
     }
 
@@ -98,12 +98,12 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
         require(index > preparedIndex,"prepared");
         delete addr2index[_msgSender()];
         delete index2value[index];
-        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(ROOT_MANAGER),_msgSender(),value);
+        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(ROOT_DB),_msgSender(),value);
         emit cancel_queue(_msgSender(),value);
     }
 
     function  executeQueue() override external  nonReentrant{
-        address deposit_addr = IRootManger(ROOT_MANAGER).depositContract();
+        address deposit_addr = RootDB(ROOT_DB).depositContract();
         uint256 value = 0;
         require(maxIndex >=  preparedIndex+1,"no pending");
         uint256 next = nextSkipIndex();
@@ -128,7 +128,7 @@ contract ExitQueue is OwnableUpgradeable,IExitQueue, ReentrancyGuardUpgradeable{
             return 0;
         }
 
-       return IRootManger(ROOT_MANAGER).valueForTorn(nextValue);
+       return RootDB(ROOT_DB).valueForTorn(nextValue);
     }
     function  withDraw() override external nonReentrant {
         uint256 index =addr2index[_msgSender()];
