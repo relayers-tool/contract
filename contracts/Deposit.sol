@@ -143,7 +143,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     function depositIni(address addr) external onlyOperator {
         uint256 root_token = RootDB(ROOT_DB).safeDeposit(addr, 300*(10**18));
-        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).newDeposit(addr,300*(10**18),root_token);
+        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).Deposit(addr,300*(10**18),root_token);
     }
 
 
@@ -158,7 +158,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         uint256 root_token = RootDB(ROOT_DB).safeDeposit(_account, _qty);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _qty);
         //record the deposit
-        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).newDeposit(msg.sender,_qty,root_token);
+        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).Deposit(msg.sender,_qty,root_token);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){

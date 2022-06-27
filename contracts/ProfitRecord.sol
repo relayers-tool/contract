@@ -35,7 +35,7 @@ contract ProfitRecord is ContextUpgradeable {
     }
 
 
-    function newDeposit(address addr, uint256 torn_amount, uint256 amount_root_token) onlyDepositContract public {
+    function Deposit(address addr, uint256 torn_amount, uint256 amount_root_token) onlyDepositContract public {
         PRICE_STORE memory userStore = profitStore[addr];
         if (userStore.amount == 0) {
             uint256 new_price = torn_amount * (10 ** 18) / amount_root_token;
