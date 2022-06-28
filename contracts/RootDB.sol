@@ -62,11 +62,11 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
 
 
     /**
-      * @notice Function used to propose a new proposal. Sender must have delegates above the proposal threshold
-      * @param _in_come_contract Target addresses for proposal calls
-      * @param _deposit_contract Eth values for proposal calls
-      * @param _exit_queue_contract Function signatures for proposal calls
-      * @param _profit_record_contract Calldatas for proposal calls
+      * @notice Function used to __RootDB_init
+      * @param _in_come_contract address
+      * @param _deposit_contract address
+      * @param _exit_queue_contract address
+      * @param _profit_record_contract address
       **/
     function __RootDB_init(address _in_come_contract, address _deposit_contract, address _exit_queue_contract, address _profit_record_contract) public initializer {
         __RootDB_init_unchained(_in_come_contract, _deposit_contract, _exit_queue_contract, _profit_record_contract);
@@ -80,13 +80,22 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         exitQueueContract = _exit_queue_contract;
         profitRecordContract = _profit_record_contract;
     }
-    // save gas
+
+
+    /**
+      * @notice addRelayer used to add relayers to the system call by Owner
+      * @dev inorder to save gas designed a simple algorithm to manger the relayers
+             it is not perfect
+      * @param relayer address of relayers
+                address can only added once
+      * @param  index  of relayer
+   **/
     function addRelayer(address relayer, uint256 index) external onlyOwner
     {
         require(index <= MAX_RELAYER_COUNTER, "too large index");
 
         uint256 counter = MAX_RELAYER_COUNTER;
-        //save gas
+
         for (uint256 i = 0; i < counter; i++) {
             require(mRelayers[i] != relayer, "repeated");
         }
@@ -94,12 +103,18 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         if (index == MAX_RELAYER_COUNTER) {
             MAX_RELAYER_COUNTER += 1;
         }
-
         require(mRelayers[index] == address(0), "index err");
-
         mRelayers[index] = relayer;
     }
 
+
+    /**
+      * @notice removeRelayer used to remove relayers form  the system call by Owner
+      * @dev inorder to save gas designed a simple algorithm to manger the relayers
+             it is not perfect
+             if remove the last one it will dec MAX_RELAYER_COUNTER
+      * @param  index  of relayer
+   **/
     function removeRelayer(uint256 index) external onlyOwner
     {
         require(index < MAX_RELAYER_COUNTER, "too large index");
@@ -118,42 +133,66 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         _;
     }
 
-
-    function totalRelayerTorn() external view returns (uint256 ret){
-        ret = 0;
+    /**
+      * @notice totalRelayerTorn used to calc all the relayers unburned torn
+      * @return qty The number of total Relayer Torn
+   **/
+    function totalRelayerTorn() external view returns (uint256 qty){
+        qty = 0;
         address relay;
         uint256 counter = MAX_RELAYER_COUNTER;
         //save gas
         for (uint256 i = 0; i < counter; i++) {
             relay = mRelayers[i];
             if (relay != address(0)) {
-                ret += IRelayerRegistry(TORN_RELAYER_REGISTRY).getRelayerBalance(relay);
+                qty += IRelayerRegistry(TORN_RELAYER_REGISTRY).getRelayerBalance(relay);
             }
         }
     }
 
-    //  Deposit torn + eInCome torn + totalRelayerTorn
+    /**
+   * @notice totalTorn used to calc all the torn in relayer dao
+    * @dev it is sum of (Deposit contract torn + InCome contract torn + totalRelayersTorn)
+    * @return qty The number of total Torn
+   **/
     function totalTorn() public view returns (uint256 qty){
         qty = Deposit(depositContract).totalBalanceOfTorn();
         qty += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
         qty += this.totalRelayerTorn();
     }
 
-    function safeDeposit(address account, uint256 qty) onlyDepositContract external returns (uint256) {
+    /**
+   * @notice safeMint used to calc token and mint to account
+             this  is called when user deposit torn to the system
+    * @dev  algorithm  :   qty / ( totalTorn() + qty) = to_mint/(totalSupply()+ to_mint)
+            if is the first user to mint mint is 10
+     * @param  account the user's address
+     * @param   qty is  the user's torn to deposit
+    * @return the number token to mint
+   **/
+    function safeMint(address account, uint256 qty) onlyDepositContract external returns (uint256) {
         uint256 total = totalSupply();
         uint256 to_mint;
         if (total == uint256(0)) {
             to_mint = 10 * 10 ** decimals();
         }
-        else {// valve / ( totalTorn() + value) = to_mint/(totalSupply()+ to_mint)
+        else {// qty / ( totalTorn() + qty) = to_mint/(totalSupply()+ to_mint)
             to_mint = total * qty / this.totalTorn();
         }
         _mint(account, to_mint);
         return to_mint;
     }
 
-    function safeWithdraw(address account, uint256 to_burn) onlyDepositContract public {
-        _burn(account, to_burn);
+
+    /**
+    * @notice safeBurn used to _burn voucher token withdraw form the system
+             this  is called when user deposit torn to the system
+    * @param  account the user's address
+    * @param  qty is the  the user's voucher to withdraw
+   **/
+
+    function safeBurn(address account, uint256 qty) onlyDepositContract external {
+        _burn(account, qty);
     }
 
 
@@ -165,13 +204,28 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         return token_qty * (this.totalTorn()) / (totalSupply());
     }
 
-    // overwite this function inorder to prevent user transfer root token
+    /**
+   @dev See {IERC20-transfer}.
+     *  overwite this function inorder to prevent user transfer voucher token
+     * Requirements:
+     * - `to` cannot be the zero address.
+     * - the caller must have a balance of at least `amount`.
+     * @notice IMPORTANT: one of the former or target must been exitQueueContract
+    **/
     function transfer(address to, uint256 amount) public virtual override returns (bool) {
         address owner = _msgSender();
         require(owner == exitQueueContract || to == exitQueueContract, "err transfer");
         _transfer(owner, to, amount);
         return true;
     }
+
+    /**
+    * @dev See {IERC20-transferFrom}.
+     * Requirements:
+     *
+     * @notice IMPORTANT: inorder to saving gas we removed approve
+       and the spender is fixed to exitQueueContract
+     */
 
     function transferFrom(
         address from,
@@ -185,6 +239,9 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         return true;
     }
 
+    /**
+     * @notice IMPORTANT: inorder to saving gas we removed approve
+     */
     function approve(address spender, uint256 amount) public virtual override returns (bool ret) {
         ret = false;
         require(false, "err approve");

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "./Interface/ITornadoStakingRewards.sol";
 import "./Interface/ITornadoGovernanceStaking.sol";
@@ -142,7 +143,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     }
 
     function depositIni(address addr) external onlyOperator {
-        uint256 root_token = RootDB(ROOT_DB).safeDeposit(addr, 300*(10**18));
+        uint256 root_token = RootDB(ROOT_DB).safeMint(addr, 300*(10**18));
         ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).Deposit(addr,300*(10**18),root_token);
     }
 
@@ -155,7 +156,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     function depositWithApproval(uint256 _qty) public nonReentrant {
         address _account = msg.sender;
         require(_qty > 0,"error para");
-        uint256 root_token = RootDB(ROOT_DB).safeDeposit(_account, _qty);
+        uint256 root_token = RootDB(ROOT_DB).safeMint(_account, _qty);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _qty);
         //record the deposit
         ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).Deposit(msg.sender,_qty,root_token);
@@ -204,7 +205,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
        if(shortage != SUFFICIENT) {
            ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
        }
-       RootDB(ROOT_DB).safeWithdraw(msg.sender, _amount_token);
+       RootDB(ROOT_DB).safeBurn(msg.sender, _amount_token);
        return torn;
    }
 
