@@ -68,13 +68,13 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
       * @param _exit_queue_contract Function signatures for proposal calls
       * @param _profit_record_contract Calldatas for proposal calls
       **/
-    function __RootManger_init(address _in_come_contract, address _deposit_contract, address _exit_queue_contract, address _profit_record_contract) public initializer {
-        __RootManger_init_unchained(_in_come_contract, _deposit_contract, _exit_queue_contract, _profit_record_contract);
+    function __RootDB_init(address _in_come_contract, address _deposit_contract, address _exit_queue_contract, address _profit_record_contract) public initializer {
+        __RootDB_init_unchained(_in_come_contract, _deposit_contract, _exit_queue_contract, _profit_record_contract);
         __ERC20_init("relayer_dao", "relayer_dao_token");
         __Ownable_init();
     }
 
-    function __RootManger_init_unchained(address _in_come_contract, address _deposit_contract, address _exit_queue_contract, address _profit_record_contract) public onlyInitializing {
+    function __RootDB_init_unchained(address _in_come_contract, address _deposit_contract, address _exit_queue_contract, address _profit_record_contract) public onlyInitializing {
         inComeContract = _in_come_contract;
         depositContract = _deposit_contract;
         exitQueueContract = _exit_queue_contract;

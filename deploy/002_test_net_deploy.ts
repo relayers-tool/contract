@@ -116,7 +116,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
     try {
-        await mRootManger.connect(users.owner).__RootManger_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address,ret_ProfitRecord.address);
+        await mRootManger.connect(users.owner).__RootDB_init(ret_mIncome.address, ret_Deposit.address, ret_mExitQueue.address,ret_ProfitRecord.address);
         await mRootManger.connect(users.owner).setOperator(users.operator.address);
     }
     catch (e:any) {
