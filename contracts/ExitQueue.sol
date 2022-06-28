@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "./RootDB.sol";
 import "./Deposit.sol";
 
-contract ExitQueue is OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract ExitQueue is OwnableUpgradeable,ReentrancyGuardUpgradeable {
 
 
     struct QUEUE_INFO {
@@ -127,13 +127,13 @@ contract ExitQueue is OwnableUpgradeable, ReentrancyGuardUpgradeable {
         require(INDEX_ERR != next, "too many skips");
 
         // avoid the last one had canceled;
-        uint256 nextValue = index2value[preparedIndex + next].v;
-        if (nextValue == 0)
+        uint256 next_value = index2value[preparedIndex + next].v;
+        if (next_value == 0)
         {
             return 0;
         }
 
-        return RootDB(ROOT_DB).valueForTorn(nextValue);
+        return RootDB(ROOT_DB).valueForTorn(next_value);
     }
 
     function withDraw() external nonReentrant {

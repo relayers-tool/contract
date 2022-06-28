@@ -11,35 +11,60 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20PermitUpgradeable.sol";
 
-
+/**
+ * @title Deposit contract
+ * @notice this is a Deposit contract
+ */
 contract Deposit is  ReentrancyGuardUpgradeable {
 
+    /// the address of  torn token contract
     address immutable public TORN_CONTRACT;
+    /// the address of  torn gov staking contract
     address immutable public TORN_GOVERNANCE_STAKING;
+    /// the address of  torn relayer registry contract
     address immutable public TORN_RELAYER_REGISTRY;
+    /// the address of  torn ROOT_DB contract
     address immutable public ROOT_DB;
 
-
+    /// the address of  dev's rewards
     address public rewardAddress;
+    /// the ratio of  dev's rewards which is x/1000
     uint256 public profitRatio;
+    /// the max torn in the Deposit contact ,if over this amount it will been  staking to gov staking contract
     uint256 public maxReserveTorn;
+    /// the max reward torn in  gov staking contract  ,if over this amount it will been claimed
     uint256 public maxRewardInGov;
+
+    /// this  is the max uint256 , this flag is used to indicate insufficient
     uint256 constant public  IN_SUFFICIENT = 2**256 - 1;
+    /// this  is the max uint256 , this flag is used to indicate sufficient
     uint256 constant public  SUFFICIENT = 2**256 - 2;
-    /** ---------- constructor ---------- **/
+
+
+    /// @notice An event emitted when lock torn to gov staking contract
+    /// @param _amount The amount which staked to gov staking contract
+    event lock_to_gov(uint256 _amount);
+
+    /// @notice An event emitted when user withdraw
+    /// @param  account The: address of user
+    /// @param _amount_token: voucher of the deposit
+    /// @param torn: the amount of torn in this withdarw
+    /// @param profi: the profi of torn in this withdarw
+    event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
+
     constructor(
         address _torn_contract,
         address _torn_governance_staking,
         address _torn_relayer_registry,
-        address _root_manager
+        address _root_db
     ) {
         TORN_CONTRACT = _torn_contract;
         TORN_GOVERNANCE_STAKING = _torn_governance_staking;
         TORN_RELAYER_REGISTRY = _torn_relayer_registry;
-        ROOT_DB = _root_manager;
+        ROOT_DB = _root_db;
     }
 
-    /** ---------- modifier ---------- **/
+
     modifier onlyOperator() {
         require(msg.sender == RootDB(ROOT_DB).operator(), "Caller is not operator");
         _;
@@ -50,33 +75,20 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         _;
     }
 
-    /** ---------- init ---------- **/
+
     function __Deposit_init() public initializer {
         __ReentrancyGuard_init();
     }
 
-
-    event lock_to_gov(uint256 _amount);
-
-    function _checkLock2Gov() internal  {
-        // the follow code will never run
-        //    if(isNeedTransfer2Queue()){
-        //        return ;
-        //    }
-        uint256 balance = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
-        if(maxReserveTorn >= balance){
-            return ;
-        }
-
-        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_GOVERNANCE_STAKING, balance);
-        ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockWithApproval(balance);
-        emit lock_to_gov(balance);
-    }
-
-    // index 1 maxReserveTorn;
-    // index 2 _maxRewardInGov;
-    // index 3 _rewardAddress
-    // index 3 profitRatio  x/1000
+    /**
+    * @notice setPara used to set parameters called by Operator
+    * @param index index para
+            * index 1 maxReserveTorn;
+            * index 2 _maxRewardInGov;
+            * index 3 _rewardAddress
+            * index 4 profitRatio  x/1000
+    * @param value
+   **/
     function setPara(uint256 index,uint256 value) external onlyOperator {
         require(value > 0,"Invalid para");
         if(index ==1){
@@ -91,15 +103,40 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         else{
             require(false,"Invalid para");
         }
-
     }
 
+
+
+    /**
+    * @notice _checkLock2Gov used to check whether the TORN balance of the contract  is over maxReserveTorn
+              if it is ture ,lock it to TORN_GOVERNANCE_STAKING
+   **/
+    function _checkLock2Gov() internal  {
+        uint256 balance = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
+        if(maxReserveTorn >= balance){
+            return ;
+        }
+        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_GOVERNANCE_STAKING, balance);
+        ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockWithApproval(balance);
+        emit lock_to_gov(balance);
+    }
+
+    /**
+     * @notice _nextExitQueueValue used to get the exitQueue next user's waiting Value
+      if no one is waiting or all users are prepared return 0
+     * return the Value waiting for
+    **/
     function  _nextExitQueueValue()  view internal returns(uint256 value){
         value = ExitQueue(RootDB(ROOT_DB).exitQueueContract()).nextValue();
     }
 
-
-// inorder to  reduce the complex the unlock only check the value
+    /**
+     * @notice getValueShouldUnlockFromGov used get the Value should unlock from gov staking contract
+     * return
+          1. if noneed to unlock return 0
+          2. if there is not enough torn to unlock for exit queue retrun  IN_SUFFICIENT
+          3. other values are the value should to unlock
+    **/
     function getValueShouldUnlockFromGov() public view returns (uint256) {
 
         uint256 next_value = _nextExitQueueValue();
@@ -119,13 +156,19 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         return  IN_SUFFICIENT;
     }
 
-
+    /**
+       * @notice isNeedClaimFromGov used to check if the gov staking contract reward
+       * return   the staking reward is over maxRewardInGov ?
+    **/
     function isNeedClaimFromGov() public view returns (bool) {
         uint256 t = ITornadoStakingRewards(ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).Staking()).checkReward(address(this));
         return t > maxRewardInGov;
     }
 
-
+    /**
+       * @notice isNeedTransfer2Queue used to check if need to Transfer torn to exit queue
+       * return   true if the balance of torn is over the next value
+    **/
     function isNeedTransfer2Queue() public view returns (bool) {
        uint256 next_value = _nextExitQueueValue();
         if(next_value == 0 ){
@@ -134,7 +177,11 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         return IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this)) > next_value;
     }
 
-
+    /**
+       * @notice stake2Node used to stake TORN to relayers  when it is necessary call by Operator
+       * @param  index: the index of the relayer
+       * @param qty: the amount of TORN to be stake
+    **/
     function stake2Node(uint256 index, uint256 qty) external onlyOperator {
         address _relayer = RootDB(ROOT_DB).mRelayers(index);
         require(_relayer != address(0), 'Invalid index');
@@ -142,17 +189,30 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, qty);
     }
 
-    function depositIni(address addr) external onlyOperator {
-        uint256 root_token = RootDB(ROOT_DB).safeMint(addr, 300*(10**18));
-        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).Deposit(addr,300*(10**18),root_token);
-    }
 
-
+   /**
+       * @notice deposit used to deposit TORN to relayers dao  with permit param
+       * @param  qty: the amount of torn want to stake
+       * @param   deadline ,v,r,s  permit param
+    **/
     function deposit(uint256 qty,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external {
         IERC20PermitUpgradeable(TORN_CONTRACT).permit(msg.sender, address(this), qty, deadline, v, r, s);
         depositWithApproval(qty);
     }
 
+    /**
+       * @notice deposit used to deposit TORN to relayers dao  with approval
+       * @param  _qty: the amount of torn want to stake
+       * @dev
+           1. mint the voucher of the deposit.
+           2. TransferFrom TORN to this contract
+           3. recorde the raw 'price' of the voucher for compute profit
+           4. check the auto work to do
+                1.  isNeedTransfer2Queue
+                2.  isNeedClaimFromGov
+                3.  checkLock2Gov
+                4. or unlock for the gov prepare to Transfer2Queue
+    **/
     function depositWithApproval(uint256 _qty) public nonReentrant {
         address _account = msg.sender;
         require(_qty > 0,"error para");
@@ -179,11 +239,21 @@ contract Deposit is  ReentrancyGuardUpgradeable {
          }
 
     }
-// avoid to waste gas return more info
-    function getValueShouldUnlock(uint256 _amount_token)  public view  returns (uint256 shortage,uint256 torn){
+
+    /**
+       * @notice getValueShouldUnlock used to get the amount of TORN and the shortage of TORN
+       * @param  _token_qty:  the amount of the voucher
+       * return (shortage ,torn)
+              shortage:  the shortage of TRON ,if the user want to with draw the _token_qty voucher
+                        1. if the balance of TORN in this contract is enough return SUFFICIENT
+                        2. if the balance of TORN added the lock balance in gov are not enough return IN_SUFFICIENT
+                        3. others is the amount which show unlock for the withdrawing
+              torn    :  the amount of TORN if the user with draw the qty of  _token_qty
+    **/
+    function getValueShouldUnlock(uint256 _token_qty)  public view  returns (uint256 shortage,uint256 torn){
         uint256 this_balance_tron = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
         // _amount_token
-         torn = RootDB(ROOT_DB).valueForTorn(_amount_token);
+         torn = RootDB(ROOT_DB).valueForTorn(_token_qty);
         if(this_balance_tron >= torn){
             shortage = SUFFICIENT;
             return (shortage,torn);
@@ -195,22 +265,35 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         }
     }
 
-   function _safeDrawWith_1(uint256 _amount_token) internal  returns (uint256){
-//       require(RootDB(ROOT_DB).balanceOf(msg.sender) >= _amount_token  ,"balance Insufficient");
-       require(_amount_token > 0,"error para");
+
+    /**
+       * @notice _safeWithdraw used to withdraw
+       * @param  _token_qty:  the amount of the voucher
+       * @return  the amount of TORN user get
+       * @dev
+             1. Unlock torn form gov if necessary
+             2. burn the _token_qty of the voucher
+    **/
+   function _safeWithdraw(uint256 _token_qty) internal  returns (uint256){
+       require(_token_qty > 0,"error para");
        uint256  shortage;
        uint256 torn;
-       (shortage,torn) = getValueShouldUnlock(_amount_token);
+       (shortage,torn) = getValueShouldUnlock(_token_qty);
        require(shortage != IN_SUFFICIENT, 'pool Insufficient');
        if(shortage != SUFFICIENT) {
            ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
        }
-       RootDB(ROOT_DB).safeBurn(msg.sender, _amount_token);
+       RootDB(ROOT_DB).safeBurn(msg.sender, _token_qty);
        return torn;
    }
 
-    function _safeSendTorn(uint256 _amount_token,uint256 torn,uint256 profit) internal returns(uint256 ret) {
-
+    /**
+       * @notice _safeSendTorn used to send TORN to withdrawer and profit to dev team
+       * @param  torn: amount of TORN user got
+       * @param  profit: the profit of the user got
+       * return  the user got TORN which subbed the dev profit
+    **/
+    function _safeSendTorn(uint256 torn,uint256 profit) internal returns(uint256 ret) {
         profit = profit*profitRatio/1000;
         //send to  profitAddress
         if(profit > 0){
@@ -221,54 +304,80 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT),msg.sender, ret);
     }
 
-    event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
-    function withDraw(uint256 _amount_token)  public nonReentrant {
+    /**
+       * @notice  used to  withdraw
+       * @param  _token_qty:  the amount of the voucher
+       * @dev inorder to save gas we had modified erc20 token which no need to approve
+    **/
+    function withDraw(uint256 _token_qty)  public nonReentrant {
         require( _nextExitQueueValue() == 0,"Queue not empty");
         address profit_address = RootDB(ROOT_DB).profitRecordContract();
-        uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender,_amount_token);
-        uint256 torn = _safeDrawWith_1(_amount_token);
-        _safeSendTorn(_amount_token,torn,profit);
-        emit with_draw(msg.sender,_amount_token,torn,profit);
+        uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender, _token_qty);
+        uint256 torn = _safeWithdraw(_token_qty);
+        _safeSendTorn(torn,profit);
+        emit with_draw(msg.sender, _token_qty,torn,profit);
     }
 
-    //because of nonReentrant have to supply this function forn exitQueue
-    function withdraw_for_exit(address addr,uint256 _amount_token)  external onlyExitQueue returns (uint256) {
+    /**
+       * @notice  used to  withdraw
+       * @param  addr:  the addr of user
+       * @param  _token_qty:  the amount of the voucher
+       * @dev    because of nonReentrant have to supply this function for exitQueue
+       * return  the user got TORN which subbed the dev profit
+    **/
+    function withdraw_for_exit(address addr,uint256 _token_qty)  external onlyExitQueue returns (uint256 ret) {
         address profit_address = RootDB(ROOT_DB).profitRecordContract();
-        uint256 profit = ProfitRecord(profit_address).withDraw(addr,_amount_token);
-        uint256 torn = _safeDrawWith_1(_amount_token);
-        return _safeSendTorn(_amount_token,torn,profit);
+        uint256 profit = ProfitRecord(profit_address).withDraw(addr, _token_qty);
+        uint256 torn = _safeWithdraw(_token_qty);
+        ret =  _safeSendTorn(torn,profit);
+        emit with_draw(addr, _token_qty,torn,profit);
     }
 
 
-    /** ---------- public getting ---------- **/
-    function totalBalanceOfTorn()  external view returns (uint256 _t) {
-        _t  = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
-        _t += balanceOfStakingOnGov();
-        _t += checkRewardOnGov();
+    /**
+       * @notice totalBalanceOfTorn
+       * return  the total Balance Of  TORN which controlled  buy this contract
+    **/
+    function totalBalanceOfTorn()  external view returns (uint256 ret) {
+        ret = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
+        ret += balanceOfStakingOnGov();
+        ret += checkRewardOnGov();
     }
 
-    function isBalanceEnough(uint256 _amount_token)  external view returns (bool) {
+    /**
+       * @notice isBalanceEnough
+       *  return whether is Enough TORN for user to withdraw the _token_qty
+    **/
+    function isBalanceEnough(uint256 _token_qty)  external view returns (bool) {
         if( _nextExitQueueValue() != 0){
             return false;
         }
         uint256  shortage;
-        (shortage,) = getValueShouldUnlock(_amount_token);
+        (shortage,) = getValueShouldUnlock(_token_qty);
         return shortage < IN_SUFFICIENT;
     }
 
-    function balanceOfStakingOnGov() public view returns (uint256 t) {
-        t =ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockedBalance(address(this));
+    function balanceOfStakingOnGov() public view returns (uint256 ) {
+        return ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockedBalance(address(this));
     }
 
     function checkRewardOnGov()  public view returns (uint256) {
         return ITornadoStakingRewards(ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).Staking()).checkReward(address(this));
     }
 
-    /** ---------- private ---------- **/
+    /**
+       * @notice claim Reward From Gov staking
+    **/
     function _claimRewardFromGov() internal {
         address _stakingRewardContract = ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).Staking();
         ITornadoStakingRewards(_stakingRewardContract).getReward();
     }
 
+
+
+    //    function depositIni(address addr) external onlyOperator {
+    //        uint256 root_token = RootDB(ROOT_DB).safeMint(addr, 300*(10**18));
+    //        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).Deposit(addr,300*(10**18),root_token);
+    //    }
 
 }
