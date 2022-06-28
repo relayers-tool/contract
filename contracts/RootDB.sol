@@ -114,7 +114,7 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
              it is not perfect
              if remove the last one it will dec MAX_RELAYER_COUNTER
       * @param  index  of relayer
-   **/
+    **/
     function removeRelayer(uint256 index) external onlyOwner
     {
         require(index < MAX_RELAYER_COUNTER, "too large index");
@@ -136,7 +136,7 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     /**
       * @notice totalRelayerTorn used to calc all the relayers unburned torn
       * @return qty The number of total Relayer Torn
-   **/
+    **/
     function totalRelayerTorn() external view returns (uint256 qty){
         qty = 0;
         address relay;
@@ -151,7 +151,7 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     }
 
     /**
-   * @notice totalTorn used to calc all the torn in relayer dao
+    * @notice totalTorn used to calc all the torn in relayer dao
     * @dev it is sum of (Deposit contract torn + InCome contract torn + totalRelayersTorn)
     * @return qty The number of total Torn
    **/
@@ -162,14 +162,14 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     }
 
     /**
-   * @notice safeMint used to calc token and mint to account
+     * @notice safeMint used to calc token and mint to account
              this  is called when user deposit torn to the system
-    * @dev  algorithm  :   qty / ( totalTorn() + qty) = to_mint/(totalSupply()+ to_mint)
+     * @dev  algorithm  :   qty / ( totalTorn() + qty) = to_mint/(totalSupply()+ to_mint)
             if is the first user to mint mint is 10
      * @param  account the user's address
      * @param   qty is  the user's torn to deposit
-    * @return the number token to mint
-   **/
+     * @return the number token to mint
+    **/
     function safeMint(address account, uint256 qty) onlyDepositContract external returns (uint256) {
         uint256 total = totalSupply();
         uint256 to_mint;
@@ -183,14 +183,12 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         return to_mint;
     }
 
-
     /**
     * @notice safeBurn used to _burn voucher token withdraw form the system
              this  is called when user deposit torn to the system
     * @param  account the user's address
     * @param  qty is the  the user's voucher to withdraw
    **/
-
     function safeBurn(address account, uint256 qty) onlyDepositContract external {
         _burn(account, qty);
     }
@@ -205,11 +203,11 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     }
 
     /**
-   @dev See {IERC20-transfer}.
-     *  overwite this function inorder to prevent user transfer voucher token
-     * Requirements:
-     * - `to` cannot be the zero address.
-     * - the caller must have a balance of at least `amount`.
+      @dev See {IERC20-transfer}.
+     *   overwite this function inorder to prevent user transfer voucher token
+     *   Requirements:
+     *   - `to` cannot be the zero address.
+     *   - the caller must have a balance of at least `amount`.
      * @notice IMPORTANT: one of the former or target must been exitQueueContract
     **/
     function transfer(address to, uint256 amount) public virtual override returns (bool) {
@@ -226,7 +224,6 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
      * @notice IMPORTANT: inorder to saving gas we removed approve
        and the spender is fixed to exitQueueContract
      */
-
     function transferFrom(
         address from,
         address to,
@@ -246,6 +243,4 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
         ret = false;
         require(false, "err approve");
     }
-
-
 }
