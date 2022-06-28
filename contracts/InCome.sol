@@ -28,7 +28,6 @@ contract Income {
 
     function distributeTorn(uint256 qty) external onlyOperator {
         address deposit_address = RootDB(ROOT_DB).depositContract();
-        RootDB(ROOT_DB).addIncome(qty);
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), deposit_address, qty);
         emit distribute_torn(deposit_address, qty);
     }
