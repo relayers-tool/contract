@@ -136,11 +136,6 @@ describe("RootManger", function () {
 
   });
 
-  it("test onlyInComeContract", async function () {
-    await expect(mRootDb.connect(user1).addIncome(5000)).revertedWith("Caller is not inComeContract");
-
-  });
-
 
   it("test removeRelayer", async function () {
 
