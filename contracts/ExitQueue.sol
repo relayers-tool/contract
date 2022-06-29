@@ -79,7 +79,7 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
            1. the number of blanks
            2. INDEX_ERR  the he number of blanks is over MAX_QUEUE_CANCEL
    **/
-    function nextSkipIndex() view internal returns (uint256){
+    function nextSkipIndex() view public returns (uint256){
 
         uint256 temp_maxIndex = maxIndex;
         // save gas
@@ -119,25 +119,25 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
     function addQueue(uint256 token_qty) public nonReentrant {
         maxIndex += 1;
         require(token_qty > 0, "error para");
-        require(addr2index[_msgSender()] == 0 && index2value[maxIndex].v == 0, "have pending");
-        addr2index[_msgSender()] = maxIndex;
-        index2value[maxIndex] = QUEUE_INFO(token_qty, _msgSender());
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_DB), _msgSender(), address(this), token_qty);
-        emit add_queue(_msgSender(),token_qty);
+        require(addr2index[msg.sender] == 0 && index2value[maxIndex].v == 0, "have pending");
+        addr2index[msg.sender] = maxIndex;
+        index2value[maxIndex] = QUEUE_INFO(token_qty, msg.sender);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_DB), msg.sender, address(this), token_qty);
+        emit add_queue(msg.sender,token_qty);
     }
 
     /**
     * @notice cancelQueue
    **/
     function cancelQueue() external nonReentrant {
-        uint256 index = addr2index[_msgSender()];
+        uint256 index = addr2index[msg.sender];
         uint256 value = index2value[index].v;
         require(value > 0, "empty");
         require(index > preparedIndex, "prepared");
-        delete addr2index[_msgSender()];
+        delete addr2index[msg.sender];
         delete index2value[index];
-        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(ROOT_DB), _msgSender(), value);
-        emit cancel_queue(_msgSender(), value);
+        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(ROOT_DB), msg.sender, value);
+        emit cancel_queue(msg.sender, value);
     }
     /**
     * @notice when there are enough TORN call this function
@@ -179,13 +179,13 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
     * @notice when the TORN is prepared call this function to claim
    **/
     function claim() external nonReentrant {
-        uint256 index = addr2index[_msgSender()];
+        uint256 index = addr2index[msg.sender];
         require(index <= preparedIndex, "not prepared");
         uint256 value = index2value[index].v;
         require(value > 0, "have no pending");
-        delete addr2index[_msgSender()];
+        delete addr2index[msg.sender];
         delete index2value[index];
-        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), _msgSender(), value);
+        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), msg.sender, value);
     }
 
     /**

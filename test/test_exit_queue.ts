@@ -132,14 +132,14 @@ describe("ExitQueue", function () {
     });
 
 
-    describe("withDraw()", function () {
+    describe("test claim()", function () {
 
         it("case1 :  test not prepared", async function () {
             let token = await mRootDb.balanceOf(user1.address);
                await mExitQueue.connect(user1).addQueue(token.div(2));
             expect(await mRootDb.balanceOfTorn(mExitQueue.address)).equal(stake_torn.div(2));
             expect(await mRootDb.balanceOf(mExitQueue.address)).equal(token.div(2));
-            await expect(mExitQueue.connect(user1).withDraw()).revertedWith("not prepared");
+            await expect(mExitQueue.connect(user1).claim()).revertedWith("not prepared");
         });
 
         it("case2 : test when prepared", async function () {
@@ -153,7 +153,7 @@ describe("ExitQueue", function () {
             await mDeposit.connect(user1).depositWithApproval(500000000);
             expect(await mExitQueue.nextValue()).equal(0);
             let last_token = await torn_erc20.balanceOf(user1.address);
-            await mExitQueue.connect(user1).withDraw();
+            await mExitQueue.connect(user1).claim();
             expect(about(last_token.sub(await torn_erc20.balanceOf(user1.address)).abs(),stake_torn.div(2))).true;
         });
 
@@ -181,7 +181,7 @@ describe("ExitQueue", function () {
             await mExitQueue.connect(user1).addQueue(token.div(4));
              torn_value = await mRootDb.valueForTorn(token.div(4));
 
-            let ret = await mExitQueue.connect(user1).address2Value(user1.address);
+            let ret = await mExitQueue.connect(user1).getQueueInfo(user1.address);
             expect(ret.v).equal(token.div(4));
             expect(ret.prepared).equal(false);
             expect(await mExitQueue.nextValue()).equal(torn_value);
@@ -206,7 +206,7 @@ describe("ExitQueue", function () {
             await mDeposit.connect(user2).depositWithApproval(5000000);
             //triger the executeQueue
             await mDeposit.connect(user2).depositWithApproval(50000000);
-            let ret = await mExitQueue.connect(user1).address2Value(user1.address);
+            let ret = await mExitQueue.connect(user1).getQueueInfo(user1.address);
             expect(about(ret.v,stake_torn.div(2))).true;
             expect(ret.prepared).equal(true);
             expect(await mExitQueue.preparedIndex()).equal(1);
@@ -344,7 +344,7 @@ describe("ExitQueue", function () {
 
             expect(about(await mExitQueue.nextValue(),stake_torn.div(2))).equal(true);
             let torn_last = await torn_erc20.connect(user1).balanceOf(user1.address);
-            expect(await mExitQueue.connect(user1).withDraw());
+            expect(await mExitQueue.connect(user1).claim());
             expect(about(await torn_erc20.connect(user1).balanceOf(user1.address),torn_last.add(stake_torn.div(2)))).equal(true);
             // unlock torn from gov staking
             await mDeposit.connect(user1).depositWithApproval(5000);
@@ -356,9 +356,9 @@ describe("ExitQueue", function () {
             expect(await mExitQueue.nextValue()).equal(0);
 
 
-            await expect(mExitQueue.connect(user1).withDraw()).revertedWith("have no pending");
+            await expect(mExitQueue.connect(user1).claim()).revertedWith("have no pending");
              torn_last = await torn_erc20.connect(user3).balanceOf(user3.address);
-            await mExitQueue.connect(user3).withDraw();
+            await mExitQueue.connect(user3).claim();
             expect(about(await torn_erc20.connect(user3).balanceOf(user3.address),torn_last.add(stake_torn.div(2)))).true;
 
         });
@@ -418,20 +418,20 @@ describe("ExitQueue", function () {
 
 
             let torn_last = await torn_erc20.connect(user1).balanceOf(user1.address);
-            expect(await mExitQueue.connect(user1).withDraw());
+            expect(await mExitQueue.connect(user1).claim());
             expect(about(await torn_erc20.connect(user1).balanceOf(user1.address),torn_last.add(stake_torn.div(2)))).equal(true);
             // unlock torn from gov staking
             await mDeposit.connect(user1).depositWithApproval(5000);
             //  trigger executeQueue
             await mDeposit.connect(user1).depositWithApproval(5000);
 
-            await expect(mExitQueue.connect(user1).withDraw()).revertedWith("have no pending");
+            await expect(mExitQueue.connect(user1).claim()).revertedWith("have no pending");
             torn_last = await torn_erc20.connect(user3).balanceOf(user3.address);
-            await mExitQueue.connect(user3).withDraw();
+            await mExitQueue.connect(user3).claim();
             expect(about(await torn_erc20.connect(user3).balanceOf(user3.address),torn_last.add(stake_torn.div(2)))).true;
 
             torn_last = await torn_erc20.connect(user2).balanceOf(user2.address);
-            await mExitQueue.connect(user2).withDraw();
+            await mExitQueue.connect(user2).claim();
             expect(about(await torn_erc20.connect(user2).balanceOf(user2.address),torn_last.add(stake_torn.div(2)))).true;
 
 

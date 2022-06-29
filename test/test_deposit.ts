@@ -243,7 +243,7 @@ describe("test_deposit", function () {
             await mDeposit.connect(user2).depositWithApproval(500);
             expect(await mRootDb.balanceOf(mExitQueue.address)).equal(0);
             let last_torn = await torn_erc20.balanceOf(user1.address);
-            await mExitQueue.connect(user1).withDraw();
+            await mExitQueue.connect(user1).claim();
             let new_torn =  await torn_erc20.balanceOf(user1.address);
             expect(about(new_torn.sub(last_torn),stake_torn.mul(6))).true;
         });
@@ -387,16 +387,11 @@ describe("test_deposit", function () {
           expect(await torn_erc20.balanceOf(mDeposit.address)).to.be.equal(0);
            let token = await mRootDb.balanceOf(user3.address);
          await expect(mExitQueue.connect(user3).addQueue(token)).to
-               .be.emit(mExitQueue,"add_queue").withArgs(token);
+               .be.emit(mExitQueue,"add_queue").withArgs(user3.address,token);
             expect(await mExitQueue.nextValue()).to.be.equal(stake_torn);
             let shortage = await mDeposit.getValueShouldUnlockFromGov();
             expect(shortage).gt(0);
-           // console.log("totalSupply",await mRootDb.totalSupply(),"token",token,"mExitQueue:",await mRootDb.balanceOfTorn(mExitQueue.address));
-            // // UnlockFromGov
            await mDeposit.connect(user3).depositWithApproval(2000000);
-          //  console.log("totalSupply",await mRootDb.totalSupply(),"token",token,"mExitQueue:",await mRootDb.balanceOfTorn(mExitQueue.address));
-           //
-           //  // Transfer2Queue
            await mDeposit.connect(user3).depositWithApproval(2000000);
             let next_value = await mExitQueue.nextValue();
             expect(next_value).equal(0);
