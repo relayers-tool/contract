@@ -66,9 +66,8 @@ describe("test_income", function () {
     it("test distribute_torn", async function () {
         let eth_value = await banlancOf(fix_info,"eth",mIncome);
         let torn =await Coin2Tron(fix_info,"eth",eth_value);
-        await expect( mIncome.connect(user1).distributeTorn(torn)).to.be.revertedWith("Caller is not operator");
         await expect(mIncome.connect(operator).distributeTorn(torn)).to.be.emit(mIncome, "distribute_torn")
-            .withArgs(mDeposit.address,torn);
+            .withArgs(torn);
     });
 
 

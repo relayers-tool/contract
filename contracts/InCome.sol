@@ -14,7 +14,7 @@ contract Income {
 
     /// @notice An event emitted when operator distribute torn
     /// @param torn: the amount of the TORN distributed
-    event distribute_torn(address account, uint256 torn);
+    event distribute_torn(uint256 torn);
 
 
     constructor(
@@ -25,14 +25,10 @@ contract Income {
         ROOT_DB = _root_db;
     }
     /**
-      * @notice addRelayer used to add relayers to the system call by Owner
-      * @dev inorder to save gas designed a simple algorithm to manger the relayers
-             it is not perfect
-      * @param relayer address of relayers
-                address can only added once
-      * @param  index  of relayer
+      * @notice distributeTorn used to distribute TORN to deposit contract which belong to stakes
+      * @param qty the amount of TORN
    **/
-    function distributeTorn(uint256 qty) {
+    function distributeTorn(uint256 qty) external {
         address deposit_address = RootDB(ROOT_DB).depositContract();
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), deposit_address, qty);
         emit distribute_torn(qty);
