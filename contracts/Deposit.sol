@@ -47,10 +47,10 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     /// @notice An event emitted when user withdraw
     /// @param  account The: address of user
-    /// @param _amount_token: voucher of the deposit
+    /// @param token_qty: voucher of the deposit
     /// @param torn: the amount of torn in this withdarw
     /// @param profi: the profi of torn in this withdarw
-    event with_draw(address  account,uint256 _amount_token,uint256 torn,uint256 profi);
+    event with_draw(address  account,uint256 token_qty,uint256 torn,uint256 profi);
 
     constructor(
         address _torn_contract,

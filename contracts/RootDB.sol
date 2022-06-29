@@ -14,8 +14,6 @@ import "./Deposit.sol";
  * @notice  the token is the voucher of the deposit
  *          token/totalSupply  is the percentage of the user
  */
-
-
 contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     /// the address of  exitQueue contract
     address public   exitQueueContract;

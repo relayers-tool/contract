@@ -7,50 +7,79 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "./RootDB.sol";
 import "./Deposit.sol";
 
-contract ExitQueue is OwnableUpgradeable,ReentrancyGuardUpgradeable {
+/**
+ * @title ExitQueue for Relayers DAO
+ * @notice this is a simple queue for user exit when  liquidity shortage is not enough.
+     1. inorder to save gas the code is not easy to understand ,it need same patience
+     2. if preparedIndex >= addr2index[user_address] , it indicate the TORN is prepared
+     3. in the waiting ,user can cancel his waiting
+     4. user at most  add one withdraw in the queue
+ */
+
+contract ExitQueue is ReentrancyGuardUpgradeable {
 
 
     struct QUEUE_INFO {
+        //
+        /* @notice  the value of user in the queue
+             the QUEUE_INFO.v when it is not prepared which stored is the value of voucher of the deposit
+             after prepared, the v stored is the value of TORN what will been claimed.
+        */
         uint256 v;
+        // the address of user in the queue
         address addr;
     }
-
+    /// the address of  torn ROOT_DB contract
     address immutable public ROOT_DB;
+    /// the address of  torn token contract
     address immutable  public TORN_CONTRACT;
 
+    /// the prepared index in the queue   @notice begin with 0
+    uint256 public preparedIndex = 0;
 
-    uint256 public preparedIndex = 0;  //begin with 0
-    uint256 public maxIndex = 0;   //begin with 0
+    /// the max index of user in the queue
+    /** @dev this variable will inc when user added a withdraw in the queue
+     *       the NO. will never decrease
+       @notice  begin with 0
+     **/
+    uint256 public maxIndex = 0;
+
+    // address -> index  map
     mapping(address => uint256) public addr2index;
+    // index -> queue_info map
     mapping(uint256 => QUEUE_INFO) public index2value;
 
     uint256 constant public  INDEX_ERR = 2 ** 256 - 1;
     uint256 constant public  MAX_QUEUE_CANCEL = 100;
 
+    /// @notice An event emitted when user cancel queue
+    /// @param  account The: address of user
+    /// @param token_qty: voucher of the deposit canceled
+    event cancel_queue(address account, uint256 token_qty);
 
-    event cancel_queue(address account, uint256 _amount_token);
-
+    /// @notice An event emitted when user add queue
+    /// @param  account The: address of user
+    /// @param token_qty: voucher of the deposit canceled
+    event add_queue(address account,uint256 token_qty);
 
     function __ExitQueue_init() public initializer {
         __ReentrancyGuard_init();
     }
 
 
-    /** ---------- constructor ---------- **/
-    constructor(address _tornContract, address _root_manager) {
-        TORN_CONTRACT = _tornContract;
-        ROOT_DB = _root_manager;
+    constructor(address _torn_contract, address _root_db) {
+        TORN_CONTRACT = _torn_contract;
+        ROOT_DB = _root_db;
     }
 
-
-
-    function address2Value(address addr) view public returns (uint256 v, bool prepared){
-        uint256 index = addr2index[addr];
-        v = index2value[index].v;
-        prepared = preparedIndex >= index;
-    }
-
-    function nextSkipIndex() view public returns (uint256){
+    /**
+    * @notice because of cancel ,it will been some blank in the queue
+      call this function to get the counter of  blank in the queue
+      return
+           1. the number of blanks
+           2. INDEX_ERR  the he number of blanks is over MAX_QUEUE_CANCEL
+   **/
+    function nextSkipIndex() view internal returns (uint256){
 
         uint256 temp_maxIndex = maxIndex;
         // save gas
@@ -79,12 +108,14 @@ contract ExitQueue is OwnableUpgradeable,ReentrancyGuardUpgradeable {
     function UpdateSkipIndex() public nonReentrant {
         uint256 next_index = nextSkipIndex();
         require(next_index == INDEX_ERR, "skip is too short");
-        preparedIndex = preparedIndex + 99;
         // skip the index
+        preparedIndex = preparedIndex + MAX_QUEUE_CANCEL -1;
     }
 
-    event add_queue(uint256 _amount_token);
-
+    /**
+    * @notice addQueue
+    * @param  token_qty: the amount of voucher
+   **/
     function addQueue(uint256 token_qty) public nonReentrant {
         maxIndex += 1;
         require(token_qty > 0, "error para");
@@ -92,10 +123,12 @@ contract ExitQueue is OwnableUpgradeable,ReentrancyGuardUpgradeable {
         addr2index[_msgSender()] = maxIndex;
         index2value[maxIndex] = QUEUE_INFO(token_qty, _msgSender());
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_DB), _msgSender(), address(this), token_qty);
-        emit add_queue(token_qty);
+        emit add_queue(_msgSender(),token_qty);
     }
 
-
+    /**
+    * @notice cancelQueue
+   **/
     function cancelQueue() external nonReentrant {
         uint256 index = addr2index[_msgSender()];
         uint256 value = index2value[index].v;
@@ -106,7 +139,10 @@ contract ExitQueue is OwnableUpgradeable,ReentrancyGuardUpgradeable {
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(ROOT_DB), _msgSender(), value);
         emit cancel_queue(_msgSender(), value);
     }
-
+    /**
+    * @notice when there are enough TORN call this function
+              the user waiting status would change to  prepared
+   **/
     function executeQueue() external nonReentrant {
         address deposit_addr = RootDB(ROOT_DB).depositContract();
         uint256 value = 0;
@@ -119,6 +155,9 @@ contract ExitQueue is OwnableUpgradeable,ReentrancyGuardUpgradeable {
         index2value[preparedIndex].v = value;
     }
 
+    /**
+        * @notice get the next user in queue waiting's TORN
+   **/
     function nextValue() view external returns (uint256 value) {
         uint256 next = nextSkipIndex();
         if (next == 0) {
@@ -136,7 +175,10 @@ contract ExitQueue is OwnableUpgradeable,ReentrancyGuardUpgradeable {
         return RootDB(ROOT_DB).valueForTorn(next_value);
     }
 
-    function withDraw() external nonReentrant {
+    /**
+    * @notice when the TORN is prepared call this function to claim
+   **/
+    function claim() external nonReentrant {
         uint256 index = addr2index[_msgSender()];
         require(index <= preparedIndex, "not prepared");
         uint256 value = index2value[index].v;
@@ -144,5 +186,17 @@ contract ExitQueue is OwnableUpgradeable,ReentrancyGuardUpgradeable {
         delete addr2index[_msgSender()];
         delete index2value[index];
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), _msgSender(), value);
+    }
+
+    /**
+     * @notice get the queue infomation
+     return
+              v : the amount of voucher if  prepared == false  else the amount of TORN which can be claim
+       prepared : prepared == true show that the TORN is prepared to claim
+    **/
+    function getQueueInfo(address addr) view public returns (uint256 v, bool prepared){
+        uint256 index = addr2index[addr];
+        v = index2value[index].v;
+        prepared = preparedIndex >= index;
     }
 }
