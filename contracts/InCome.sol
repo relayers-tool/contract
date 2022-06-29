@@ -6,10 +6,15 @@ import "./RootDB.sol";
 
 contract Income {
 
-    address immutable public TORN_CONTRACT;
+    /// the address of  torn ROOT_DB contract
     address immutable public ROOT_DB;
+    /// the address of  torn token contract
+    address immutable  public TORN_CONTRACT;
 
-    event distribute_torn(address, uint256);
+
+    /// @notice An event emitted when operator distribute torn
+    /// @param torn: the amount of the TORN distributed
+    event distribute_torn(address account, uint256 torn);
 
 
     constructor(
@@ -19,17 +24,18 @@ contract Income {
         TORN_CONTRACT = _torn_contract;
         ROOT_DB = _root_db;
     }
-
-    modifier onlyOperator() {
-        require(msg.sender == RootDB(ROOT_DB).operator(), "Caller is not operator");
-        _;
-    }
-
-
-    function distributeTorn(uint256 qty) external onlyOperator {
+    /**
+      * @notice addRelayer used to add relayers to the system call by Owner
+      * @dev inorder to save gas designed a simple algorithm to manger the relayers
+             it is not perfect
+      * @param relayer address of relayers
+                address can only added once
+      * @param  index  of relayer
+   **/
+    function distributeTorn(uint256 qty) {
         address deposit_address = RootDB(ROOT_DB).depositContract();
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), deposit_address, qty);
-        emit distribute_torn(deposit_address, qty);
+        emit distribute_torn(qty);
     }
 
     receive() external payable {

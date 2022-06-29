@@ -6,14 +6,19 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 
 contract ProfitRecord is ContextUpgradeable {
 
+    /// the address of  torn ROOT_DB contract
     address immutable public ROOT_DB;
-    address immutable public TORN_CONTRACT;
+    /// the address of  torn token contract
+    address immutable  public TORN_CONTRACT;
+
 
     struct PRICE_STORE {
+        //weighted average price
         uint256 price;
+        // amount
         uint256 amount;
     }
-
+    // address -> PRICE_STORE  map
     mapping(address => PRICE_STORE) public profitStore;
 
 
@@ -22,48 +27,64 @@ contract ProfitRecord is ContextUpgradeable {
         _;
     }
 
-
-    /** ---------- constructor ---------- **/
     constructor(address _torn_contract, address _root_db) {
         TORN_CONTRACT = _torn_contract;
         ROOT_DB = _root_db;
     }
 
-    /** ---------- init ---------- **/
     function __ProfitRecord_init() public initializer {
         __Context_init();
     }
 
 
-    function Deposit(address addr, uint256 torn_amount, uint256 amount_root_token) onlyDepositContract public {
+    /**
+    * @notice Deposit used to record the price
+             this  is called when user deposit torn to the system
+    * @param  addr the user's address
+    * @param  torn_amount is the  the user's to deposit amount
+    * @param  token_qty is amount of voucher which the user get
+      @dev    if the user Deposit more than once function will calc weighted average
+   **/
+    function Deposit(address addr, uint256 torn_amount, uint256 token_qty) onlyDepositContract public {
         PRICE_STORE memory userStore = profitStore[addr];
         if (userStore.amount == 0) {
-            uint256 new_price = torn_amount * (10 ** 18) / amount_root_token;
+            uint256 new_price = torn_amount * (10 ** 18) / token_qty;
             profitStore[addr].price = new_price;
-            profitStore[addr].amount = amount_root_token;
+            profitStore[addr].amount = token_qty;
         } else {
             // calc weighted average
-            profitStore[addr].price = (userStore.amount * userStore.price + torn_amount * (10 ** 18)) / (amount_root_token + userStore.amount);
-            profitStore[addr].amount = amount_root_token + userStore.amount;
+            profitStore[addr].price = (userStore.amount * userStore.price + torn_amount * (10 ** 18)) / (token_qty + userStore.amount);
+            profitStore[addr].amount = token_qty + userStore.amount;
         }
 
     }
 
-    function withDraw(address addr, uint256 amount_root_token) onlyDepositContract public returns (uint256 profit) {
-        profit = getProfit(addr, amount_root_token);
-        if (profitStore[addr].amount > amount_root_token) {
-            profitStore[addr].amount -= amount_root_token;
+    /**
+     * @notice withDraw used to clean record
+             this  is called when user withDraw
+    * @param  addr the user's address
+    * @param  token_qty is amount of voucher which the user want to withdraw
+   **/
+    function withDraw(address addr, uint256 token_qty) onlyDepositContract public returns (uint256 profit) {
+        profit = getProfit(addr, token_qty);
+        if (profitStore[addr].amount > token_qty) {
+            profitStore[addr].amount -= token_qty;
         }
         else {
             delete profitStore[addr];
         }
     }
 
-    function getProfit(address addr, uint256 amount_root_token) public view returns (uint256 profit){
+    /**
+     * @notice getProfit used to calc profit
+    * @param  addr the user's address
+    * @param  token_qty is amount of voucher which the user want to calc
+   **/
+    function getProfit(address addr, uint256 token_qty) public view returns (uint256 profit){
         PRICE_STORE memory userStore = profitStore[addr];
-        require(userStore.amount >= amount_root_token, "err root token");
-        uint256 value = RootDB(ROOT_DB).valueForTorn(amount_root_token);
-        profit = value - (userStore.price * amount_root_token / 10 ** 18);
+        require(userStore.amount >= token_qty, "err root token");
+        uint256 value = RootDB(ROOT_DB).valueForTorn(token_qty);
+        profit = value - (userStore.price * token_qty / 10 ** 18);
     }
 
 }
