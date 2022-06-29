@@ -11,6 +11,9 @@ Currently,the amount of TORN locked in the Tornado Cash governance contract is 7
 
 
 
+
+
+
 ## Initialization
 
 1. `cp .env.example .env`
