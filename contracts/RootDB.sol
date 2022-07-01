@@ -84,25 +84,25 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
       * @notice addRelayer used to add relayers to the system call by Owner
       * @dev inorder to save gas designed a simple algorithm to manger the relayers
              it is not perfect
-      * @param relayer address of relayers
+      * @param _relayer address of relayers
                 address can only added once
-      * @param  index  of relayer
+      * @param  _index  of relayer
    **/
-    function addRelayer(address relayer, uint256 index) external onlyOwner
+    function addRelayer(address _relayer, uint256 _index) external onlyOwner
     {
-        require(index <= MAX_RELAYER_COUNTER, "too large index");
+        require(_index <= MAX_RELAYER_COUNTER, "too large index");
 
         uint256 counter = MAX_RELAYER_COUNTER;
 
         for (uint256 i = 0; i < counter; i++) {
-            require(mRelayers[i] != relayer, "repeated");
+            require(mRelayers[i] != _relayer, "repeated");
         }
 
-        if (index == MAX_RELAYER_COUNTER) {
+        if (_index == MAX_RELAYER_COUNTER) {
             MAX_RELAYER_COUNTER += 1;
         }
-        require(mRelayers[index] == address(0), "index err");
-        mRelayers[index] = relayer;
+        require(mRelayers[_index] == address(0), "index err");
+        mRelayers[_index] = _relayer;
     }
 
 
@@ -111,19 +111,19 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
       * @dev inorder to save gas designed a simple algorithm to manger the relayers
              it is not perfect
              if remove the last one it will dec MAX_RELAYER_COUNTER
-      * @param  index  of relayer
+      * @param  _index  of relayer
     **/
-    function removeRelayer(uint256 index) external onlyOwner
+    function removeRelayer(uint256 _index) external onlyOwner
     {
-        require(index < MAX_RELAYER_COUNTER, "too large index");
+        require(_index < MAX_RELAYER_COUNTER, "too large index");
 
         // save gas
-        if (index + 1 == MAX_RELAYER_COUNTER) {
+        if (_index + 1 == MAX_RELAYER_COUNTER) {
             MAX_RELAYER_COUNTER -= 1;
         }
 
-        require(mRelayers[index] != address(0), "index err");
-        delete mRelayers[index];
+        require(mRelayers[_index] != address(0), "index err");
+        delete mRelayers[_index];
     }
 
     modifier onlyDepositContract() {
@@ -133,17 +133,17 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
 
     /**
       * @notice totalRelayerTorn used to calc all the relayers unburned torn
-      * @return qty The number of total Relayer Torn
+      * @return torn_qty The number of total Relayer Torn
     **/
-    function totalRelayerTorn() external view returns (uint256 qty){
-        qty = 0;
+    function totalRelayerTorn() external view returns (uint256 torn_qty){
+        torn_qty = 0;
         address relay;
         uint256 counter = MAX_RELAYER_COUNTER;
         //save gas
         for (uint256 i = 0; i < counter; i++) {
             relay = mRelayers[i];
             if (relay != address(0)) {
-                qty += IRelayerRegistry(TORN_RELAYER_REGISTRY).getRelayerBalance(relay);
+                torn_qty += IRelayerRegistry(TORN_RELAYER_REGISTRY).getRelayerBalance(relay);
             }
         }
     }
@@ -151,12 +151,12 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     /**
     * @notice totalTorn used to calc all the torn in relayer dao
     * @dev it is sum of (Deposit contract torn + InCome contract torn + totalRelayersTorn)
-    * @return qty The number of total Torn
+    * @return torn_qty The number of total Torn
    **/
-    function totalTorn() public view returns (uint256 qty){
-        qty = Deposit(depositContract).totalBalanceOfTorn();
-        qty += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
-        qty += this.totalRelayerTorn();
+    function totalTorn() public view returns (uint256 torn_qty){
+        torn_qty = Deposit(depositContract).totalBalanceOfTorn();
+        torn_qty += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
+        torn_qty += this.totalRelayerTorn();
     }
 
     /**
@@ -164,40 +164,40 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
              this  is called when user deposit torn to the system
      * @dev  algorithm  :   qty / ( totalTorn() + qty) = to_mint/(totalSupply()+ to_mint)
             if is the first user to mint mint is 10
-     * @param  account the user's address
-     * @param   qty is  the user's torn to deposit
+     * @param  _account the user's address
+     * @param  _torn_qty is  the user's torn to deposit
      * @return the number token to mint
     **/
-    function safeMint(address account, uint256 qty) onlyDepositContract external returns (uint256) {
+    function safeMint(address _account, uint256 _torn_qty) onlyDepositContract external returns (uint256) {
         uint256 total = totalSupply();
         uint256 to_mint;
         if (total == uint256(0)) {
             to_mint = 10 * 10 ** decimals();
         }
         else {// qty / ( totalTorn() + qty) = to_mint/(totalSupply()+ to_mint)
-            to_mint = total * qty / this.totalTorn();
+            to_mint = total * _torn_qty / this.totalTorn();
         }
-        _mint(account, to_mint);
+        _mint(_account, to_mint);
         return to_mint;
     }
 
     /**
     * @notice safeBurn used to _burn voucher token withdraw form the system
              this  is called when user deposit torn to the system
-    * @param  account the user's address
-    * @param  qty is the  the user's voucher to withdraw
+    * @param  _account the user's address
+    * @param  _token_qty is the  the user's voucher to withdraw
    **/
-    function safeBurn(address account, uint256 qty) onlyDepositContract external {
-        _burn(account, qty);
+    function safeBurn(address _account, uint256 _token_qty) onlyDepositContract external {
+        _burn(_account, _token_qty);
     }
 
 
-    function balanceOfTorn(address account) public view returns (uint256){
-        return valueForTorn(this.balanceOf(account));
+    function balanceOfTorn(address _account) public view returns (uint256){
+        return valueForTorn(this.balanceOf(_account));
     }
 
-    function valueForTorn(uint256 token_qty) public view returns (uint256){
-        return token_qty * (this.totalTorn()) / (totalSupply());
+    function valueForTorn(uint256 _token_qty) public view returns (uint256){
+        return _token_qty * (this.totalTorn()) / (totalSupply());
     }
 
     /**

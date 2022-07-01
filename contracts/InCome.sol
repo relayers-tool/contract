@@ -26,12 +26,12 @@ contract Income {
     }
     /**
       * @notice distributeTorn used to distribute TORN to deposit contract which belong to stakes
-      * @param qty the amount of TORN
+      * @param _torn_qty the amount of TORN
    **/
-    function distributeTorn(uint256 qty) external {
+    function distributeTorn(uint256 _torn_qty) external {
         address deposit_address = RootDB(ROOT_DB).depositContract();
-        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), deposit_address, qty);
-        emit distribute_torn(qty);
+        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), deposit_address, _torn_qty);
+        emit distribute_torn(_torn_qty);
     }
 
     receive() external payable {

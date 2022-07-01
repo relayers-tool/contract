@@ -40,21 +40,21 @@ contract ProfitRecord is ContextUpgradeable {
     /**
     * @notice Deposit used to record the price
              this  is called when user deposit torn to the system
-    * @param  addr the user's address
-    * @param  torn_amount is the  the user's to deposit amount
-    * @param  token_qty is amount of voucher which the user get
+    * @param  _addr the user's address
+    * @param  _torn_amount is the  the user's to deposit amount
+    * @param  _token_qty is amount of voucher which the user get
       @dev    if the user Deposit more than once function will calc weighted average
    **/
-    function Deposit(address addr, uint256 torn_amount, uint256 token_qty) onlyDepositContract public {
-        PRICE_STORE memory userStore = profitStore[addr];
+    function Deposit(address _addr, uint256 _torn_amount, uint256 _token_qty) onlyDepositContract public {
+        PRICE_STORE memory userStore = profitStore[_addr];
         if (userStore.amount == 0) {
-            uint256 new_price = torn_amount * (10 ** 18) / token_qty;
-            profitStore[addr].price = new_price;
-            profitStore[addr].amount = token_qty;
+            uint256 new_price = _torn_amount * (10 ** 18) / _token_qty;
+            profitStore[_addr].price = new_price;
+            profitStore[_addr].amount = _token_qty;
         } else {
             // calc weighted average
-            profitStore[addr].price = (userStore.amount * userStore.price + torn_amount * (10 ** 18)) / (token_qty + userStore.amount);
-            profitStore[addr].amount = token_qty + userStore.amount;
+            profitStore[_addr].price = (userStore.amount * userStore.price + _torn_amount * (10 ** 18)) / (_token_qty + userStore.amount);
+            profitStore[_addr].amount = _token_qty + userStore.amount;
         }
 
     }
@@ -62,29 +62,29 @@ contract ProfitRecord is ContextUpgradeable {
     /**
      * @notice withDraw used to clean record
              this  is called when user withDraw
-    * @param  addr the user's address
-    * @param  token_qty is amount of voucher which the user want to withdraw
+    * @param  _addr the user's address
+    * @param  _token_qty is amount of voucher which the user want to withdraw
    **/
-    function withDraw(address addr, uint256 token_qty) onlyDepositContract public returns (uint256 profit) {
-        profit = getProfit(addr, token_qty);
-        if (profitStore[addr].amount > token_qty) {
-            profitStore[addr].amount -= token_qty;
+    function withDraw(address _addr, uint256 _token_qty) onlyDepositContract public returns (uint256 profit) {
+        profit = getProfit(_addr, _token_qty);
+        if (profitStore[_addr].amount > _token_qty) {
+            profitStore[_addr].amount -= _token_qty;
         }
         else {
-            delete profitStore[addr];
+            delete profitStore[_addr];
         }
     }
 
     /**
      * @notice getProfit used to calc profit
-    * @param  addr the user's address
-    * @param  token_qty is amount of voucher which the user want to calc
+    * @param  _addr the user's address
+    * @param  _token_qty is amount of voucher which the user want to calc
    **/
-    function getProfit(address addr, uint256 token_qty) public view returns (uint256 profit){
-        PRICE_STORE memory userStore = profitStore[addr];
-        require(userStore.amount >= token_qty, "err root token");
-        uint256 value = RootDB(ROOT_DB).valueForTorn(token_qty);
-        profit = value - (userStore.price * token_qty / 10 ** 18);
+    function getProfit(address _addr, uint256 _token_qty) public view returns (uint256 profit){
+        PRICE_STORE memory userStore = profitStore[_addr];
+        require(userStore.amount >= _token_qty, "err root token");
+        uint256 value = RootDB(ROOT_DB).valueForTorn(_token_qty);
+        profit = value - (userStore.price * _token_qty / 10 ** 18);
     }
 
 }

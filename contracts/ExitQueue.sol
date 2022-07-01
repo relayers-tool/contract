@@ -54,13 +54,13 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
 
     /// @notice An event emitted when user cancel queue
     /// @param  account The: address of user
-    /// @param token_qty: voucher of the deposit canceled
+    /// @param  token_qty: voucher of the deposit canceled
     event cancel_queue(address account, uint256 token_qty);
 
     /// @notice An event emitted when user add queue
-    /// @param  account The: address of user
-    /// @param token_qty: voucher of the deposit canceled
-    event add_queue(address account,uint256 token_qty);
+    /// @param  _account The: address of user
+    /// @param  _token_qty: voucher of the deposit canceled
+    event add_queue(address _account,uint256 _token_qty);
 
     function __ExitQueue_init() public initializer {
         __ReentrancyGuard_init();
@@ -114,16 +114,16 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
 
     /**
     * @notice addQueue
-    * @param  token_qty: the amount of voucher
+    * @param  _token_qty: the amount of voucher
    **/
-    function addQueue(uint256 token_qty) public nonReentrant {
+    function addQueue(uint256 _token_qty) public nonReentrant {
         maxIndex += 1;
-        require(token_qty > 0, "error para");
+        require(_token_qty > 0, "error para");
         require(addr2index[msg.sender] == 0 && index2value[maxIndex].v == 0, "have pending");
         addr2index[msg.sender] = maxIndex;
-        index2value[maxIndex] = QUEUE_INFO(token_qty, msg.sender);
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_DB), msg.sender, address(this), token_qty);
-        emit add_queue(msg.sender,token_qty);
+        index2value[maxIndex] = QUEUE_INFO(_token_qty, msg.sender);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_DB), msg.sender, address(this), _token_qty);
+        emit add_queue(msg.sender, _token_qty);
     }
 
     /**
@@ -194,8 +194,8 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
               v : the amount of voucher if  prepared == false  else the amount of TORN which can be claim
        prepared : prepared == true show that the TORN is prepared to claim
     **/
-    function getQueueInfo(address addr) view public returns (uint256 v, bool prepared){
-        uint256 index = addr2index[addr];
+    function getQueueInfo(address _addr) view public returns (uint256 v, bool prepared){
+        uint256 index = addr2index[_addr];
         v = index2value[index].v;
         prepared = preparedIndex >= index;
     }
