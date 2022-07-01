@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -16,21 +17,22 @@ contract MTornadoStakingRewards is ITornadoStakingRewards {
 
     event RewardPaid(address indexed user, uint256 reward);
 
-    constructor(address TornadoGovernanceStaking_,address torn_addr) {
+    constructor(address TornadoGovernanceStaking_, address torn_addr) {
         TornadoGovernanceStaking = TornadoGovernanceStaking_;
-         TORN_CONTRACT = torn_addr;
+        TORN_CONTRACT = torn_addr;
     }
 
 
     function getReward() override external {
         uint256 reward = MTornadoGovernanceStaking(TornadoGovernanceStaking).getReward(msg.sender);
- //       console.log("addr- > %s,%s",msg.sender,reward);
-  //      console.log("balanceOf %s",ERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this) ));
-        SafeERC20Upgradeable.safeTransfer(ERC20Upgradeable(TORN_CONTRACT),msg.sender, reward);
+        //       console.log("addr- > %s,%s",msg.sender,reward);
+        //      console.log("balanceOf %s",ERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this) ));
+        SafeERC20Upgradeable.safeTransfer(ERC20Upgradeable(TORN_CONTRACT), msg.sender, reward);
         emit RewardPaid(msg.sender, reward);
     }
+
     function checkReward(address account) override external view returns (uint256 rewards){
-        rewards =  MTornadoGovernanceStaking(TornadoGovernanceStaking).checkReward(account);
+        rewards = MTornadoGovernanceStaking(TornadoGovernanceStaking).checkReward(account);
     }
 }
 

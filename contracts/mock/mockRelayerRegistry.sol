@@ -10,7 +10,7 @@ import "./mockLib.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "./mockTornadoGovernanceStaking.sol";
 
-contract MRelayerRegistry is IRelayerRegistry{
+contract MRelayerRegistry is IRelayerRegistry {
 
     address immutable  public TORN_CONTRACT;
     address immutable  public TORN_STAKING_REWARDS;
@@ -18,41 +18,41 @@ contract MRelayerRegistry is IRelayerRegistry{
     mapping(address => uint256) public stakeValue;
     address[] public array;
 
-    constructor(address gov_staking_rewards,address torn_address){
+    constructor(address gov_staking_rewards, address torn_address){
         TORN_STAKING_REWARDS = gov_staking_rewards;
-         TORN_CONTRACT = torn_address;
+        TORN_CONTRACT = torn_address;
     }
 
 
 
-    function register(address relayer ,uint256 stake) external {
-        for(uint256 i = 0 ;i < array.length ; ++i){
-            require(array[i] != relayer,"registered");
+    function register(address relayer, uint256 stake) external {
+        for (uint256 i = 0; i < array.length; ++i) {
+            require(array[i] != relayer, "registered");
         }
-        counter += 1 ;
+        counter += 1;
         array.push(relayer);
-        return stakeToRelayer(relayer,stake);
+        return stakeToRelayer(relayer, stake);
     }
 
-    function stakeToRelayer(address relayer, uint256 stake)  override public {
-         stakeValue[relayer]= stakeValue[relayer] + stake;
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),msg.sender,address(this),stake);
+    function stakeToRelayer(address relayer, uint256 stake) override public {
+        stakeValue[relayer] = stakeValue[relayer] + stake;
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT), msg.sender, address(this), stake);
     }
 
 
     function getRelayerBalance(address relayer) override external view returns (uint256){
-        return  stakeValue[relayer];
+        return stakeValue[relayer];
     }
 
     function notice_tron_router_withdraw(uint256 value) external returns (address relayer){
         uint256 tempTime = block.timestamp;
-        relayer = array[tempTime%counter];
-        while(stakeValue[relayer] <value){
+        relayer = array[tempTime % counter];
+        while (stakeValue[relayer] < value) {
             tempTime += 1;
-            relayer = array[tempTime%counter];
+            relayer = array[tempTime % counter];
         }
-        stakeValue[relayer] =  stakeValue[relayer] -value;
-        ERC20(TORN_CONTRACT).approve(TORN_STAKING_REWARDS,value);
+        stakeValue[relayer] = stakeValue[relayer] - value;
+        ERC20(TORN_CONTRACT).approve(TORN_STAKING_REWARDS, value);
         MTornadoGovernanceStaking(TORN_STAKING_REWARDS).addRewardAmount(value);
     }
 

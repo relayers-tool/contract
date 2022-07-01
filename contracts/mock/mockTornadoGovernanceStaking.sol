@@ -1,4 +1,5 @@
 pragma solidity ^0.8.0;
+
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -13,7 +14,7 @@ contract LPTokenWrapper {
     using SafeMath for uint256;
 
 
-    address  public y ;
+    address  public y;
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
@@ -32,16 +33,16 @@ contract LPTokenWrapper {
         return _balances[account];
     }
 
-    function stake(uint256 amount) public virtual  {
+    function stake(uint256 amount) public virtual {
         _totalSupply = _totalSupply.add(amount);
         _balances[msg.sender] = _balances[msg.sender].add(amount);
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(y),msg.sender, address(this), amount);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(y), msg.sender, address(this), amount);
     }
 
     function withdraw(uint256 amount) public virtual {
         _totalSupply = _totalSupply.sub(amount);
         _balances[msg.sender] = _balances[msg.sender].sub(amount);
-        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(y),msg.sender, amount);
+        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(y), msg.sender, amount);
     }
 }
 
@@ -71,31 +72,30 @@ contract MTornadoGovernanceStaking is ITornadoGovernanceStaking, LPTokenWrapper 
         jfi = torn;
     }
 
-    function setStakingRewardContract(address staking)external{
+    function setStakingRewardContract(address staking) external {
         TORN_STAKING_REWARDS = staking;
     }
 
     function lockWithApproval(uint256 amount) override external {
-        return stake( amount);
+        return stake(amount);
     }
 
-    function lock(address owner, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) override external{
-        require(msg.sender == owner,"error owner");
-        return stake( amount);
+    function lock(address owner, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) override external {
+        require(msg.sender == owner, "error owner");
+        return stake(amount);
     }
 
     function unlock(uint256 amount) override external {
-         return withdraw(amount);
+        return withdraw(amount);
     }
 
     function Staking() override external view returns (address){
         return TORN_STAKING_REWARDS;
     }
+
     function lockedBalance(address account) override external view returns (uint256){
         return balanceOf(account);
     }
-
-
 
 
     function earned(address account) public view returns (uint256 ret) {
@@ -108,13 +108,13 @@ contract MTornadoGovernanceStaking is ITornadoGovernanceStaking, LPTokenWrapper 
     }
 
     // stake visibility is public as overriding LPTokenWrapper's stake() function
-    function stake(uint256 amount) override public updateReward(msg.sender)   {
+    function stake(uint256 amount) override public updateReward(msg.sender) {
         require(amount > 0, "Cannot stake 0");
         super.stake(amount);
         emit Staked(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount) override public updateReward(msg.sender)  {
+    function withdraw(uint256 amount) override public updateReward(msg.sender) {
         require(amount > 0, "Cannot withdraw 0");
         super.withdraw(amount);
         emit Withdrawn(msg.sender, amount);
@@ -127,21 +127,21 @@ contract MTornadoGovernanceStaking is ITornadoGovernanceStaking, LPTokenWrapper 
 
 
 
-   // this function have some safe mistakes  but it does not mater because of mock
+    // this function have some safe mistakes  but it does not mater because of mock
     function getReward(address account) public updateReward(account) returns (uint256 reward){
-        require(msg.sender == TORN_STAKING_REWARDS ,"err sender");
+        require(msg.sender == TORN_STAKING_REWARDS, "err sender");
         reward = earned(account);
         if (reward > 0) {
             rewards[account] = 0;
         }
     }
 
-    function addRewardAmount(uint256 reward)  external
+    function addRewardAmount(uint256 reward) external
     {
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(y),msg.sender, address(this), reward);
-        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(y),TORN_STAKING_REWARDS, reward);
-      //  console.log("send reward to TORN_STAKING_REWARDS %d",reward);
-        totalCurrentPerTokenReward += (reward.mul(1e35)/totalSupply());
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(y), msg.sender, address(this), reward);
+        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(y), TORN_STAKING_REWARDS, reward);
+        //  console.log("send reward to TORN_STAKING_REWARDS %d",reward);
+        totalCurrentPerTokenReward += (reward.mul(1e35) / totalSupply());
 
         emit RewardAdded(reward);
     }
