@@ -25,7 +25,7 @@ async function main() {
 
         console.log("__RootManger_init");
         try {
-           let tx = await mRootDb.connect(users.owner).__RootManger_init(contracts.Income, contracts.Deposit, contracts.ExitQueue,contracts.profitRecord);
+           let tx = await mRootDb.connect(users.owner).__RootDB_init(contracts.Income, contracts.Deposit, contracts.ExitQueue,contracts.profitRecord);
            await tx.wait(1);
         } catch (e:any) {
             console.log(e.reason)
