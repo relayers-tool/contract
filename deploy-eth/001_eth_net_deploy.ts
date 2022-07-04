@@ -2,107 +2,103 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 
 import {Deposit, ExitQueue, Income, ProfitRecord, RootDB} from "../typechain-types";
-import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, USER_FIX} from "../test/start_up";
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // @ts-ignore
-    const {deployments,ethers, getNamedAccounts} = hre;
+    const {deployments, ethers, getNamedAccounts} = hre;
     const {deploy} = deployments;
 
 
-    let address_torn_erc20 =  '0x77777FeDdddFfC19Ff86DB637967013e6C6A116C';
-    let address_TornadoGovernanceStaking =  '0x5efda50f22d34f262c29268506c5fa42cb56a1ce';
-    let address_RelayerRegistry =  '0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2';
+    let address_torn_erc20 = '0x77777FeDdddFfC19Ff86DB637967013e6C6A116C';
+    let address_TornadoGovernanceStaking = '0x5efda50f22d34f262c29268506c5fa42cb56a1ce';
+    let address_RelayerRegistry = '0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2';
 
-    let users:USER_FIX = await get_user_fixture();
-
+    let users: USER_FIX = await get_user_fixture();
 
 
     const contracts = {
         mock_torn: address_torn_erc20,
-        mTornadoGovernanceStaking:address_TornadoGovernanceStaking,
-        mRelayerRegistry:address_RelayerRegistry,
+        mTornadoGovernanceStaking: address_TornadoGovernanceStaking,
+        mRelayerRegistry: address_RelayerRegistry,
     };
 
-    let ret_RootManger_logic =  await deploy('RootManger_logic', {
+    let ret_RootManger_logic = await deploy('RootManger_logic', {
         from: users.deployer1.address,
-        args: [contracts.mRelayerRegistry,contracts.mock_torn],
+        args: [contracts.mRelayerRegistry, contracts.mock_torn],
         log: true,
-        contract:"RootDB"
+        contract: "RootDB"
     });
 
-    let ret_RootManger =  await deploy('RootManger', {
+    let ret_RootManger = await deploy('RootManger', {
         from: users.deployer1.address,
-        args: [ret_RootManger_logic.address,users.proxy_admin.address,"0x"],
+        args: [ret_RootManger_logic.address, users.proxy_admin.address, "0x"],
         log: true,
-        contract:"RelayerDAOProxy"
-    });
-
-
-    let ret_Income_logic =  await deploy('Income_logic', {
-        from: users.deployer1.address,
-        args: [contracts.mock_torn,ret_RootManger.address],
-        log: true,
-        contract:"Income"
+        contract: "RelayerDAOProxy"
     });
 
 
-    let ret_mIncome =  await deploy('Income', {
+    let ret_Income_logic = await deploy('Income_logic', {
         from: users.deployer1.address,
-        args: [ret_Income_logic.address,users.proxy_admin.address,"0x"],
+        args: [contracts.mock_torn, ret_RootManger.address],
         log: true,
-        contract:"RelayerDAOProxy"
+        contract: "Income"
     });
 
 
-
-    let ret_mDeposit_logic =  await deploy('Deposit_logic', {
+    let ret_mIncome = await deploy('Income', {
         from: users.deployer1.address,
-        args: [contracts.mock_torn,contracts.mTornadoGovernanceStaking,contracts.mRelayerRegistry,ret_RootManger.address],
+        args: [ret_Income_logic.address, users.proxy_admin.address, "0x"],
         log: true,
-        contract:"Deposit"
+        contract: "RelayerDAOProxy"
     });
 
 
-    let ret_Deposit =  await deploy('Deposit', {
+    let ret_mDeposit_logic = await deploy('Deposit_logic', {
         from: users.deployer1.address,
-        args: [ret_mDeposit_logic.address,users.proxy_admin.address,"0x"],
+        args: [contracts.mock_torn, contracts.mTornadoGovernanceStaking, contracts.mRelayerRegistry, ret_RootManger.address],
         log: true,
-        contract:"RelayerDAOProxy"
+        contract: "Deposit"
     });
 
 
-    let ret_ProfitRecord_logic =  await deploy('ProfitRecord_logic', {
+    let ret_Deposit = await deploy('Deposit', {
         from: users.deployer1.address,
-        args: [contracts.mock_torn,ret_RootManger.address],
+        args: [ret_mDeposit_logic.address, users.proxy_admin.address, "0x"],
         log: true,
-        contract:"ProfitRecord"
-    });
-
-    let ret_ProfitRecord =  await deploy('ProfitRecord', {
-        from: users.deployer1.address,
-        args: [ret_ProfitRecord_logic.address,users.proxy_admin.address,"0x"],
-        log: true,
-        contract:"RelayerDAOProxy"
+        contract: "RelayerDAOProxy"
     });
 
 
-
-    let ret_mExitQueue_logic =  await deploy('ExitQueue_logic', {
+    let ret_ProfitRecord_logic = await deploy('ProfitRecord_logic', {
         from: users.deployer1.address,
-        args: [contracts.mock_torn,ret_RootManger.address],
+        args: [contracts.mock_torn, ret_RootManger.address],
         log: true,
-        contract:"ExitQueue"
+        contract: "ProfitRecord"
+    });
+
+    let ret_ProfitRecord = await deploy('ProfitRecord', {
+        from: users.deployer1.address,
+        args: [ret_ProfitRecord_logic.address, users.proxy_admin.address, "0x"],
+        log: true,
+        contract: "RelayerDAOProxy"
     });
 
 
-    let ret_mExitQueue =  await deploy('ExitQueue', {
+    let ret_mExitQueue_logic = await deploy('ExitQueue_logic', {
         from: users.deployer1.address,
-        args: [ret_mExitQueue_logic.address,users.proxy_admin.address,"0x"],
+        args: [contracts.mock_torn, ret_RootManger.address],
         log: true,
-        contract:"RelayerDAOProxy"
+        contract: "ExitQueue"
+    });
+
+
+    let ret_mExitQueue = await deploy('ExitQueue', {
+        from: users.deployer1.address,
+        args: [ret_mExitQueue_logic.address, users.proxy_admin.address, "0x"],
+        log: true,
+        contract: "RelayerDAOProxy"
     });
 
 };

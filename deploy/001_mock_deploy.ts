@@ -6,65 +6,65 @@ import {MTornadoGovernanceStaking} from "../typechain-types";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // @ts-ignore
-    const {deployments,ethers, getNamedAccounts} = hre;
+    const {deployments, ethers, getNamedAccounts} = hre;
     const {deploy} = deployments;
 
     const {deployer1} = await getNamedAccounts();
     await deploy('mock_usdc', {
         from: deployer1,
-        args: ["usdc","mock_usdc",6],
+        args: ["usdc", "mock_usdc", 6],
         log: true,
-        contract:"MERC20"
+        contract: "MERC20"
     });
 
 
     await deploy('mock_dai', {
         from: deployer1,
-        args: ["dai","mock_dai",18],
+        args: ["dai", "mock_dai", 18],
         log: true,
-        contract:"MERC20"
+        contract: "MERC20"
     });
 
     await deploy('mock_weth', {
         from: deployer1,
-        args: ["weth","mock_weth",18],
+        args: ["weth", "mock_weth", 18],
         log: true,
-        contract:"MERC20"
+        contract: "MERC20"
     });
 
     await deploy('mock_torn', {
         from: deployer1,
-        args: ["torn","mock_torn",18],
+        args: ["torn", "mock_torn", 18],
         log: true,
-        contract:"MERC20"
+        contract: "MERC20"
     });
 
-    let addr =  (await deployments.get('mock_weth')).address;
+    let addr = (await deployments.get('mock_weth')).address;
 
 
-    let torn_erc20_addr =  (await deployments.get('mock_torn')).address;
+    let torn_erc20_addr = (await deployments.get('mock_torn')).address;
 
-   let mTornadoGovernanceStaking_res =  await deploy('MTornadoGovernanceStaking', {
+    let mTornadoGovernanceStaking_res = await deploy('MTornadoGovernanceStaking', {
         from: deployer1,
         args: [torn_erc20_addr],
         log: true,
-        contract:"MTornadoGovernanceStaking"
+        contract: "MTornadoGovernanceStaking"
     });
 
 
-   let ret_MRelayerRegistry =  await deploy('MRelayerRegistry', {
+    let ret_MRelayerRegistry = await deploy('MRelayerRegistry', {
         from: deployer1,
-        args: [mTornadoGovernanceStaking_res.address,torn_erc20_addr],
+        args: [mTornadoGovernanceStaking_res.address, torn_erc20_addr],
         log: true,
-        contract:"MRelayerRegistry"
+        contract: "MRelayerRegistry"
     });
 
 
-    let ret_mTornadoStakingRewards =  await deploy('MTornadoStakingRewards', {
+    let ret_mTornadoStakingRewards = await deploy('MTornadoStakingRewards', {
         from: deployer1,
-        args: [mTornadoGovernanceStaking_res.address,torn_erc20_addr],
+        args: [mTornadoGovernanceStaking_res.address, torn_erc20_addr],
         log: true,
-        contract:"MTornadoStakingRewards"
+        contract: "MTornadoStakingRewards"
     });
 
     let mTornadoGovernanceStaking: MTornadoGovernanceStaking;

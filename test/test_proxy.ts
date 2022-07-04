@@ -11,7 +11,7 @@ describe("RelayerDAOProxy", function () {
         const [, deployer2] = await ethers.getSigners();
 
         const Deposit = await ethers.getContractFactory('Deposit');
-        const logicContract = await Deposit.deploy(tornContract, tornGovernanceStaking, tornRelayerRegistry,root_manager);
+        const logicContract = await Deposit.deploy(tornContract, tornGovernanceStaking, tornRelayerRegistry, root_manager);
         await logicContract.deployed();
 
         const RelayerDAOProxy = await ethers.getContractFactory("RelayerDAOProxy");
@@ -29,7 +29,7 @@ describe("RelayerDAOProxy", function () {
         const tornGovernanceStakingUP = "0x0000000000000000000000000000000000000006";
         const tornRelayerRegistryUP = "0x0000000000000000000000000000000000000007";
         const root_managerUp = "0x0000000000000000000000000000000000000008";
-        const logicContractUP = await Deposit.deploy(tornContractUP, tornGovernanceStakingUP, tornRelayerRegistryUP,root_managerUp);
+        const logicContractUP = await Deposit.deploy(tornContractUP, tornGovernanceStakingUP, tornRelayerRegistryUP, root_managerUp);
         await logicContractUP.deployed();
 
         const tx = await proxy.connect(deployer2).upgradeTo(logicContractUP.address);
@@ -43,9 +43,9 @@ describe("RelayerDAOProxy", function () {
 
     it("Should proxy 2", async function () {
 
-        let usdc_erc20: MERC20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("usdc","mock_usdc",6);
+        let usdc_erc20: MERC20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("usdc", "mock_usdc", 6);
         const [, deployer2] = await ethers.getSigners();
-        await usdc_erc20.mint(deployer2.address,5000);
+        await usdc_erc20.mint(deployer2.address, 5000);
         expect(await usdc_erc20.balanceOf(deployer2.address)).equal(5000);
         expect(await usdc_erc20.totalSupply()).equal(5000);
 
@@ -57,13 +57,11 @@ describe("RelayerDAOProxy", function () {
         expect(await proxy_torn.balanceOf(deployer2.address)).equal(0);
         expect(await proxy_torn.totalSupply()).equal(0);
 
-        await proxy_torn.mint(deployer2.address,5000);
+        await proxy_torn.mint(deployer2.address, 5000);
         expect(await proxy_torn.balanceOf(deployer2.address)).equal(5000);
         expect(await proxy_torn.totalSupply()).equal(5000);
 
     });
-
-
 
 
 });

@@ -30,7 +30,7 @@ export interface Fixture {
 }
 
 async function getAllRelayers(info: Fixture) {
-    let ret_arr = new Array();
+    let ret_arr = [];
     let counter = (await info.mRelayerRegistry.counter()).toBigInt();
     while (counter--) {
         ret_arr.push(await info.mRelayerRegistry.array(counter))
@@ -41,7 +41,7 @@ async function getAllRelayers(info: Fixture) {
 }
 
 async function getDaoRelayers(info: Fixture) {
-    let ret_arr = new Array();
+    let ret_arr = [];
     let counter = (await info.mRootDb.MAX_RELAYER_COUNTER()).toBigInt();
     while (counter--) {
         ret_arr.push(await info.mRootDb.mRelayers(counter))

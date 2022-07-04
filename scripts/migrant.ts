@@ -1,19 +1,19 @@
 import {
     Deposit,
-    ExitQueue, Income,
-    MERC20, MRelayerRegistry,
+    ExitQueue,
+    Income,
+    MERC20,
+    MRelayerRegistry,
     MTornadoGovernanceStaking,
-    MTornadoStakingRewards, MTornRouter,
+    MTornadoStakingRewards,
+    MTornRouter,
     RelayerDAOProxy,
     RootDB
 } from "../typechain-types";
 
 import {get_user_fixture, USER_FIX} from "../test/start_up";
-import {expect} from "chai";
-import {BigNumber} from "ethers";
-import {signERC2612Permit} from "eth-permit";
 
-const { ethers } = require("hardhat");
+const {ethers} = require("hardhat");
 
 
 async function main() {
@@ -59,11 +59,11 @@ async function main() {
 
         mRelayerRegistry: '0xB8F413A881fA869caa775f561a4CFf1bD45ee880',
 
-        mTornadoGovernanceStaking:"0xab9705376a93cD0F15b0a3a0232FbA6989410564",
-        mTornadoStakingRewards:"0xE6ec350BF8a0Bce1C0Fcf0e3FF62Cf6Dd52833Fe",
-        TornRouter:"0xd9E93811d472b7060AF9C987c8CAaa0CfC1F58A3",
-        usdc:"0x0Aacd406A99FDE9dCFb09dda316b77A6cE15D923",
-        dai:"0x1CA1C0E6c9649f341086FD54c44e1778CA230817",
+        mTornadoGovernanceStaking: "0xab9705376a93cD0F15b0a3a0232FbA6989410564",
+        mTornadoStakingRewards: "0xE6ec350BF8a0Bce1C0Fcf0e3FF62Cf6Dd52833Fe",
+        TornRouter: "0xd9E93811d472b7060AF9C987c8CAaa0CfC1F58A3",
+        usdc: "0x0Aacd406A99FDE9dCFb09dda316b77A6cE15D923",
+        dai: "0x1CA1C0E6c9649f341086FD54c44e1778CA230817",
 
         relayerList: [
             "0xbeaBbbC2C29cA1c9827D6B27a02fbE9a5950B72f",
@@ -73,17 +73,17 @@ async function main() {
     };
 
     let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
-    let  mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
+    let mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
     let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(contracts.ExitQueue);
     let mIncome = <Income>await (await ethers.getContractFactory("Income")).attach(contracts.Income);
-    let torn_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.tornToken);
+    let torn_erc20: MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.tornToken);
     let mTornadoGovernanceStaking = <MTornadoGovernanceStaking>await (await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(contracts.mTornadoGovernanceStaking);
     let mTornadoStakingRewards = <MTornadoStakingRewards>await (await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(contracts.mTornadoStakingRewards);
     let mTornRouter = <MTornRouter>await (await ethers.getContractFactory("MTornRouter")).attach(contracts.TornRouter);
-    let usdc_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.usdc);
-    let dai_erc20:MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.dai);
+    let usdc_erc20: MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.usdc);
+    let dai_erc20: MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.dai);
 
-    let mRelayerRegistry:MRelayerRegistry = <MRelayerRegistry>(await ethers.getContractFactory("MRelayerRegistry")).attach(contracts.mRelayerRegistry);
+    let mRelayerRegistry: MRelayerRegistry = <MRelayerRegistry>(await ethers.getContractFactory("MRelayerRegistry")).attach(contracts.mRelayerRegistry);
 
 
     let mDeposit_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.Deposit);
@@ -91,15 +91,15 @@ async function main() {
     let mRootDb_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.RootManger);
     let Income_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.Income);
 
-    let users:USER_FIX = await get_user_fixture();
+    let users: USER_FIX = await get_user_fixture();
 
-   // let ExitQueue_logic = await (await ethers.getContractFactory("Deposit")).deploy(contracts.tornToken,contracts.Deposit);
-   // await ExitQueue_logic.deployed();
-   // console.log("ExitQueue_logic.address",ExitQueue_logic.address)
-   // await mExitQueue_proxy.connect(users.proxy_admin).upgradeTo(ExitQueue_logic.address);
-   //  console.log("upgradeTo(ExitQueue_logic.address)")
-   // await mExitQueue.connect(users.operator).migrant();
-   //  console.log("migrant")
+    // let ExitQueue_logic = await (await ethers.getContractFactory("Deposit")).deploy(contracts.tornToken,contracts.Deposit);
+    // await ExitQueue_logic.deployed();
+    // console.log("ExitQueue_logic.address",ExitQueue_logic.address)
+    // await mExitQueue_proxy.connect(users.proxy_admin).upgradeTo(ExitQueue_logic.address);
+    //  console.log("upgradeTo(ExitQueue_logic.address)")
+    // await mExitQueue.connect(users.operator).migrant();
+    //  console.log("migrant")
 
 }
 

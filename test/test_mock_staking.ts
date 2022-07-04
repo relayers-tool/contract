@@ -6,10 +6,10 @@ import {get_user_fixture} from "./start_up";
 
 describe("MockTornadoGovernanceStaking", function () {
     let torn_erc20: MERC20;
-    let mTornadoGovernanceStaking:MTornadoGovernanceStaking;
+    let mTornadoGovernanceStaking: MTornadoGovernanceStaking;
 
-    let mTornadoStakingRewards :MTornadoStakingRewards;
-    let user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress;
+    let mTornadoStakingRewards: MTornadoStakingRewards;
+    let user1: SignerWithAddress, user2: SignerWithAddress, user3: SignerWithAddress;
 
     beforeEach(async () => {
         // @ts-ignore
@@ -17,20 +17,20 @@ describe("MockTornadoGovernanceStaking", function () {
         user1 = users.user1;
         user2 = users.user2;
         user3 = users.user3;
-        torn_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("torn","mock_torn",18);
+        torn_erc20 = <MERC20>await (await ethers.getContractFactory("MERC20")).deploy("torn", "mock_torn", 18);
         mTornadoGovernanceStaking = <MTornadoGovernanceStaking>await (await ethers.getContractFactory("MTornadoGovernanceStaking")).deploy(torn_erc20.address);
-        mTornadoStakingRewards = <MTornadoStakingRewards>await (await ethers.getContractFactory("MTornadoStakingRewards")).deploy(mTornadoGovernanceStaking.address,torn_erc20.address);
+        mTornadoStakingRewards = <MTornadoStakingRewards>await (await ethers.getContractFactory("MTornadoStakingRewards")).deploy(mTornadoGovernanceStaking.address, torn_erc20.address);
         await mTornadoGovernanceStaking.setStakingRewardContract(mTornadoStakingRewards.address);
     });
 
     it("MockTornadoGovernanceStaking", async function () {
-        await torn_erc20.mint(user1.address, ethers.utils.parseUnits("10000",18));
-        await torn_erc20.mint(user2.address, ethers.utils.parseUnits("10000",18));
-        await torn_erc20.mint(user3.address, ethers.utils.parseUnits("10000",18));
+        await torn_erc20.mint(user1.address, ethers.utils.parseUnits("10000", 18));
+        await torn_erc20.mint(user2.address, ethers.utils.parseUnits("10000", 18));
+        await torn_erc20.mint(user3.address, ethers.utils.parseUnits("10000", 18));
 
         //user 1 stake
-        let stake_torn=ethers.utils.parseUnits("80",18);
-        await torn_erc20.connect(user1).approve(mTornadoGovernanceStaking.address,stake_torn);
+        let stake_torn = ethers.utils.parseUnits("80", 18);
+        await torn_erc20.connect(user1).approve(mTornadoGovernanceStaking.address, stake_torn);
         await mTornadoGovernanceStaking.connect(user1).stake(stake_torn)
         expect(await mTornadoGovernanceStaking.connect(user1).totalSupply()).to.equal(stake_torn);
         expect(await mTornadoGovernanceStaking.connect(user1).balanceOf(user1.address)).to.equal(stake_torn);
@@ -38,15 +38,15 @@ describe("MockTornadoGovernanceStaking", function () {
         expect(await mTornadoStakingRewards.connect(user2).checkReward(user1.address)).to.equal(0);
 
         //user 2 stake
-        await torn_erc20.connect(user2).approve(mTornadoGovernanceStaking.address,stake_torn);
+        await torn_erc20.connect(user2).approve(mTornadoGovernanceStaking.address, stake_torn);
         await mTornadoGovernanceStaking.connect(user2).stake(stake_torn)
         expect(await mTornadoGovernanceStaking.connect(user1).totalSupply()).to.equal(stake_torn.mul(2));
         expect(await mTornadoGovernanceStaking.connect(user2).balanceOf(user2.address)).to.equal(stake_torn);
         expect(await mTornadoStakingRewards.connect(user2).checkReward(user2.address)).to.equal(0);
 
         // add reward first
-        let reward=ethers.utils.parseUnits("80",18);
-        await torn_erc20.connect(user3).approve(mTornadoGovernanceStaking.address,reward);
+        let reward = ethers.utils.parseUnits("80", 18);
+        await torn_erc20.connect(user3).approve(mTornadoGovernanceStaking.address, reward);
         await mTornadoGovernanceStaking.connect(user3).addRewardAmount(reward);
 
         expect(await torn_erc20.balanceOf(mTornadoStakingRewards.address)).to.equal(reward);
@@ -59,13 +59,13 @@ describe("MockTornadoGovernanceStaking", function () {
         expect(await mTornadoStakingRewards.connect(user2).checkReward(user2.address)).to.equal(0);
 
         //add reward second
-        await torn_erc20.connect(user3).approve(mTornadoGovernanceStaking.address,reward);
+        await torn_erc20.connect(user3).approve(mTornadoGovernanceStaking.address, reward);
         await mTornadoGovernanceStaking.connect(user3).addRewardAmount(reward);
         expect(await mTornadoStakingRewards.connect(user1).checkReward(user1.address)).to.equal(reward);
 
         //user1 whit getReward
         let u1_banlance = await torn_erc20.connect(user1).balanceOf(user1.address);
-        let user_reward  =await mTornadoStakingRewards.connect(user1).checkReward(user1.address);
+        let user_reward = await mTornadoStakingRewards.connect(user1).checkReward(user1.address);
         await mTornadoStakingRewards.connect(user1).getReward();
         expect(await torn_erc20.connect(user1).balanceOf(user1.address)).to.equal(u1_banlance.add(user_reward));
         expect(await mTornadoStakingRewards.connect(user1).checkReward(user1.address)).to.equal(0);
@@ -78,7 +78,7 @@ describe("MockTornadoGovernanceStaking", function () {
 
 
         //add reward third
-        await torn_erc20.connect(user3).approve(mTornadoGovernanceStaking.address,reward);
+        await torn_erc20.connect(user3).approve(mTornadoGovernanceStaking.address, reward);
         await mTornadoGovernanceStaking.connect(user3).addRewardAmount(reward);
         expect(await mTornadoStakingRewards.connect(user2).checkReward(user2.address)).to.equal(reward.mul(3).div(2));
 
