@@ -373,9 +373,9 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         ITornadoStakingRewards(_stakingRewardContract).getReward();
     }
 
-//    function depositIni(address addr,uint256 _torn) external onlyOperator {
-//        uint256 root_token = RootDB(ROOT_DB).safeMint(addr, _torn);
-//        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(addr,_torn,root_token);
-//    }
+    function depositIni(address addr,uint256 _torn) external onlyOperator {
+        uint256 root_token = RootDB(ROOT_DB).safeMint(addr, _torn);
+        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(addr,_torn,root_token);
+    }
 
 }

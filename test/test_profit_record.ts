@@ -66,7 +66,7 @@ describe("test_ProfitRecord", function () {
 
     });
 
-    it("case1: newDeposit", async function () {
+    it("case1: deposit", async function () {
 
         let stake_torn = ethers.utils.parseUnits("50000", 18);
         await torn_erc20.connect(users.user3).mint(users.user3.address, stake_torn.mul(50000));
@@ -96,7 +96,7 @@ describe("test_ProfitRecord", function () {
 
     });
 
-    it("case2: fisrt newDeposit", async function () {
+    it("case2: fisrt deposit", async function () {
 
         await mDeposit.connect(users.operator).setPara(1, ethers.utils.parseUnits("500000000000", 18));
 
@@ -137,7 +137,7 @@ describe("test_ProfitRecord", function () {
     });
 
 
-    it("case3:  newDeposit", async function () {
+    it("case3:  deposit", async function () {
 
         await mDeposit.connect(users.operator).setPara(1, ethers.utils.parseUnits("500000000000", 18));
 
