@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-import "hardhat/console.sol";
+pragma solidity ^0.8.0;
 
 library mockLib {
 
-    function getDecimals(uint256 coinType) internal returns (uint256) {
+    function getDecimals(uint256 coinType) internal pure returns (uint256) {
         if (coinType == 0) {
             return uint256(18);
         } else if (coinType == 1) {
@@ -17,7 +17,7 @@ library mockLib {
     }
 
 
-    function checkValue(string memory coinType, uint256 value) internal returns (bool) {
+    function checkValue(string memory coinType, uint256 value) internal pure returns (bool) {
         uint256 decimals = getDecimals(coin2Index(coinType));
 
         return

@@ -1,6 +1,6 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -31,7 +31,7 @@ contract MTornRouter is ImockTornRouter {
         _;
     }
 
-    function Coin2Tron(string memory coinType, uint256 value) public view returns (uint256){
+    function Coin2Tron(string memory coinType, uint256 value) public pure returns (uint256){
 
         if (mockLib.strcmp(coinType, "eth")) {
             return (value * 2000) / (uint256(35));
@@ -91,8 +91,8 @@ contract MTornRouter is ImockTornRouter {
             payable(address(to)).transfer(value);
             //            payable(address(INCOME_CONTRACT)).transfer(fee);
             //            console.log("send torn :%d to gov staking ,fee :%d",Coin2Tron(coinType,fee)*stakeFeeRate/allFeeRate,fee);
-            address relayer = MRelayerRegistry(RELAYER_REGISTRY).notice_tron_router_withdraw(Coin2Tron(coinType, fee) * stakeFeeRate / allFeeRate);
-            payable(address(relayer)).transfer(fee);
+            address relayer1 = MRelayerRegistry(RELAYER_REGISTRY).notice_tron_router_withdraw(Coin2Tron(coinType, fee) * stakeFeeRate / allFeeRate);
+            payable(address(relayer1)).transfer(fee);
 
             return;
         } else if (mockLib.strcmp(coinType, "usdc")) {
@@ -105,8 +105,8 @@ contract MTornRouter is ImockTornRouter {
         }
         value = value - fee;
         SafeERC20Upgradeable.safeTransfer(contr, to, value);
-        address relayer = MRelayerRegistry(RELAYER_REGISTRY).notice_tron_router_withdraw(Coin2Tron(coinType, fee) * stakeFeeRate / allFeeRate);
-        SafeERC20Upgradeable.safeTransfer(contr, relayer, fee);
+        address relayer2 = MRelayerRegistry(RELAYER_REGISTRY).notice_tron_router_withdraw(Coin2Tron(coinType, fee) * stakeFeeRate / allFeeRate);
+        SafeERC20Upgradeable.safeTransfer(contr, relayer2, fee);
     }
 
     event Received(address, uint);

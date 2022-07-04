@@ -194,7 +194,7 @@ describe("test_ProfitRecord", function () {
     });
     it("case4:  test onlyDepositContract", async function () {
         await expect(mProfitRecord.connect(users.user3).withDraw(users.user3.address, 500)).revertedWith("Caller is not depositContract");
-        await expect(mProfitRecord.connect(users.user3).Deposit(users.user3.address, 500, 200)).revertedWith("Caller is not depositContract");
+        await expect(mProfitRecord.connect(users.user3).deposit(users.user3.address, 500, 200)).revertedWith("Caller is not depositContract");
     })
 
 

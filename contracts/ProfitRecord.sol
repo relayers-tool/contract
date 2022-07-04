@@ -45,7 +45,7 @@ contract ProfitRecord is ContextUpgradeable {
     * @param  _token_qty is amount of voucher which the user get
       @dev    if the user Deposit more than once function will calc weighted average
    **/
-    function Deposit(address _addr, uint256 _torn_amount, uint256 _token_qty) onlyDepositContract public {
+    function deposit(address _addr, uint256 _torn_amount, uint256 _token_qty) onlyDepositContract public {
         PRICE_STORE memory userStore = profitStore[_addr];
         if (userStore.amount == 0) {
             uint256 new_price = _torn_amount * (10 ** 18) / _token_qty;

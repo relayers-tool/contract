@@ -1,5 +1,5 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./Interface/IRelayerRegistry.sol";
@@ -237,7 +237,7 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     /**
      * @notice IMPORTANT: inorder to saving gas we removed approve
      */
-    function approve(address spender, uint256 amount) public virtual override returns (bool ret) {
+    function approve(address /* spender */, uint256 /* amount */) public virtual override returns (bool ret) {
         ret = false;
         require(false, "err approve");
     }

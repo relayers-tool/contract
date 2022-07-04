@@ -1,6 +1,6 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../Interface/IRelayerRegistry.sol";
@@ -80,7 +80,7 @@ contract MTornadoGovernanceStaking is ITornadoGovernanceStaking, LPTokenWrapper 
         return stake(amount);
     }
 
-    function lock(address owner, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) override external {
+    function lock(address owner, uint256 amount, uint256 , uint8 , bytes32 , bytes32 ) override external {
         require(msg.sender == owner, "error owner");
         return stake(amount);
     }

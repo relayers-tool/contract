@@ -15,6 +15,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-IERC20P
  * @title Deposit contract
  * @notice this is a Deposit contract
  */
+
 contract Deposit is  ReentrancyGuardUpgradeable {
 
     /// the address of  torn token contract
@@ -218,7 +219,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         uint256 root_token = RootDB(ROOT_DB).safeMint(_account, _token_qty);
         SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _token_qty);
         //record the deposit
-        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).Deposit(msg.sender, _token_qty,root_token);
+        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(msg.sender, _token_qty,root_token);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
@@ -372,11 +373,9 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         ITornadoStakingRewards(_stakingRewardContract).getReward();
     }
 
-
-
-    //    function depositIni(address addr) external onlyOperator {
-    //        uint256 root_token = RootDB(ROOT_DB).safeMint(addr, 300*(10**18));
-    //        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).Deposit(addr,300*(10**18),root_token);
-    //    }
+//    function depositIni(address addr,uint256 _torn) external onlyOperator {
+//        uint256 root_token = RootDB(ROOT_DB).safeMint(addr, _torn);
+//        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(addr,_torn,root_token);
+//    }
 
 }
