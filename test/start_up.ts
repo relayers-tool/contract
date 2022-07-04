@@ -87,13 +87,13 @@ export  async function set_up_fixture(fix_name:string) {
         mProfitRecord:(await deployments.get('ProfitRecord')).address,
     };
 
-    let owner:SignerWithAddress,proxy_admin:SignerWithAddress;
-    let deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
-    let relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
-    let stake1:SignerWithAddress,stake2:SignerWithAddress,stake3:SignerWithAddress;
-    let dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress;
-    // @ts-ignore
-    [deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner] = await ethers.getSigners();
+    // let owner:SignerWithAddress,proxy_admin:SignerWithAddress;
+    // let deployer1:SignerWithAddress,deployer2:SignerWithAddress,relayer1:SignerWithAddress;
+    // let relayer2:SignerWithAddress,relayer3:SignerWithAddress,user1:SignerWithAddress,user2:SignerWithAddress,user3:SignerWithAddress,operator:SignerWithAddress ;
+    // let stake1:SignerWithAddress,stake2:SignerWithAddress,stake3:SignerWithAddress;
+    // let dao_relayer1:SignerWithAddress,dao_relayer2:SignerWithAddress,dao_relayer3:SignerWithAddress;
+    // // @ts-ignore
+    // [deployer1,deployer2,proxy_admin,relayer1, relayer2,relayer3,user1,user2,user3,operator,stake1,stake2,stake3,dao_relayer1,dao_relayer2,dao_relayer3,owner] = await ethers.getSigners();
 
     let torn_erc20: MERC20;
     let usdc_erc20: MERC20;
