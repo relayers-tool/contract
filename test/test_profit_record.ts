@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {ethers} from "hardhat";
 
-import {about, almost, banlancOf, Coin2Tron, Fixture, getGovRelayerReward, getGovStakingReward} from "./utils";
+import {about, almost, banlancOf, Coin2Tron, Fixture, getAllRelayerReward, getGovStakingReward} from "./utils";
 import {
     Deposit,
     Income,
@@ -171,7 +171,7 @@ describe("test_ProfitRecord", function () {
             await  mTornRouter.connect( users.user1).withdraw("eth", eth,  users.user1.address);
         }
 
-        let relayer_reward = await getGovRelayerReward(fix_info,"eth",eth.mul(20));
+        let relayer_reward = await getAllRelayerReward(fix_info,"eth",eth.mul(20));
         let staking_reward = await getGovStakingReward(fix_info,"eth",eth.mul(20));
         let staking_reward_torn = staking_reward.mul(2000).div(35);
         expect(about(staking_reward_torn,await mTornadoGovernanceStaking.checkReward(users.user3.address))).true;

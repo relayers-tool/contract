@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {ethers} from "hardhat";
 
-import {banlancOf, Fixture, getGovRelayerReward} from "./utils";
+import {banlancOf, Fixture, getAllRelayerReward, TornUserSimulate} from "./utils";
 import {
     Deposit,
     Income,
@@ -13,6 +13,7 @@ import {
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {get_user_fixture, set_up_fixture, USER_FIX} from "./start_up";
+import {BigNumber} from "ethers";
 
 describe("main_process", function () {
     let usdc_erc20: MERC20,torn_erc20: MERC20;
@@ -102,7 +103,7 @@ describe("main_process", function () {
 
 
             let income = await banlancOf(fix_info,"usdc", relayer1);
-            let reward = await getGovRelayerReward(fix_info,"usdc",usdc);
+            let reward = await getAllRelayerReward(fix_info,"usdc",usdc);
             expect(income).to.equal(reward);
             let banlance1 = await banlancOf(fix_info,"eth", relayer1);
 
@@ -110,23 +111,11 @@ describe("main_process", function () {
             let eth = ethers.utils.parseUnits("1000",18);
             let counter = 20
 
-            for(let i = 0 ; i < counter ; i++) {
-                await  mTornRouter.connect( user1).deposit("eth", eth, {value: eth});
-                await  mTornRouter.connect( user1).withdraw("eth", eth,  user2.address);
-            }
-            let income_eth = await banlancOf(fix_info,"eth", relayer1);
+           let ret =  await TornUserSimulate(fix_info, "eth", eth, BigNumber.from(counter), true);
 
-            expect((await banlancOf(fix_info,"eth", relayer1)).sub(banlance1)).to.equal(await  getGovRelayerReward(fix_info,"eth",eth.mul(20)));
+            expect((await banlancOf(fix_info,"eth", relayer1)).sub(banlance1)).to.equal(await  getAllRelayerReward(fix_info,"eth",eth.mul(20)));
 
-            //swap income eth to torn
-            let eth_to_torn = await   mTornRouter.Coin2Tron("eth",income_eth);
-            await torn_erc20.connect(relayer1).approve(mIncome.address,eth_to_torn);
-            await torn_erc20.connect(relayer1).transfer(mIncome.address,eth_to_torn);
-            await  mIncome.connect( operator).distributeTorn(eth_to_torn);
-
-            expect(await  mRootDb.connect(stake2).balanceOfTorn(stake2.address)).to.equal(stake_torn.add(eth_to_torn));
-            let relay_lost =  (await  mRelayerRegistry.getRelayerBalance( relayer1.address)).add(await  mRelayerRegistry.getRelayerBalance( relayer2.address));
-
+            expect(await  mRootDb.connect(stake2).balanceOfTorn(stake2.address)).to.equal(stake_torn.add(ret.gov_rev_torn));
 
 
         });
