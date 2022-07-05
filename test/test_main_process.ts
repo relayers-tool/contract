@@ -233,6 +233,14 @@ describe("main_process", function () {
             expect(about(all_profit, ret.relayer_rev_torn.add(ret2.relayer_rev_torn))).true;
 
 
+            await mDeposit.connect(operator).setPara(3, users.reward.address);
+            await mDeposit.connect(operator).setPara(4, 200);
+
+            let last_balance =  await torn_erc20.balanceOf(users.reward.address);
+            let  Profit1= await mProfitRecord.getProfit(stake1.address, token1);
+            await mDeposit.connect(stake1).withDraw(token1);
+            let last_balance2 =  await torn_erc20.balanceOf(users.reward.address);
+            expect(Profit1.mul(200).div(1000)).equal(last_balance2.sub(last_balance));
         });
 
     })
