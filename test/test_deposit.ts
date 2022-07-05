@@ -114,10 +114,10 @@ describe("test_deposit", function () {
         it("case3 : Invalid para", async function () {
             let maxReserveTorn = ethers.utils.parseUnits(Math.random() * 10 + "", 18);
             let maxRewardInGov = ethers.utils.parseUnits(Math.random() * 10 + "", 18);
-            await expect(mDeposit.connect(operator).setPara(0, maxReserveTorn,)).revertedWith("Invalid para");
-            await expect(mDeposit.connect(operator).setPara(1, 0)).revertedWith("Invalid para");
-            await expect(mDeposit.connect(operator).setPara(2, 0)).revertedWith("Invalid para");
-            await expect(mDeposit.connect(operator).setPara(3, 0)).revertedWith("Invalid para");
+            await expect(mDeposit.connect(operator).setPara(0, maxReserveTorn,)).revertedWith("Invalid _index");
+            await expect(mDeposit.connect(operator).setPara(1, 0));
+            await expect(mDeposit.connect(operator).setPara(2, 0));
+            await expect(mDeposit.connect(operator).setPara(3, 0));
         });
 
 
