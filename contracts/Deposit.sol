@@ -91,8 +91,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     * @param _value
    **/
     function setPara(uint256 _index,uint256 _value) external onlyOperator {
-        require(_value > 0,"Invalid para");
-        if(_index ==1){
+        if(_index == 1){
             maxReserveTorn = _value;
         }else if(_index == 2){
             maxRewardInGov = _value;
@@ -102,7 +101,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
             profitRatio = _value;
         }
         else{
-            require(false,"Invalid para");
+            require(false,"Invalid _index");
         }
     }
 
