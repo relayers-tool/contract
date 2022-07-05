@@ -99,8 +99,8 @@ export async function TornUserSimulate(info: Fixture, type: string, each_value: 
 
 
         await info.torn_erc20.mint(user_fix.user1.address, relayer_reward_torn);
-        await info.torn_erc20.connect(user_fix.user1).transfer(info.mIncome.address, gov_staking_reward_torn);
-        await info.mIncome.connect(user_fix.operator).distributeTorn(gov_staking_reward_torn);
+        await info.torn_erc20.connect(user_fix.user1).transfer(info.mIncome.address, relayer_reward_torn);
+        await info.mIncome.connect(user_fix.operator).distributeTorn(relayer_reward_torn);
     }
     return {
         relayer_rev_torn: relayer_reward_torn,
