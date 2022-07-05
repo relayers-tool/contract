@@ -8,7 +8,8 @@ import {
     MERC20,
     MRelayerRegistry,
     MTornadoGovernanceStaking,
-    MTornRouter, ProfitRecord,
+    MTornRouter,
+    ProfitRecord,
     RootDB
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
@@ -30,7 +31,7 @@ describe("main_process", function () {
     let relayer2: SignerWithAddress, relayer3: SignerWithAddress, user1: SignerWithAddress, user2: SignerWithAddress,
         user3: SignerWithAddress, operator: SignerWithAddress;
     let stake1: SignerWithAddress, stake2: SignerWithAddress;
-    let mProfitRecord :ProfitRecord;
+    let mProfitRecord: ProfitRecord;
     let fix_info: Fixture;
     let users: USER_FIX;
     beforeEach(async () => {
@@ -54,12 +55,6 @@ describe("main_process", function () {
         stake1 = users.stake1;
         stake2 = users.stake2;
         mProfitRecord = fix_info.mProfitRecord;
-
-
-
-
-
-
     });
 
 
@@ -130,11 +125,11 @@ describe("main_process", function () {
             await torn_erc20.connect(stake1).approve(mTornadoGovernanceStaking.address, stake_torn.mul(10000000));
 
             await torn_erc20.mint(relayer1.address, stake_torn.mul(10000000));
-            await torn_erc20.mint(relayer2.address,  stake_torn.mul(10000000));
+            await torn_erc20.mint(relayer2.address, stake_torn.mul(10000000));
             await torn_erc20.mint(relayer3.address, stake_torn.mul(10000000));
 
             await torn_erc20.mint(stake1.address, stake_torn.mul(10000000));
-            await torn_erc20.mint(stake2.address,  stake_torn.mul(10000000));
+            await torn_erc20.mint(stake2.address, stake_torn.mul(10000000));
 
             await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_torn);
             await mRelayerRegistry.connect(relayer1).register(relayer2.address, 0);
@@ -142,21 +137,21 @@ describe("main_process", function () {
 
             expect(await mRelayerRegistry.connect(relayer1).getRelayerBalance(relayer1.address)).equal(stake_torn);
 
-            await mRootDb.connect(users.owner).addRelayer(relayer2.address,0);
-            await mRootDb.connect(users.owner).addRelayer(relayer3.address,1);
+            await mRootDb.connect(users.owner).addRelayer(relayer2.address, 0);
+            await mRootDb.connect(users.owner).addRelayer(relayer3.address, 1);
 
             await torn_erc20.connect(stake1).approve(mDeposit.address, stake_torn.mul(10000000));
             await torn_erc20.connect(stake2).approve(mDeposit.address, stake_torn.mul(10000000));
 
-            await mDeposit.connect(operator).setPara(1,stake_torn.mul(10000000));
+            await mDeposit.connect(operator).setPara(1, stake_torn.mul(10000000));
 
             await mDeposit.connect(stake1).depositWithApproval(stake_torn);
             await mDeposit.connect(stake2).depositWithApproval(stake_torn);
 
-            await mDeposit.connect(operator).stake2Node(0,stake_torn);
-            await mDeposit.connect(operator).stake2Node(1,stake_torn);
+            await mDeposit.connect(operator).stake2Node(0, stake_torn);
+            await mDeposit.connect(operator).stake2Node(1, stake_torn);
 
-            await mDeposit.connect(operator).setPara(1,0);
+            await mDeposit.connect(operator).setPara(1, 0);
             await mTornadoGovernanceStaking.connect(stake1).stake(stake_torn);
             await mDeposit.connect(stake2).depositWithApproval(stake_torn);
 
@@ -166,13 +161,12 @@ describe("main_process", function () {
 
             let eth = ethers.utils.parseUnits("1000", 18);
             let counter = 20
-            let ret = await TornUserSimulate(fix_info,"eth",eth,BigNumber.from(counter),false);
+            let ret = await TornUserSimulate(fix_info, "eth", eth, BigNumber.from(counter), false);
 
-            expect(about(ret.gov_rev_torn.div(2),(await  mDeposit.checkRewardOnGov()))).true;
-            expect(about(ret.gov_rev_torn,(stake_torn.mul(3).sub(await mRelayerRegistry.getRelayerBalance(relayer1.address)).sub(await mRootDb.totalRelayerTorn())))).true;
+            expect(about(ret.gov_rev_torn.div(2), (await mDeposit.checkRewardOnGov()))).true;
+            expect(about(ret.gov_rev_torn, (stake_torn.mul(3).sub(await mRelayerRegistry.getRelayerBalance(relayer1.address)).sub(await mRootDb.totalRelayerTorn())))).true;
 
         });
-
 
 
         it("main_process3", async function () {
@@ -182,33 +176,33 @@ describe("main_process", function () {
             await torn_erc20.connect(stake1).approve(mTornadoGovernanceStaking.address, stake_torn.mul(10000000));
 
             await torn_erc20.mint(relayer1.address, stake_torn.mul(10000000));
-            await torn_erc20.mint(relayer2.address,  stake_torn.mul(10000000));
+            await torn_erc20.mint(relayer2.address, stake_torn.mul(10000000));
             await torn_erc20.mint(relayer3.address, stake_torn.mul(10000000));
 
             await torn_erc20.mint(stake1.address, stake_torn.mul(10000000));
-            await torn_erc20.mint(stake2.address,  stake_torn.mul(10000000));
+            await torn_erc20.mint(stake2.address, stake_torn.mul(10000000));
 
             await mRelayerRegistry.connect(relayer1).register(relayer1.address, 0);
             await mRelayerRegistry.connect(relayer1).register(relayer2.address, 0);
             await mRelayerRegistry.connect(relayer1).register(relayer3.address, 0);
 
 
-            await mRootDb.connect(users.owner).addRelayer(relayer2.address,0);
-            await mRootDb.connect(users.owner).addRelayer(relayer3.address,1);
-            await mRootDb.connect(users.owner).addRelayer(relayer1.address,2);
+            await mRootDb.connect(users.owner).addRelayer(relayer2.address, 0);
+            await mRootDb.connect(users.owner).addRelayer(relayer3.address, 1);
+            await mRootDb.connect(users.owner).addRelayer(relayer1.address, 2);
 
             await torn_erc20.connect(stake1).approve(mDeposit.address, stake_torn.mul(10000000));
             await torn_erc20.connect(stake2).approve(mDeposit.address, stake_torn.mul(10000000));
 
-            await mDeposit.connect(operator).setPara(1,stake_torn.mul(10000000));
+            await mDeposit.connect(operator).setPara(1, stake_torn.mul(10000000));
 
             await mDeposit.connect(stake1).depositWithApproval(stake_torn.mul(2));
             await mDeposit.connect(stake2).depositWithApproval(stake_torn.mul(2));
 
-            await mDeposit.connect(operator).stake2Node(0,stake_torn);
-            await mDeposit.connect(operator).stake2Node(1,stake_torn);
-            await mDeposit.connect(operator).stake2Node(2,stake_torn);
-            await mDeposit.connect(operator).setPara(1,0);
+            await mDeposit.connect(operator).stake2Node(0, stake_torn);
+            await mDeposit.connect(operator).stake2Node(1, stake_torn);
+            await mDeposit.connect(operator).stake2Node(2, stake_torn);
+            await mDeposit.connect(operator).setPara(1, 0);
 
             await mDeposit.connect(stake2).depositWithApproval(stake_torn);
 
@@ -219,25 +213,24 @@ describe("main_process", function () {
 
             let eth = ethers.utils.parseUnits("1000", 18);
             let counter = 20
-            let ret = await TornUserSimulate(fix_info,"eth",eth,BigNumber.from(counter),true);
+            let ret = await TornUserSimulate(fix_info, "eth", eth, BigNumber.from(counter), true);
 
-            expect(about(ret.gov_rev_torn,(await  mDeposit.checkRewardOnGov()))).true;
-            expect(about((await mRootDb.totalTorn()).sub(stake_torn.mul(5)),ret.relayer_rev_torn)).true;
+            expect(about(ret.gov_rev_torn, (await mDeposit.checkRewardOnGov()))).true;
+            expect(about((await mRootDb.totalTorn()).sub(stake_torn.mul(5)), ret.relayer_rev_torn)).true;
             let token1 = await mRootDb.balanceOf(stake1.address);
             let token2 = await mRootDb.balanceOf(stake2.address);
-            let all_profit = (await mProfitRecord.getProfit(stake1.address,token1)).add(await mProfitRecord.getProfit(stake2.address,token2));
-            expect(about(all_profit,ret.relayer_rev_torn)).true;
-
+            let all_profit = (await mProfitRecord.getProfit(stake1.address, token1)).add(await mProfitRecord.getProfit(stake2.address, token2));
+            expect(about(all_profit, ret.relayer_rev_torn)).true;
 
 
             let usdc = ethers.utils.parseUnits("1000", 18);
-            let ret2 = await TornUserSimulate(fix_info,"dai",usdc,BigNumber.from(counter),true);
+            let ret2 = await TornUserSimulate(fix_info, "dai", usdc, BigNumber.from(counter), true);
 
-            expect(about(ret.gov_rev_torn.add(ret2.gov_rev_torn),(await  mDeposit.checkRewardOnGov()))).true;
-            expect(about((await mRootDb.totalTorn()).sub(stake_torn.mul(5)),ret.relayer_rev_torn.add(ret2.relayer_rev_torn))).true;
+            expect(about(ret.gov_rev_torn.add(ret2.gov_rev_torn), (await mDeposit.checkRewardOnGov()))).true;
+            expect(about((await mRootDb.totalTorn()).sub(stake_torn.mul(5)), ret.relayer_rev_torn.add(ret2.relayer_rev_torn))).true;
 
-            all_profit = (await mProfitRecord.getProfit(stake1.address,token1)).add(await mProfitRecord.getProfit(stake2.address,token2));
-            expect(about(all_profit,ret.relayer_rev_torn.add(ret2.relayer_rev_torn))).true;
+            all_profit = (await mProfitRecord.getProfit(stake1.address, token1)).add(await mProfitRecord.getProfit(stake2.address, token2));
+            expect(about(all_profit, ret.relayer_rev_torn.add(ret2.relayer_rev_torn))).true;
 
 
         });
