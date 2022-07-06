@@ -72,7 +72,7 @@ export async function get_user_fixture() {
     let dao_relayer1: SignerWithAddress, dao_relayer2: SignerWithAddress, dao_relayer3: SignerWithAddress,
         reward: SignerWithAddress;
     // @ts-ignore
-    [deployer1, owner, proxy_admin, operator, relayer1, relayer2, relayer3, user1, user2, user3, operator, stake1, stake2, stake3, dao_relayer1, dao_relayer2, dao_relayer3, owner2, reward] = await ethers.getSigners();
+    [deployer1, owner, proxy_admin, operator, relayer1, relayer2, relayer3, user1, user2, user3, stake1, stake2, stake3, dao_relayer1, dao_relayer2, dao_relayer3, owner2, reward] = await ethers.getSigners();
     return {
         deployer1,
         owner,
