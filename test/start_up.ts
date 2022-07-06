@@ -9,7 +9,7 @@ import {
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
     MTornRouter,
-    ProfitRecord,
+    ProfitRecord, RelayerDAOProxy,
     RootDB
 } from "../typechain-types";
 import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
@@ -97,29 +97,7 @@ export async function get_user_fixture() {
 }
 
 
-export async function set_up_fixture(fix_name: string) {
-    // it first ensure the deployment is executed and reset (use of evm_snaphost for fast test)
-    // await deployments.fixture(["mock_torn"]);
-    expect("test_net register_relayers".includes(fix_name)).true;
-    await deployments.fixture([fix_name]);
-    // we get an instantiated contract in the form of a ethers.js Contract instance:
-    const contracts = {
-        mock_torn: (await deployments.get('mock_torn')).address,
-        mock_dai: (await deployments.get('mock_dai')).address,
-        mock_usdc: (await deployments.get('mock_usdc')).address,
-        mock_weth: (await deployments.get('mock_weth')).address,
-        mTornadoGovernanceStaking: (await deployments.get('MTornadoGovernanceStaking')).address,
-        mRelayerRegistry: (await deployments.get('MRelayerRegistry')).address,
-        mTornadoStakingRewards: (await deployments.get('MTornadoStakingRewards')).address,
-        Deposit: (await deployments.get('Deposit')).address,
-        RootDb: (await deployments.get('RootDb')).address,
-        ExitQueue: (await deployments.get('ExitQueue')).address,
-        Income: (await deployments.get('Income')).address,
-        MTornRouter: (await deployments.get('MTornRouter')).address,
-        mProfitRecord: (await deployments.get('ProfitRecord')).address,
-    };
-
-
+async function CreateFix(contracts: any) {
     let torn_erc20: MERC20;
     let usdc_erc20: MERC20;
     let dai_erc20: MERC20;
@@ -133,6 +111,12 @@ export async function set_up_fixture(fix_name: string) {
     let mDeposit: Deposit;
     let mExitQueue: ExitQueue;
     let mIncome: Income;
+
+    let mDeposit_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.Deposit);
+    let mExitQueue_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.ExitQueue);
+    let mRootDb_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.RootDb);
+    let mIncome_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.Income);
+    let mProfitRecord_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.mProfitRecord);
 
 
     torn_erc20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
@@ -171,6 +155,76 @@ export async function set_up_fixture(fix_name: string) {
         mTornRouter,
         mDeposit,
         mExitQueue,
-        mProfitRecord
+        mProfitRecord,
+        mDeposit_proxy,
+        mExitQueue_proxy,
+        mRootDb_proxy,
+        mIncome_proxy,
+        mProfitRecord_proxy,
     };
+}
+
+export async function get_bsc_fixture(){
+    const network = await ethers.getDefaultProvider().getNetwork();
+    let ChainId =network.chainId;
+    let  contracts ={}
+    const addressBook = {
+            usdcToken: '0xc8E7d7FBaCEF6aa300c3933316dB38ceF3bE1F12',
+            daiToken: '0x71B6e1B82295bf1029535FE44eBaC7Ba43217BC1',
+            wethToken: '0x79B52e597cF2328EE45f51a1d07586A57aDEbf16',
+            tornToken: '0x5d5776B3491bf758D52326b09a8dBe6F3b8E1388',
+            mRootDb: '0x6772e36EC55e9C6c93958E5afaa58598752D4617',
+            mIncome: '0x3dEbcec58743e6EBAC375d825D189A3378466155',
+            mDeposit: '0x60B3e177879CcD4253FB2256b4FB01DF0FD2c5Ab',
+            mExitQueue: '0xEb68522Db0abEFa730D5304dB1f5863A0fcdfD4E',
+            TornGovStaking:"0x3a09Aa2658D429774544B2087E0f5364FCfa0e0a",
+            relayerRegistry: '0x7BC60F27A28723217B78537A05735CF89a167adF',
+            mProfitRecord:"0x25d6e698eF1B12f8220F3970D76Ec93C5E8B6Bf1",
+            mTornadoStakingRewards:"0x67E323523C4FbA29EAF7FfB01D792b12B84a6526",
+            MTornRouter:"0x9839e04232FE04F56DCF7Ca510b302B9E38d7c56",
+            multicall: '0xC50F4c1E81c873B2204D7eFf7069Ffec6Fbe136D',
+
+        }
+
+         contracts = {
+            mock_torn: addressBook.tornToken,
+            mock_dai: addressBook.daiToken,
+            mock_usdc: addressBook.usdcToken,
+            mock_weth: addressBook.wethToken,
+            mTornadoGovernanceStaking: addressBook.TornGovStaking,
+            mRelayerRegistry: addressBook.relayerRegistry,
+            mTornadoStakingRewards: addressBook.mTornadoStakingRewards,
+            Deposit: addressBook.mDeposit,
+            RootDb: addressBook.mRootDb,
+            ExitQueue: addressBook.mExitQueue,
+            Income: addressBook.mIncome,
+            MTornRouter:addressBook.MTornRouter,
+            mProfitRecord:addressBook.mProfitRecord,
+        };
+
+    return await CreateFix(contracts);
+}
+
+export async function set_up_fixture(fix_name: string) {
+    // it first ensure the deployment is executed and reset (use of evm_snaphost for fast test)
+    // await deployments.fixture(["mock_torn"]);
+    expect("test_net register_relayers".includes(fix_name)).true;
+    await deployments.fixture([fix_name]);
+    // we get an instantiated contract in the form of a ethers.js Contract instance:
+    const contracts = {
+        mock_torn: (await deployments.get('mock_torn')).address,
+        mock_dai: (await deployments.get('mock_dai')).address,
+        mock_usdc: (await deployments.get('mock_usdc')).address,
+        mock_weth: (await deployments.get('mock_weth')).address,
+        mTornadoGovernanceStaking: (await deployments.get('MTornadoGovernanceStaking')).address,
+        mRelayerRegistry: (await deployments.get('MRelayerRegistry')).address,
+        mTornadoStakingRewards: (await deployments.get('MTornadoStakingRewards')).address,
+        Deposit: (await deployments.get('Deposit')).address,
+        RootDb: (await deployments.get('RootDb')).address,
+        ExitQueue: (await deployments.get('ExitQueue')).address,
+        Income: (await deployments.get('Income')).address,
+        MTornRouter: (await deployments.get('MTornRouter')).address,
+        mProfitRecord: (await deployments.get('ProfitRecord')).address,
+    };
+    return await CreateFix(contracts);
 }

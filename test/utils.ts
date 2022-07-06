@@ -7,11 +7,12 @@ import {
     MTornadoGovernanceStaking,
     MTornadoStakingRewards,
     MTornRouter,
-    ProfitRecord,
+    ProfitRecord, RelayerDAOProxy,
     RootDB
 } from "../typechain-types";
 import {BaseContract, BigNumber} from "ethers";
 import {get_user_fixture, USER_FIX} from "./start_up";
+import {ethers} from "hardhat";
 
 export interface Fixture {
     usdc_erc20: MERC20;
@@ -26,7 +27,12 @@ export interface Fixture {
     mDeposit: Deposit;
     mExitQueue: ExitQueue;
     mIncome: Income;
-    mProfitRecord: ProfitRecord
+    mProfitRecord: ProfitRecord;
+    mDeposit_proxy :RelayerDAOProxy;
+    mExitQueue_proxy :RelayerDAOProxy;
+    mRootDb_proxy:RelayerDAOProxy;
+    mIncome_proxy :RelayerDAOProxy;
+    mProfitRecord_proxy:RelayerDAOProxy;
 }
 
 async function getAllRelayers(info: Fixture) {
