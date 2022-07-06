@@ -83,7 +83,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     try {
         await ((await mRelayerRegistry.connect(relayer1).register(relayer1.address, stake_value.mul(10))).wait(1))
     } catch (e: any) {
-        console.log(e.reason)
+        console.log(1, e.reason)
     }
 
     if ((await mRootDb.operator()) != users.operator.address) {
@@ -98,9 +98,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     try {
         await (await mRelayerRegistry.connect(relayer2).register(relayer2.address, stake_value.mul(10))).wait(1);
     } catch (e: any) {
-        console.log(e.reason)
+        console.log(2, e.reason)
     }
-
 
     allowance = await torn_erc20.connect(dao_relayer1).allowance(dao_relayer1.address, mRelayerRegistry.address);
     if (allowance < (stake_value.mul(50))) {
@@ -109,21 +108,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     try {
         await (await mRelayerRegistry.connect(dao_relayer1).register(dao_relayer1.address, 0)).wait(1);
     } catch (e: any) {
-        console.log(e.reason)
+        console.log(3, e.reason)
     }
 
 
     try {
         await (await mRelayerRegistry.connect(dao_relayer1).register(users.dao_relayer2.address, 0)).wait(1);
     } catch (e: any) {
-        console.log(e.reason)
+        console.log(4, e.reason)
     }
 
 
     try {
         await (await mRelayerRegistry.connect(dao_relayer1).register(users.dao_relayer3.address, 0)).wait(1);
     } catch (e: any) {
-        console.log(e.reason)
+        console.log(5, e.reason)
     }
 
 
@@ -132,24 +131,34 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 
     let addr = await mRootDb.connect(owner).mRelayers(0);
-    if (addr != dao_relayer1.address) {
-        await (await mRootDb.connect(owner).addRelayer(dao_relayer1.address, 0)).wait(1);
+
+    try {
+        if (addr != dao_relayer1.address) {
+            await (await mRootDb.connect(owner).addRelayer(dao_relayer1.address, 0)).wait(1);
+        }
+    } catch (e: any) {
+        console.log(6, e.reason)
     }
 
     addr = await mRootDb.connect(owner).mRelayers(1);
-    if (addr != users.dao_relayer2.address) {
-        await (await mRootDb.connect(owner).addRelayer(users.dao_relayer2.address, 1)).wait(1);
+
+    try {
+        if (addr != users.dao_relayer2.address) {
+            await (await mRootDb.connect(owner).addRelayer(users.dao_relayer2.address, 1)).wait(1);
+        }
+    } catch (e: any) {
+        console.log(7, e.reason)
     }
 
     addr = await mRootDb.connect(owner).mRelayers(2);
-    if (addr != users.dao_relayer3.address) {
-        await (await mRootDb.connect(owner).addRelayer(users.dao_relayer3.address, 2)).wait(1);
+    try {
+        if (addr != users.dao_relayer3.address) {
+            await (await mRootDb.connect(owner).addRelayer(users.dao_relayer3.address, 2)).wait(1);
+        }
+    } catch (e: any) {
+        console.log(8, e.reason)
     }
 
-    addr = await mRootDb.connect(owner).mRelayers(1);
-    if (addr == users.dao_relayer2.address) {
-        await (await mRootDb.connect(owner).removeRelayer(1)).wait(1);
-    }
 
     //initialize fist stake avoid dive 0
     let stake_torn = ethers.utils.parseUnits("1", 18);
