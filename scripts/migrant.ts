@@ -20,12 +20,12 @@ async function main() {
 
     // const contracts = {
     //     Deposit:"0xD74284c112C48dc678E7924CdbB22abc487aF1E7",
-    //     RootManger:"0x137f2bf9584dE69371624b38bc04fA3c060Cdb29",
+    //     RootDb:"0x137f2bf9584dE69371624b38bc04fA3c060Cdb29",
     //     ExitQueue:"0x46892dbc480287C2f4BacFb69d9f5d98CCaFA284",
     //     Income:"0x7E3e92d5D6a7bd59a71E4e4d37F109CD80f23b23",
     //     tornToken: '0x3FFe033d7fd8f1A2FE006E59F1F384740Fa54dB6',
     //
-    //   RootManger_logic:"0x9A6a66b4f281D2959Daf1fC4CCDF97D4b08FeB63",
+    //   RootDb_logic:"0x9A6a66b4f281D2959Daf1fC4CCDF97D4b08FeB63",
     //   Income_logic:"0x6B993008DC453De6E3Eec06E9Fe610efc22a4D59",
     //   Deposit_logic: "0xF00e2088221B4c5D952399324eFa31eeA436f32A",
     //   ExitQueue_logic: "0x9f3c02574FC8EBA30ACEEAd5D26F8B08383A0060",
@@ -37,12 +37,12 @@ async function main() {
 // bsc
     const contracts = {
         // Deposit:"0xD74284c112C48dc678E7924CdbB22abc487aF1E7",
-        // RootManger:"0x137f2bf9584dE69371624b38bc04fA3c060Cdb29",
+        // RootDb:"0x137f2bf9584dE69371624b38bc04fA3c060Cdb29",
         // ExitQueue:"0x46892dbc480287C2f4BacFb69d9f5d98CCaFA284",
         // Income:"0x7E3e92d5D6a7bd59a71E4e4d37F109CD80f23b23",
         // tornToken: '0x3FFe033d7fd8f1A2FE006E59F1F384740Fa54dB6',
         //
-        // RootManger_logic:"0x9A6a66b4f281D2959Daf1fC4CCDF97D4b08FeB63",
+        // RootDb_logic:"0x9A6a66b4f281D2959Daf1fC4CCDF97D4b08FeB63",
         // Income_logic:"0x6B993008DC453De6E3Eec06E9Fe610efc22a4D59",
         // Deposit_logic: "0xF00e2088221B4c5D952399324eFa31eeA436f32A",
         // ExitQueue_logic: "0x9f3c02574FC8EBA30ACEEAd5D26F8B08383A0060",
@@ -52,7 +52,7 @@ async function main() {
         // daiToken: '0x1CA1C0E6c9649f341086FD54c44e1778CA230817',
         // wethToken: '0x7D7a35A3E4503b2Cc0f167b1c54CCD279E4FcAcf',
         tornToken: '0xC43878E042EEf355eF92b44D322Db9b224F0A1DB',
-        RootManger: '0x870C44cFea1645C1ce675389ab1E932280403923',
+        RootDb: '0x870C44cFea1645C1ce675389ab1E932280403923',
         Income: '0xd23984B5B7169222C030e2d8CE08FE820b3ba9C0',
         Deposit: '0x3F3d5c45d0bf31FAaB7ed2b0c6F1E0929F38d252',
         ExitQueue: '0xb56699Aadf509A4B3bc9141777B51e6B61741ED2',
@@ -72,7 +72,7 @@ async function main() {
         ]
     };
 
-    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
+    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootDb);
     let mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
     let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(contracts.ExitQueue);
     let mIncome = <Income>await (await ethers.getContractFactory("Income")).attach(contracts.Income);
@@ -88,7 +88,7 @@ async function main() {
 
     let mDeposit_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.Deposit);
     let mExitQueue_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.ExitQueue);
-    let mRootDb_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.RootManger);
+    let mRootDb_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.RootDb);
     let Income_proxy = <RelayerDAOProxy>await (await ethers.getContractFactory("RelayerDAOProxy")).attach(contracts.Income);
 
     let users: USER_FIX = await get_user_fixture();

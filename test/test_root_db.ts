@@ -14,7 +14,7 @@ import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {about} from "./utils";
 import {get_user_fixture, set_up_fixture} from "./start_up";
 
-describe("RootManger", function () {
+describe("RootDb", function () {
 
     let usdc_erc20: MERC20, torn_erc20: MERC20;
 

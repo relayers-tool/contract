@@ -24,16 +24,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         mRelayerRegistry: address_RelayerRegistry,
     };
 
-    let ret_RootManger_logic = await deploy('RootManger_logic', {
+    let ret_RootDb_logic = await deploy('RootDb_logic', {
         from: users.deployer1.address,
         args: [contracts.mRelayerRegistry, contracts.mock_torn],
         log: true,
         contract: "RootDB"
     });
 
-    let ret_RootManger = await deploy('RootManger', {
+    let ret_RootDb = await deploy('RootDb', {
         from: users.deployer1.address,
-        args: [ret_RootManger_logic.address, users.proxy_admin.address, "0x"],
+        args: [ret_RootDb_logic.address, users.proxy_admin.address, "0x"],
         log: true,
         contract: "RelayerDAOProxy"
     });
@@ -41,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_Income_logic = await deploy('Income_logic', {
         from: users.deployer1.address,
-        args: [contracts.mock_torn, ret_RootManger.address],
+        args: [contracts.mock_torn, ret_RootDb.address],
         log: true,
         contract: "Income"
     });
@@ -57,7 +57,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_mDeposit_logic = await deploy('Deposit_logic', {
         from: users.deployer1.address,
-        args: [contracts.mock_torn, contracts.mTornadoGovernanceStaking, contracts.mRelayerRegistry, ret_RootManger.address],
+        args: [contracts.mock_torn, contracts.mTornadoGovernanceStaking, contracts.mRelayerRegistry, ret_RootDb.address],
         log: true,
         contract: "Deposit"
     });
@@ -73,7 +73,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_ProfitRecord_logic = await deploy('ProfitRecord_logic', {
         from: users.deployer1.address,
-        args: [contracts.mock_torn, ret_RootManger.address],
+        args: [contracts.mock_torn, ret_RootDb.address],
         log: true,
         contract: "ProfitRecord"
     });
@@ -88,7 +88,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_mExitQueue_logic = await deploy('ExitQueue_logic', {
         from: users.deployer1.address,
-        args: [contracts.mock_torn, ret_RootManger.address],
+        args: [contracts.mock_torn, ret_RootDb.address],
         log: true,
         contract: "ExitQueue"
     });

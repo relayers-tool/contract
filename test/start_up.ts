@@ -26,12 +26,12 @@ async function config_check() {
         mRelayerRegistry: (await deployments.get('MRelayerRegistry')).address,
         mTornadoStakingRewards: (await deployments.get('MTornadoStakingRewards')).address,
         Deposit: (await deployments.get('Deposit')).address,
-        RootManger: (await deployments.get('RootManger')).address,
+        RootDb: (await deployments.get('RootDb')).address,
         ExitQueue: (await deployments.get('ExitQueue')).address,
         Income: (await deployments.get('Income')).address,
         MTornRouter: (await deployments.get('MTornRouter')).address,
     };
-    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
+    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootDb);
 
     expect(await mRootDb.exitQueueContract()).equal(contracts.ExitQueue);
     expect(await mRootDb.TORN_CONTRACT()).equal(contracts.mock_torn);
@@ -112,7 +112,7 @@ export async function set_up_fixture(fix_name: string) {
         mRelayerRegistry: (await deployments.get('MRelayerRegistry')).address,
         mTornadoStakingRewards: (await deployments.get('MTornadoStakingRewards')).address,
         Deposit: (await deployments.get('Deposit')).address,
-        RootManger: (await deployments.get('RootManger')).address,
+        RootDb: (await deployments.get('RootDb')).address,
         ExitQueue: (await deployments.get('ExitQueue')).address,
         Income: (await deployments.get('Income')).address,
         MTornRouter: (await deployments.get('MTornRouter')).address,
@@ -145,7 +145,7 @@ export async function set_up_fixture(fix_name: string) {
     mTornadoGovernanceStaking = <MTornadoGovernanceStaking>(await ethers.getContractFactory("MTornadoGovernanceStaking")).attach(contracts.mTornadoGovernanceStaking);
 
 
-    mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
+    mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootDb);
 
     mIncome = <Income>await (await ethers.getContractFactory("Income")).attach(contracts.Income);
 

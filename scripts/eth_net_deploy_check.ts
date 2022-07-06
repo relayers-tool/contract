@@ -9,20 +9,20 @@ async function main() {
 
     const contracts = {
         Deposit: "0x7155F8c9B74BED0C69d58A730914f2232c5CeE4c",
-        RootManger: "0x6201dBf488e977018F4A1BbD8Df57F5327991ECE",
+        RootDb: "0x6201dBf488e977018F4A1BbD8Df57F5327991ECE",
         ExitQueue: "0x859971C83B596e599D1C00254E827d7de90a0562",
         Income: "0xD184DE1fAD8F2D340c7720A3e1D54f5947e010e5",
         profitRecord: "0xb1eB9a41d45b5CDEf4ca8586e05Cc5C001AAEdB8",
     };
 
-    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
+    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootDb);
     let mDeposit = <Deposit>await (await ethers.getContractFactory("Deposit")).attach(contracts.Deposit);
     let mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(contracts.ExitQueue);
     let mProfitRecord = <ProfitRecord>await (await ethers.getContractFactory("ProfitRecord")).attach(contracts.profitRecord);
     let users: USER_FIX = await get_user_fixture();
 
 
-    console.log("__RootManger_init");
+    console.log("__RootDb_init");
     try {
         let tx = await mRootDb.connect(users.owner).__RootDB_init(contracts.Income, contracts.Deposit, contracts.ExitQueue, contracts.profitRecord);
         await tx.wait(1);

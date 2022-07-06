@@ -26,17 +26,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         mRelayerRegistry: (await deployments.get('MRelayerRegistry')).address,
         mTornadoStakingRewards: (await deployments.get('MTornadoStakingRewards')).address,
         Deposit: (await deployments.get('Deposit')).address,
-        RootManger: (await deployments.get('RootManger')).address,
+        RootDb: (await deployments.get('RootDb')).address,
         ExitQueue: (await deployments.get('ExitQueue')).address,
         Income: (await deployments.get('Income')).address,
         MTornRouter: (await deployments.get('MTornRouter')).address,
     };
 
-    let mRootManger: RootDB;
+    let mRootDb: RootDB;
 
 
     let torn_erc20: MERC20 = <MERC20>(await ethers.getContractFactory("MERC20")).attach(contracts.mock_torn);
-    mRootManger = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootManger);
+    mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootDb);
 
 
     let users: USER_FIX = await get_user_fixture();
@@ -86,8 +86,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         console.log(e.reason)
     }
 
-    if ((await mRootManger.operator()) != users.operator.address) {
-        await (await mRootManger.connect(owner).setOperator(users.operator.address)).wait(1);
+    if ((await mRootDb.operator()) != users.operator.address) {
+        await (await mRootDb.connect(owner).setOperator(users.operator.address)).wait(1);
     }
 
 
@@ -127,28 +127,28 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 
 
-    if ((await mRootManger.connect(owner).owner()) != owner.address) {
-        await (await mRootManger.connect(deployer1).transferOwnership(owner.address)).wait(1);
+    if ((await mRootDb.connect(owner).owner()) != owner.address) {
+        await (await mRootDb.connect(deployer1).transferOwnership(owner.address)).wait(1);
     }
 
-    let addr = await mRootManger.connect(owner).mRelayers(0);
+    let addr = await mRootDb.connect(owner).mRelayers(0);
     if (addr != dao_relayer1.address) {
-        await (await mRootManger.connect(owner).addRelayer(dao_relayer1.address, 0)).wait(1);
+        await (await mRootDb.connect(owner).addRelayer(dao_relayer1.address, 0)).wait(1);
     }
 
-    addr = await mRootManger.connect(owner).mRelayers(1);
+    addr = await mRootDb.connect(owner).mRelayers(1);
     if (addr != users.dao_relayer2.address) {
-        await (await mRootManger.connect(owner).addRelayer(users.dao_relayer2.address, 1)).wait(1);
+        await (await mRootDb.connect(owner).addRelayer(users.dao_relayer2.address, 1)).wait(1);
     }
 
-    addr = await mRootManger.connect(owner).mRelayers(2);
+    addr = await mRootDb.connect(owner).mRelayers(2);
     if (addr != users.dao_relayer3.address) {
-        await (await mRootManger.connect(owner).addRelayer(users.dao_relayer3.address, 2)).wait(1);
+        await (await mRootDb.connect(owner).addRelayer(users.dao_relayer3.address, 2)).wait(1);
     }
 
-    addr = await mRootManger.connect(owner).mRelayers(1);
+    addr = await mRootDb.connect(owner).mRelayers(1);
     if (addr == users.dao_relayer2.address) {
-        await (await mRootManger.connect(owner).removeRelayer(1)).wait(1);
+        await (await mRootDb.connect(owner).removeRelayer(1)).wait(1);
     }
 
     //initialize fist stake avoid dive 0
