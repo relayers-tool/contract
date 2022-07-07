@@ -17,9 +17,10 @@ import {expect} from "chai";
 
 
 export interface USER_FIX {
+    deployer1: SignerWithAddress,
     owner: SignerWithAddress,
     proxy_admin: SignerWithAddress;
-    deployer1: SignerWithAddress,
+    reward: SignerWithAddress;
     relayer1: SignerWithAddress;
     relayer2: SignerWithAddress,
     relayer3: SignerWithAddress,
@@ -33,7 +34,6 @@ export interface USER_FIX {
     dao_relayer1: SignerWithAddress,
     dao_relayer2: SignerWithAddress,
     dao_relayer3: SignerWithAddress,
-    reward: SignerWithAddress;
     owner2: SignerWithAddress
 }
 
