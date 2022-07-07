@@ -23,8 +23,8 @@ async function main() {
     let users: USER_FIX = await get_user_fixture();
 
     // let stake_torn = ethers.utils.parseUnits( "300", 18);
-    // console.log(users.reward.address);
-    // await fix.mDeposit.connect(users.operator).depositIni(users.reward.address,stake_torn);
+    console.log(users.reward.address);
+    //  await fix.mDeposit.connect(users.operator).depositIni(users.reward.address,stake_torn);
     // await fix.mRootDb.connect(users.owner).addRelayer("0xa0109274F53609f6Be97ec5f3052C659AB80f012",0);
 
     // let ExitQueue_logic = await (await ethers.getContractFactory("Deposit")).deploy(contracts.tornToken,contracts.Deposit);
