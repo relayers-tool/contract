@@ -88,7 +88,7 @@ const config: HardhatUserConfig = {
     eth: {
       url: process.env.ETH_RPC_URL,
       chainId: 1,
-      gasMultiplier:1.5,
+      gasMultiplier:1.2,
       accounts: {
         mnemonic:process.env.ETH_MNEMONIC?process.env.ETH_MNEMONIC:"test test test test test test test test test test test junk",
         path: "m/44'/60'/0'/0",

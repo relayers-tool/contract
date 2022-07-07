@@ -16,32 +16,6 @@ import {SignerWithAddress} from "hardhat-deploy-ethers/signers";
 import {expect} from "chai";
 
 
-async function config_check() {
-    const contracts = {
-        mock_torn: (await deployments.get('mock_torn')).address,
-        mock_dai: (await deployments.get('mock_dai')).address,
-        mock_usdc: (await deployments.get('mock_usdc')).address,
-        mock_weth: (await deployments.get('mock_weth')).address,
-        mTornadoGovernanceStaking: (await deployments.get('MTornadoGovernanceStaking')).address,
-        mRelayerRegistry: (await deployments.get('MRelayerRegistry')).address,
-        mTornadoStakingRewards: (await deployments.get('MTornadoStakingRewards')).address,
-        Deposit: (await deployments.get('Deposit')).address,
-        RootDb: (await deployments.get('RootDb')).address,
-        ExitQueue: (await deployments.get('ExitQueue')).address,
-        Income: (await deployments.get('Income')).address,
-        MTornRouter: (await deployments.get('MTornRouter')).address,
-    };
-    let mRootDb = <RootDB>await (await ethers.getContractFactory("RootDB")).attach(contracts.RootDb);
-
-    expect(await mRootDb.exitQueueContract()).equal(contracts.ExitQueue);
-    expect(await mRootDb.TORN_CONTRACT()).equal(contracts.mock_torn);
-    expect(await mRootDb.TORN_RELAYER_REGISTRY()).equal(contracts.mRelayerRegistry);
-    expect(await mRootDb.inComeContract()).equal(contracts.Income);
-    expect(await mRootDb.exitQueueContract()).equal(contracts.ExitQueue);
-    expect(await mRootDb.depositContract()).equal(contracts.Deposit);
-
-}
-
 export interface USER_FIX {
     owner: SignerWithAddress,
     proxy_admin: SignerWithAddress;
@@ -72,7 +46,7 @@ export async function get_user_fixture() {
     let dao_relayer1: SignerWithAddress, dao_relayer2: SignerWithAddress, dao_relayer3: SignerWithAddress,
         reward: SignerWithAddress;
     // @ts-ignore
-    [deployer1, owner, proxy_admin, operator, relayer1, relayer2, relayer3, user1, user2, user3, stake1, stake2, stake3, dao_relayer1, dao_relayer2, dao_relayer3, owner2, reward] = await ethers.getSigners();
+    [deployer1, owner, proxy_admin, operator,reward,relayer1, relayer2, relayer3, user1, user2, user3, stake1, stake2, stake3, dao_relayer1, dao_relayer2, dao_relayer3, owner2] = await ethers.getSigners();
     return {
         deployer1,
         owner,
@@ -140,7 +114,6 @@ async function CreateFix(contracts: any) {
     mExitQueue = <ExitQueue>await (await ethers.getContractFactory("ExitQueue")).attach(contracts.ExitQueue);
     let mProfitRecord: ProfitRecord = <ProfitRecord>await (await ethers.getContractFactory("ProfitRecord")).attach(contracts.mProfitRecord);
 
-    await config_check();
     // finally we return the whole object (including the tokenOwner set_up as a User object)
     return {
         usdc_erc20,
@@ -164,9 +137,50 @@ async function CreateFix(contracts: any) {
     };
 }
 
+export async function get_eth_fixture(){
+
+    let  contracts ={}
+    const addressBook = {
+        usdcToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        usdtToken:'0xdAC17F958D2ee523a2206206994597C13D831ec7',
+        daiToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        wethToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+        tornToken: '0x77777FeDdddFfC19Ff86DB637967013e6C6A116C',
+        mRootDb: '0x2fB6ac90378d4065a0D750cE42CDDD7E85835609',
+        mIncome: '0x875d48f26b1f0e41D62A76446A5D25905Bcf6395',
+        mDeposit: '0x3654EcfC4e406c8320DCE4Af95C318369488f6b6',
+        mExitQueue: '0x4Ddc2B9a75b67D8A049475838CF3D1326aCc0177',
+        TornGovStaking:"0x5efda50f22d34f262c29268506c5fa42cb56a1ce",
+        relayerRegistry: '0x58E8dCC13BE9780fC42E8723D8EaD4CF46943dF2',
+        mProfitRecord:"0xdB97042c66A41740cD5C58BCF934151F9E09cA6f",
+        mTornadoStakingRewards:"0x2FC93484614a34f26F7970CBB94615bA109BB4bf",
+        MTornRouter:"0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b",
+        multicall: '0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696',
+    }
+
+    contracts = {
+        mock_torn: addressBook.tornToken,
+        mock_dai: addressBook.daiToken,
+        mock_usdc: addressBook.usdcToken,
+        mock_weth: addressBook.wethToken,
+        mTornadoGovernanceStaking: addressBook.TornGovStaking,
+        mRelayerRegistry: addressBook.relayerRegistry,
+        mTornadoStakingRewards: addressBook.mTornadoStakingRewards,
+        Deposit: addressBook.mDeposit,
+        RootDb: addressBook.mRootDb,
+        ExitQueue: addressBook.mExitQueue,
+        Income: addressBook.mIncome,
+        MTornRouter:addressBook.MTornRouter,
+        mProfitRecord:addressBook.mProfitRecord,
+    };
+
+    return await CreateFix(contracts);
+
+
+}
+
 export async function get_bsc_fixture(){
-    const network = await ethers.getDefaultProvider().getNetwork();
-    let ChainId =network.chainId;
+
     let  contracts ={}
     const addressBook = {
             usdcToken: '0xc8E7d7FBaCEF6aa300c3933316dB38ceF3bE1F12',
@@ -183,7 +197,6 @@ export async function get_bsc_fixture(){
             mTornadoStakingRewards:"0x67E323523C4FbA29EAF7FfB01D792b12B84a6526",
             MTornRouter:"0x9839e04232FE04F56DCF7Ca510b302B9E38d7c56",
             multicall: '0xC50F4c1E81c873B2204D7eFf7069Ffec6Fbe136D',
-
         }
 
          contracts = {
