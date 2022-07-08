@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {ethers} from "hardhat";
 
-import {about, almost, banlancOf, Fixture, getAllRelayerReward, getGovStakingReward} from "./utils";
+import {about, almost, banlancOf, Fixture, getAllRelayerReward, getGovStakingReward, TornUserSimulate} from "./utils";
 import {
     Deposit,
     Income,
@@ -50,8 +50,6 @@ describe("test_ProfitRecord", function () {
 
         let stake_torn = ethers.utils.parseUnits("50000000", 18);
 
-        // await torn_erc20.connect(users.relayer2).mint(users.relayer2.address,stake_torn.mul(1000));
-        // await torn_erc20.connect(users.dao_relayer1).mint(users.dao_relayer1.address,stake_torn.mul(1000));
 
         await torn_erc20.connect(users.relayer2).approve(mRelayerRegistry.address, stake_torn.mul(5000));
         await mRelayerRegistry.connect(users.relayer2).register(users.relayer2.address, 0);
@@ -96,7 +94,7 @@ describe("test_ProfitRecord", function () {
 
     });
 
-    it("case2: fisrt deposit", async function () {
+    it("case2: test defective", async function () {
 
         await mDeposit.connect(users.operator).setPara(1, ethers.utils.parseUnits("500000000000", 18));
 
@@ -121,18 +119,37 @@ describe("test_ProfitRecord", function () {
 
         await mDeposit.connect(users.operator).stake2Node(0, stake_torn.div(3));
 
+        expect(await mRootDb.totalTorn()).equal(stake_torn.mul(2));
+
         //deposit eth for test
         let eth = ethers.utils.parseUnits("100000", 18);
         let counter = 20
+        let ret =   await TornUserSimulate(fix_info,"eth",eth,BigNumber.from(counter),false);
 
-        for (let i = 0; i < counter; i++) {
-            await mTornRouter.connect(users.user1).deposit("eth", eth, {value: eth});
-            await mTornRouter.connect(users.user1).withdraw("eth", eth, users.user1.address);
-        }
-        let income_eth = await banlancOf(fix_info, "eth", mIncome);
+        expect(await mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token)).equal(0);
+        expect(about(await mRootDb.balanceOfTorn(users.user3.address),stake_torn.mul(2))).true;
 
-        await expect(mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token)).revertedWith("panic code 17");
 
+        // add user 2 to share the gov reward to make defective
+        await torn_erc20.connect(users.user2).mint(users.user2.address, stake_torn.mul(500));
+        await torn_erc20.connect(users.user2).approve(mTornadoGovernanceStaking.address, stake_torn.mul(100));
+        await mTornadoGovernanceStaking.connect(users.user2).lockWithApproval(stake_torn);
+        ret =   await TornUserSimulate(fix_info,"eth",eth,BigNumber.from(counter),false);
+
+        expect(await mProfitRecord.connect(users.user3).getProfit(users.user3.address, root_token)).equal(0);
+        let cur_left_torn = await mRootDb.balanceOfTorn(users.user3.address);
+        expect(about(await mTornadoGovernanceStaking.connect(users.user2).checkReward(users.user2.address),stake_torn.mul(2).sub(cur_left_torn))).true;
+
+        // when have defective the user1 will share the defective
+        await torn_erc20.connect(users.user1).mint(users.user1.address, stake_torn.mul(500));
+        await torn_erc20.connect(users.user1).approve(mDeposit.address, stake_torn.mul(500));
+        let user1_deposit = stake_torn.mul(1);
+        await mDeposit.connect(users.user1).depositWithApproval(user1_deposit);
+        let cur_left_user1 = await mRootDb.balanceOfTorn(users.user1.address);
+        let user1_lost = user1_deposit.sub(cur_left_user1);
+        let last_balance = await torn_erc20.balanceOf(users.user3.address);
+        await mDeposit.connect(users.user3).withDraw(root_token);
+        expect(about(last_balance.add(cur_left_torn).add(user1_lost),await torn_erc20.balanceOf(users.user3.address))).true;
 
     });
 
@@ -192,10 +209,10 @@ describe("test_ProfitRecord", function () {
 
 
     });
+
     it("case4:  test onlyDepositContract", async function () {
         await expect(mProfitRecord.connect(users.user3).withDraw(users.user3.address, 500)).revertedWith("Caller is not depositContract");
         await expect(mProfitRecord.connect(users.user3).deposit(users.user3.address, 500, 200)).revertedWith("Caller is not depositContract");
     })
-
 
 });
