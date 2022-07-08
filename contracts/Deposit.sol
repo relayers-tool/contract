@@ -179,13 +179,13 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     /**
        * @notice stake2Node used to stake TORN to relayers  when it is necessary call by Operator
        * @param  index: the index of the relayer
-       * @param qty: the amount of TORN to be stake
+       * @param _torn_qty: the amount of TORN to be stake
     **/
-    function stake2Node(uint256 index, uint256 qty) external onlyOperator {
+    function stake2Node(uint256 index, uint256 _torn_qty) external onlyOperator {
         address _relayer = RootDB(ROOT_DB).mRelayers(index);
         require(_relayer != address(0), 'Invalid index');
-        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, qty);
-        IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, qty);
+        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, _torn_qty);
+        IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, _torn_qty);
     }
 
 
@@ -201,7 +201,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     /**
        * @notice deposit used to deposit TORN to relayers dao  with approval
-       * @param  _token_qty: the amount of torn want to stake
+       * @param  _torn_qty: the amount of torn want to stake
        * @dev
            1. mint the voucher of the deposit.
            2. TransferFrom TORN to this contract
@@ -212,13 +212,13 @@ contract Deposit is  ReentrancyGuardUpgradeable {
                 3.  checkLock2Gov
                 4. or unlock for the gov prepare to Transfer2Queue
     **/
-    function depositWithApproval(uint256 _token_qty) public nonReentrant {
+    function depositWithApproval(uint256 _torn_qty) public nonReentrant {
         address _account = msg.sender;
-        require(_token_qty > 0,"error para");
-        uint256 root_token = RootDB(ROOT_DB).safeMint(_account, _token_qty);
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _token_qty);
+        require(_torn_qty > 0,"error para");
+        uint256 root_token = RootDB(ROOT_DB).safeMint(_account, _torn_qty);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _torn_qty);
         //record the deposit
-        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(msg.sender, _token_qty,root_token);
+        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(msg.sender, _torn_qty,root_token);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
