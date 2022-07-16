@@ -35,7 +35,8 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     /// the address of  torn relayer registry
     address immutable public TORN_RELAYER_REGISTRY;
 
-
+    /// the address of  Tornado multisig
+    address immutable public TORNADO_MULTISIG;
 
     /**
      * @notice Called by the Owner to set operator
@@ -52,10 +53,12 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
      */
     constructor(
         address _torn_relayer_registry,
-        address _torn_contract
+        address _torn_contract,
+        address _tornado_multisig
     ) {
         TORN_CONTRACT = _torn_contract;
         TORN_RELAYER_REGISTRY = _torn_relayer_registry;
+        TORNADO_MULTISIG = _tornado_multisig;
     }
 
 

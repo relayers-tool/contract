@@ -71,6 +71,13 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         _;
     }
 
+    modifier onlyTornAdo() {
+        require(msg.sender == RootDB(ROOT_DB).TORNADO_MULTISIG(), "caller is not Tornado multisig");
+        _;
+    }
+
+
+
     modifier onlyExitQueue() {
         require(msg.sender == RootDB(ROOT_DB).exitQueueContract(), "Caller is not exitQueue");
         _;
@@ -103,6 +110,11 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         else{
             require(false,"Invalid _index");
         }
+    }
+
+
+    function setProfitRatio(uint256 profit) external onlyTornAdo {
+            profitRatio = profit;
     }
 
     /**
