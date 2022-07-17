@@ -46,7 +46,7 @@ describe("test_ProfitRecord", function () {
         await mDeposit.connect(users.operator).setPara(1, ethers.utils.parseUnits("50000", 18));
         await mDeposit.connect(users.operator).setPara(2, ethers.utils.parseUnits("50000", 18));
         await mDeposit.connect(users.operator).setPara(3, users.reward.address);
-        await mDeposit.connect(users.operator).setPara(4, 200);
+        await mDeposit.connect(users.deployer1).setProfitRatio( 200);
 
         let stake_torn = ethers.utils.parseUnits("50000000", 18);
 

@@ -22,7 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     let ret_RootDb_logic = await deploy('RootDb_logic', {
         from: users.deployer1.address,
-        args: [contracts.mRelayerRegistry, contracts.mock_torn],
+        args: [contracts.mRelayerRegistry, contracts.mock_torn,users.deployer1.address], //use the deployer1 for multi sign
         log: true,
         contract: "RootDB"
     });

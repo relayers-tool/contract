@@ -34,7 +34,7 @@ const config: HardhatUserConfig = {
     }
   },
   namedAccounts: {
-    deployer1:0,
+    deployer1:0, // this is the same as multi_sigin
     owner:1,
     proxy_admin:2,
     operator:3,

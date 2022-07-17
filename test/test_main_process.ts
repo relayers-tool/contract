@@ -234,7 +234,7 @@ describe("main_process", function () {
 
 
             await mDeposit.connect(operator).setPara(3, users.reward.address);
-            await mDeposit.connect(operator).setPara(4, 200);
+            await mDeposit.connect(users.deployer1).setProfitRatio(200);
 
             let last_balance =  await torn_erc20.balanceOf(users.reward.address);
             let  Profit1= await mProfitRecord.getProfit(stake1.address, token1);

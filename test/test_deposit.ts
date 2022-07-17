@@ -105,7 +105,7 @@ describe("test_deposit", function () {
             await mDeposit.connect(operator).setPara(1, maxReserveTorn);
             await mDeposit.connect(operator).setPara(2, maxRewardInGov);
             await mDeposit.connect(operator).setPara(3, users.reward.address);
-            await mDeposit.connect(operator).setPara(4, 1);
+            await mDeposit.connect(users.deployer1).setProfitRatio( 1);
             expect(await mDeposit.rewardAddress()).to.be.equal(users.reward.address);
             expect(await mDeposit.maxReserveTorn()).to.be.equal(maxReserveTorn);
             expect(await mDeposit.maxRewardInGov()).to.be.equal(maxRewardInGov);
@@ -118,6 +118,7 @@ describe("test_deposit", function () {
             await expect(mDeposit.connect(operator).setPara(1, 0));
             await expect(mDeposit.connect(operator).setPara(2, 0));
             await expect(mDeposit.connect(operator).setPara(3, 0));
+            await expect(mDeposit.connect(operator).setProfitRatio(1)).revertedWith("caller is not Tornado multisig");
         });
 
 

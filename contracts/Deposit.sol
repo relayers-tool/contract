@@ -104,8 +104,6 @@ contract Deposit is  ReentrancyGuardUpgradeable {
             maxRewardInGov = _value;
         }else if(_index == 3){
             rewardAddress = address(uint160(_value));
-        }else  if(_index == 4){
-            profitRatio = _value;
         }
         else{
             require(false,"Invalid _index");
