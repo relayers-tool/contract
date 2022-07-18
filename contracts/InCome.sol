@@ -14,7 +14,7 @@ contract Income {
 
     /// @notice An event emitted when operator distribute torn
     /// @param torn: the amount of the TORN distributed
-    event distribute_torn(uint256 torn);
+    event DistributeTorn(uint256 torn);
 
 
     constructor(
@@ -31,7 +31,7 @@ contract Income {
     function distributeTorn(uint256 _torn_qty) external {
         address deposit_address = RootDB(ROOT_DB).depositContract();
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), deposit_address, _torn_qty);
-        emit distribute_torn(_torn_qty);
+        emit DistributeTorn(_torn_qty);
     }
 
     receive() external payable {

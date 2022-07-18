@@ -44,14 +44,14 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     /// @notice An event emitted when lock torn to gov staking contract
     /// @param _amount The amount which staked to gov staking contract
-    event lock_to_gov(uint256 _amount);
+    event LockToGov(uint256 _amount);
 
     /// @notice An event emitted when user withdraw
     /// @param  _account The: address of user
     /// @param _token_qty: voucher of the deposit
     /// @param _torn: the amount of torn in this withdarw
     /// @param _profit: the profi of torn in this withdarw
-    event with_draw(address  _account,uint256 _token_qty,uint256 _torn,uint256 _profit);
+    event WithDraw(address  _account,uint256 _token_qty,uint256 _torn,uint256 _profit);
 
     constructor(
         address _torn_contract,
@@ -126,7 +126,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         }
         SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_GOVERNANCE_STAKING, balance);
         ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).lockWithApproval(balance);
-        emit lock_to_gov(balance);
+        emit LockToGov(balance);
     }
 
     /**
@@ -324,7 +324,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender, _token_qty);
         uint256 torn = _safeWithdraw(_token_qty);
         _safeSendTorn(torn,profit);
-        emit with_draw(msg.sender, _token_qty,torn,profit);
+        emit WithDraw(msg.sender, _token_qty,torn,profit);
     }
 
     /**
@@ -339,7 +339,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         uint256 profit = ProfitRecord(profit_address).withDraw(_addr, _token_qty);
         uint256 torn = _safeWithdraw(_token_qty);
         ret =  _safeSendTorn(torn,profit);
-        emit with_draw(_addr, _token_qty,torn,profit);
+        emit WithDraw(_addr, _token_qty,torn,profit);
     }
 
 
