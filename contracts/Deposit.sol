@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.9;
 import "./Interface/ITornadoStakingRewards.sol";
 import "./Interface/ITornadoGovernanceStaking.sol";
 import "./Interface/IRelayerRegistry.sol";
