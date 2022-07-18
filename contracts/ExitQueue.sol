@@ -54,22 +54,22 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
 
     /// @notice An event emitted when user cancel queue
     /// @param  account The: address of user
-    /// @param  token_qty: voucher of the deposit canceled
-    event CancelQueue(address account, uint256 token_qty);
+    /// @param  tokenQty: voucher of the deposit canceled
+    event CancelQueue(address account, uint256 tokenQty);
 
     /// @notice An event emitted when user add queue
-    /// @param  _account The: address of user
-    /// @param  _token_qty: voucher of the deposit canceled
-    event AddQueue(address _account,uint256 _token_qty);
+    /// @param  account The: address of user
+    /// @param  tokenQty: voucher of the deposit canceled
+    event AddQueue(address  account,uint256 tokenQty);
 
     function __ExitQueue_init() public initializer {
         __ReentrancyGuard_init();
     }
 
 
-    constructor(address _torn_contract, address _root_db) {
-        TORN_CONTRACT = _torn_contract;
-        ROOT_DB = _root_db;
+    constructor(address tornContract, address rootDb) {
+        TORN_CONTRACT = tornContract;
+        ROOT_DB = rootDb;
     }
 
     /**
@@ -114,16 +114,16 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
 
     /**
     * @notice addQueue
-    * @param  _token_qty: the amount of voucher
+    * @param  tokenQty: the amount of voucher
    **/
-    function addQueue(uint256 _token_qty) public nonReentrant {
+    function addQueue(uint256 tokenQty) public nonReentrant {
         maxIndex += 1;
-        require(_token_qty > 0, "error para");
+        require(tokenQty > 0, "error para");
         require(addr2index[msg.sender] == 0 && index2value[maxIndex].v == 0, "have pending");
         addr2index[msg.sender] = maxIndex;
-        index2value[maxIndex] = QUEUE_INFO(_token_qty, msg.sender);
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_DB), msg.sender, address(this), _token_qty);
-        emit AddQueue(msg.sender, _token_qty);
+        index2value[maxIndex] = QUEUE_INFO(tokenQty, msg.sender);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(ROOT_DB), msg.sender, address(this), tokenQty);
+        emit AddQueue(msg.sender, tokenQty);
     }
 
     /**
