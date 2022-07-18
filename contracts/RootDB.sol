@@ -40,46 +40,40 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
 
     /**
      * @notice Called by the Owner to set operator
-     * @param _operator The address of the new operator
+     * @param operator_ The address of the new operator
      */
-    function setOperator(address _operator) external onlyOwner
+    function setOperator(address operator_) external onlyOwner
     {
-        operator = _operator;
+        operator = operator_;
     }
 
     /**
-     * @param _torn_relayer_registry :the address of  torn relayer registry
-     * @param _torn_contract : the address of  torn token contract
+     * @param tornRelayerRegistry :the address of  torn relayer registry
+     * @param tornContract : the address of  torn token contract
      */
     constructor(
-        address _torn_relayer_registry,
-        address _torn_contract,
-        address _tornado_multisig
+        address tornRelayerRegistry,
+        address tornContract,
+        address tornadoMultisig
     ) {
-        TORN_CONTRACT = _torn_contract;
-        TORN_RELAYER_REGISTRY = _torn_relayer_registry;
-        TORNADO_MULTISIG = _tornado_multisig;
+        TORN_CONTRACT = tornContract;
+        TORN_RELAYER_REGISTRY = tornRelayerRegistry;
+        TORNADO_MULTISIG = tornadoMultisig;
     }
 
 
-    /**
-      * @notice Function used to __RootDB_init
-      * @param _in_come_contract address
-      * @param _deposit_contract address
-      * @param _exit_queue_contract address
-      * @param _profit_record_contract address
-      **/
-    function __RootDB_init(address _in_come_contract, address _deposit_contract, address _exit_queue_contract, address _profit_record_contract) public initializer {
-        __RootDB_init_unchained(_in_come_contract, _deposit_contract, _exit_queue_contract, _profit_record_contract);
+
+    function __RootDB_init(address inComeContract_, address depositContract_, address exitQueueContract_, address profitRecordContract_) public initializer {
+        __RootDB_init_unchained(inComeContract_, depositContract_, exitQueueContract_, profitRecordContract_);
         __ERC20_init("relayer_dao", "relayer_dao_token");
         __Ownable_init();
     }
 
-    function __RootDB_init_unchained(address _in_come_contract, address _deposit_contract, address _exit_queue_contract, address _profit_record_contract) public onlyInitializing {
-        inComeContract = _in_come_contract;
-        depositContract = _deposit_contract;
-        exitQueueContract = _exit_queue_contract;
-        profitRecordContract = _profit_record_contract;
+    function __RootDB_init_unchained(address inComeContract_, address depositContract_, address exitQueueContract_, address profitRecordContract_) public onlyInitializing {
+        inComeContract = inComeContract_;
+        depositContract = depositContract_;
+        exitQueueContract = exitQueueContract_;
+        profitRecordContract = profitRecordContract_;
     }
 
 
@@ -87,25 +81,25 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
       * @notice addRelayer used to add relayers to the system call by Owner
       * @dev inorder to save gas designed a simple algorithm to manger the relayers
              it is not perfect
-      * @param _relayer address of relayers
+      * @param relayer address of relayers
                 address can only added once
-      * @param  _index  of relayer
+      * @param  index  of relayer
    **/
-    function addRelayer(address _relayer, uint256 _index) external onlyOwner
+    function addRelayer(address relayer, uint256 index) external onlyOwner
     {
-        require(_index <= MAX_RELAYER_COUNTER, "too large index");
+        require(index <= MAX_RELAYER_COUNTER, "too large index");
 
         uint256 counter = MAX_RELAYER_COUNTER;
 
         for (uint256 i = 0; i < counter; i++) {
-            require(mRelayers[i] != _relayer, "repeated");
+            require(mRelayers[i] != relayer, "repeated");
         }
 
-        if (_index == MAX_RELAYER_COUNTER) {
+        if (index == MAX_RELAYER_COUNTER) {
             MAX_RELAYER_COUNTER += 1;
         }
-        require(mRelayers[_index] == address(0), "index err");
-        mRelayers[_index] = _relayer;
+        require(mRelayers[index] == address(0), "index err");
+        mRelayers[index] = relayer;
     }
 
 
@@ -114,19 +108,19 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
       * @dev inorder to save gas designed a simple algorithm to manger the relayers
              it is not perfect
              if remove the last one it will dec MAX_RELAYER_COUNTER
-      * @param  _index  of relayer
+      * @param  index  of relayer
     **/
-    function removeRelayer(uint256 _index) external onlyOwner
+    function removeRelayer(uint256 index) external onlyOwner
     {
-        require(_index < MAX_RELAYER_COUNTER, "too large index");
+        require(index < MAX_RELAYER_COUNTER, "too large index");
 
         // save gas
-        if (_index + 1 == MAX_RELAYER_COUNTER) {
+        if (index + 1 == MAX_RELAYER_COUNTER) {
             MAX_RELAYER_COUNTER -= 1;
         }
 
-        require(mRelayers[_index] != address(0), "index err");
-        delete mRelayers[_index];
+        require(mRelayers[index] != address(0), "index err");
+        delete mRelayers[index];
     }
 
     modifier onlyDepositContract() {
@@ -136,17 +130,17 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
 
     /**
       * @notice totalRelayerTorn used to calc all the relayers unburned torn
-      * @return torn_qty The number of total Relayer Torn
+      * @return tornQty The number of total Relayer Torn
     **/
-    function totalRelayerTorn() external view returns (uint256 torn_qty){
-        torn_qty = 0;
+    function totalRelayerTorn() external view returns (uint256 tornQty){
+        tornQty = 0;
         address relay;
         uint256 counter = MAX_RELAYER_COUNTER;
         //save gas
         for (uint256 i = 0; i < counter; i++) {
             relay = mRelayers[i];
             if (relay != address(0)) {
-                torn_qty += IRelayerRegistry(TORN_RELAYER_REGISTRY).getRelayerBalance(relay);
+                tornQty += IRelayerRegistry(TORN_RELAYER_REGISTRY).getRelayerBalance(relay);
             }
         }
     }
@@ -154,12 +148,12 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
     /**
     * @notice totalTorn used to calc all the torn in relayer dao
     * @dev it is sum of (Deposit contract torn + InCome contract torn + totalRelayersTorn)
-    * @return torn_qty The number of total Torn
+    * @return tornQty The number of total Torn
    **/
-    function totalTorn() public view returns (uint256 torn_qty){
-        torn_qty = Deposit(depositContract).totalBalanceOfTorn();
-        torn_qty += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
-        torn_qty += this.totalRelayerTorn();
+    function totalTorn() public view returns (uint256 tornQty){
+        tornQty = Deposit(depositContract).totalBalanceOfTorn();
+        tornQty += ERC20Upgradeable(TORN_CONTRACT).balanceOf(inComeContract);
+        tornQty += this.totalRelayerTorn();
     }
 
     /**
@@ -167,40 +161,40 @@ contract RootDB is OwnableUpgradeable, ERC20Upgradeable {
              this  is called when user deposit torn to the system
      * @dev  algorithm  :   qty / ( totalTorn() + qty) = to_mint/(totalSupply()+ to_mint)
             if is the first user to mint mint is 10
-     * @param  _account the user's address
-     * @param  _torn_qty is  the user's torn to deposit
+     * @param  account the user's address
+     * @param  tornQty is  the user's torn to deposit
      * @return the number token to mint
     **/
-    function safeMint(address _account, uint256 _torn_qty) onlyDepositContract external returns (uint256) {
+    function safeMint(address account, uint256 tornQty) onlyDepositContract external returns (uint256) {
         uint256 total = totalSupply();
         uint256 to_mint;
         if (total == uint256(0)) {
             to_mint = 10 * 10 ** decimals();
         }
         else {// qty / ( totalTorn() + qty) = to_mint/(totalSupply()+ to_mint)
-            to_mint = total * _torn_qty / this.totalTorn();
+            to_mint = total * tornQty / this.totalTorn();
         }
-        _mint(_account, to_mint);
+        _mint(account, to_mint);
         return to_mint;
     }
 
     /**
     * @notice safeBurn used to _burn voucher token withdraw form the system
              this  is called when user deposit torn to the system
-    * @param  _account the user's address
-    * @param  _token_qty is the  the user's voucher to withdraw
+    * @param  account the user's address
+    * @param  tokenQty is the  the user's voucher to withdraw
    **/
-    function safeBurn(address _account, uint256 _token_qty) onlyDepositContract external {
-        _burn(_account, _token_qty);
+    function safeBurn(address account, uint256 tokenQty) onlyDepositContract external {
+        _burn(account, tokenQty);
     }
 
 
-    function balanceOfTorn(address _account) public view returns (uint256){
-        return valueForTorn(this.balanceOf(_account));
+    function balanceOfTorn(address account) public view returns (uint256){
+        return valueForTorn(this.balanceOf(account));
     }
 
-    function valueForTorn(uint256 _token_qty) public view returns (uint256){
-        return _token_qty * (this.totalTorn()) / (totalSupply());
+    function valueForTorn(uint256 tokenQty) public view returns (uint256){
+        return tokenQty * (this.totalTorn()) / (totalSupply());
     }
 
     /**

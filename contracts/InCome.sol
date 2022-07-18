@@ -18,20 +18,20 @@ contract Income {
 
 
     constructor(
-        address _torn_contract,
-        address _root_db
+        address tornContract,
+        address rootDb
     ) {
-        TORN_CONTRACT = _torn_contract;
-        ROOT_DB = _root_db;
+        TORN_CONTRACT = tornContract;
+        ROOT_DB = rootDb;
     }
     /**
       * @notice distributeTorn used to distribute TORN to deposit contract which belong to stakes
-      * @param _torn_qty the amount of TORN
+      * @param tornQty the amount of TORN
    **/
-    function distributeTorn(uint256 _torn_qty) external {
+    function distributeTorn(uint256 tornQty) external {
         address deposit_address = RootDB(ROOT_DB).depositContract();
-        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), deposit_address, _torn_qty);
-        emit DistributeTorn(_torn_qty);
+        SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT), deposit_address, tornQty);
+        emit DistributeTorn(tornQty);
     }
 
     receive() external payable {
