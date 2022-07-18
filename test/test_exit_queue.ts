@@ -170,7 +170,7 @@ describe("ExitQueue", function () {
             expect(await mExitQueue.maxIndex()).equal(1);
             expect(await mExitQueue.preparedIndex()).equal(0);
             expect(await mExitQueue.nextSkipIndex()).equal(1);
-            await expect(mExitQueue.connect(user1).cancelQueue()).emit(mExitQueue, "cancel_queue").withArgs(user1.address, token.div(2));
+            await expect(mExitQueue.connect(user1).cancelQueue()).emit(mExitQueue, "CancelQueue").withArgs(user1.address, token.div(2));
 
             expect(await mExitQueue.nextValue()).equal(0);
             expect(await mExitQueue.maxIndex()).equal(1);
@@ -192,7 +192,7 @@ describe("ExitQueue", function () {
         it("case3 :  test not multiple cancel ", async function () {
             let token = await mRootDb.balanceOf(user1.address);
             await mExitQueue.connect(user1).addQueue(token.div(2));
-            await expect(mExitQueue.connect(user1).cancelQueue()).emit(mExitQueue, "cancel_queue").withArgs(user1.address, token.div(2));
+            await expect(mExitQueue.connect(user1).cancelQueue()).emit(mExitQueue, "CancelQueue").withArgs(user1.address, token.div(2));
             expect(mExitQueue.connect(user1).cancelQueue()).revertedWith("empty")
 
         });

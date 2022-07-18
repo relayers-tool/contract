@@ -377,14 +377,14 @@ describe("test_deposit", function () {
             await mDeposit.connect(operator).setPara(1, stake_torn.div(10));
             await mDeposit.connect(operator).setPara(2, stake_torn);
             //_checkLock2Gov
-            await expect(mDeposit.connect(user3).depositWithApproval(stake_torn)).to.be.emit(mDeposit, "lock_to_gov")
+            await expect(mDeposit.connect(user3).depositWithApproval(stake_torn)).to.be.emit(mDeposit, "LockToGov")
                 .withArgs(stake_torn);
             expect(await mRootDb.totalTorn()).to.be.equal(stake_torn);
 
             expect(await torn_erc20.balanceOf(mDeposit.address)).to.be.equal(0);
             let token = await mRootDb.balanceOf(user3.address);
             await expect(mExitQueue.connect(user3).addQueue(token)).to
-                .be.emit(mExitQueue, "add_queue").withArgs(user3.address, token);
+                .be.emit(mExitQueue, "AddQueue").withArgs(user3.address, token);
             expect(await mExitQueue.nextValue()).to.be.equal(stake_torn);
             let shortage = await mDeposit.getValueShouldUnlockFromGov();
             expect(shortage).gt(0);
