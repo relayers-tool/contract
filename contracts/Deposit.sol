@@ -54,15 +54,15 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     event WithDraw(address  _account,uint256 _token_qty,uint256 _torn,uint256 _profit);
 
     constructor(
-        address _torn_contract,
-        address _torn_governance_staking,
-        address _torn_relayer_registry,
-        address _root_db
+        address tornContract,
+        address tornGovStaking,
+        address tornRelayerRegistry,
+        address rootDb
     ) {
-        TORN_CONTRACT = _torn_contract;
-        TORN_GOVERNANCE_STAKING = _torn_governance_staking;
-        TORN_RELAYER_REGISTRY = _torn_relayer_registry;
-        ROOT_DB = _root_db;
+        TORN_CONTRACT = tornContract;
+        TORN_GOVERNANCE_STAKING = tornGovStaking;
+        TORN_RELAYER_REGISTRY = tornRelayerRegistry;
+        ROOT_DB = rootDb;
     }
 
 
@@ -90,20 +90,20 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     /**
     * @notice setPara used to set parameters called by Operator
-    * @param _index index para
+    * @param index index para
             * index 1 maxReserveTorn;
             * index 2 _maxRewardInGov;
             * index 3 _rewardAddress
             * index 4 profitRatio  x/1000
-    * @param _value
+    * @param value
    **/
-    function setPara(uint256 _index,uint256 _value) external onlyOperator {
-        if(_index == 1){
-            maxReserveTorn = _value;
-        }else if(_index == 2){
-            maxRewardInGov = _value;
-        }else if(_index == 3){
-            rewardAddress = address(uint160(_value));
+    function setPara(uint256 index,uint256 value) external onlyOperator {
+        if(index == 1){
+            maxReserveTorn = value;
+        }else if(index == 2){
+            maxRewardInGov = value;
+        }else if(index == 3){
+            rewardAddress = address(uint160(value));
         }
         else{
             require(false,"Invalid _index");
@@ -189,29 +189,29 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     /**
        * @notice stake2Node used to stake TORN to relayers  when it is necessary call by Operator
        * @param  index: the index of the relayer
-       * @param _torn_qty: the amount of TORN to be stake
+       * @param tornQty: the amount of TORN to be stake
     **/
-    function stake2Node(uint256 index, uint256 _torn_qty) external onlyOperator {
+    function stake2Node(uint256 index, uint256 tornQty) external onlyOperator {
         address _relayer = RootDB(ROOT_DB).mRelayers(index);
         require(_relayer != address(0), 'Invalid index');
-        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, _torn_qty);
-        IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, _torn_qty);
+        SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, tornQty);
+        IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, tornQty);
     }
 
 
    /**
        * @notice deposit used to deposit TORN to relayers dao  with permit param
-       * @param  _torn_qty: the amount of torn want to stake
+       * @param  tornQty: the amount of torn want to stake
        * @param   deadline ,v,r,s  permit param
     **/
-    function deposit(uint256 _torn_qty,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external {
-        IERC20PermitUpgradeable(TORN_CONTRACT).permit(msg.sender, address(this), _torn_qty, deadline, v, r, s);
-        depositWithApproval(_torn_qty);
+    function deposit(uint256 tornQty,uint256 deadline, uint8 v, bytes32 r, bytes32 s) external {
+        IERC20PermitUpgradeable(TORN_CONTRACT).permit(msg.sender, address(this), tornQty, deadline, v, r, s);
+        depositWithApproval(tornQty);
     }
 
     /**
        * @notice deposit used to deposit TORN to relayers dao  with approval
-       * @param  _torn_qty: the amount of torn want to stake
+       * @param  tornQty: the amount of torn want to stake
        * @dev
            1. mint the voucher of the deposit.
            2. TransferFrom TORN to this contract
@@ -222,13 +222,13 @@ contract Deposit is  ReentrancyGuardUpgradeable {
                 3.  checkLock2Gov
                 4. or unlock for the gov prepare to Transfer2Queue
     **/
-    function depositWithApproval(uint256 _torn_qty) public nonReentrant {
+    function depositWithApproval(uint256 tornQty) public nonReentrant {
         address _account = msg.sender;
-        require(_torn_qty > 0,"error para");
-        uint256 root_token = RootDB(ROOT_DB).safeMint(_account, _torn_qty);
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), _torn_qty);
+        require(tornQty > 0,"error para");
+        uint256 root_token = RootDB(ROOT_DB).safeMint(_account, tornQty);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), tornQty);
         //record the deposit
-        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(msg.sender, _torn_qty,root_token);
+        ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(msg.sender, tornQty,root_token);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
@@ -251,7 +251,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     /**
        * @notice getValueShouldUnlock used to get the amount of TORN and the shortage of TORN
-       * @param  _token_qty:  the amount of the voucher
+       * @param  tokenQty:  the amount of the voucher
        * return (shortage ,torn)
               shortage:  the shortage of TRON ,if the user want to with draw the _token_qty voucher
                         1. if the balance of TORN in this contract is enough return SUFFICIENT
@@ -259,10 +259,10 @@ contract Deposit is  ReentrancyGuardUpgradeable {
                         3. others is the amount which show unlock for the withdrawing
               torn    :  the amount of TORN if the user with draw the qty of  _token_qty
     **/
-    function getValueShouldUnlock(uint256 _token_qty)  public view  returns (uint256 shortage,uint256 torn){
+    function getValueShouldUnlock(uint256 tokenQty)  public view  returns (uint256 shortage,uint256 torn){
         uint256 this_balance_tron = IERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
         // _amount_token
-         torn = RootDB(ROOT_DB).valueForTorn(_token_qty);
+         torn = RootDB(ROOT_DB).valueForTorn(tokenQty);
         if(this_balance_tron >= torn){
             shortage = SUFFICIENT;
             return (shortage,torn);
@@ -277,69 +277,69 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     /**
        * @notice _safeWithdraw used to withdraw
-       * @param  _token_qty:  the amount of the voucher
+       * @param  tokenQty:  the amount of the voucher
        * @return  the amount of TORN user get
        * @dev
              1. Unlock torn form gov if necessary
-             2. burn the _token_qty of the voucher
+             2. burn the tokenQty of the voucher
     **/
-   function _safeWithdraw(uint256 _token_qty) internal  returns (uint256){
-       require(_token_qty > 0,"error para");
+   function _safeWithdraw(uint256 tokenQty) internal  returns (uint256){
+       require(tokenQty > 0,"error para");
        uint256  shortage;
        uint256 torn;
-       (shortage,torn) = getValueShouldUnlock(_token_qty);
+       (shortage,torn) = getValueShouldUnlock(tokenQty);
        require(shortage != IN_SUFFICIENT, 'pool Insufficient');
        if(shortage != SUFFICIENT) {
            ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(shortage);
        }
-       RootDB(ROOT_DB).safeBurn(msg.sender, _token_qty);
+       RootDB(ROOT_DB).safeBurn(msg.sender, tokenQty);
        return torn;
    }
 
     /**
        * @notice _safeSendTorn used to send TORN to withdrawer and profit to dev team
-       * @param  _torn: amount of TORN user got
-       * @param  _profit: the profit of the user got
+       * @param  torn: amount of TORN user got
+       * @param  profit: the profit of the user got
        * return  the user got TORN which subbed the dev profit
     **/
-    function _safeSendTorn(uint256 _torn,uint256 _profit) internal returns(uint256 ret) {
-        _profit = _profit *profitRatio/1000;
+    function _safeSendTorn(uint256 torn,uint256 profit) internal returns(uint256 ret) {
+        profit = profit *profitRatio/1000;
         //send to  profitAddress
-        if(_profit > 0){
-            SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT),rewardAddress, _profit);
+        if(profit > 0){
+            SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT),rewardAddress, profit);
         }
-        ret = _torn - _profit;
+        ret = torn - profit;
         //send to  user address
         SafeERC20Upgradeable.safeTransfer(IERC20Upgradeable(TORN_CONTRACT),msg.sender, ret);
     }
 
     /**
        * @notice  used to  withdraw
-       * @param  _token_qty:  the amount of the voucher
+       * @param  tokenQty:  the amount of the voucher
        * @dev inorder to save gas we had modified erc20 token which no need to approve
     **/
-    function withDraw(uint256 _token_qty)  public nonReentrant {
+    function withDraw(uint256 tokenQty)  public nonReentrant {
         require( _nextExitQueueValue() == 0,"Queue not empty");
         address profit_address = RootDB(ROOT_DB).profitRecordContract();
-        uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender, _token_qty);
-        uint256 torn = _safeWithdraw(_token_qty);
+        uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender, tokenQty);
+        uint256 torn = _safeWithdraw(tokenQty);
         _safeSendTorn(torn,profit);
-        emit WithDraw(msg.sender, _token_qty,torn,profit);
+        emit WithDraw(msg.sender, tokenQty,torn,profit);
     }
 
     /**
        * @notice  used to  withdraw
-       * @param  _addr:  the addr of user
-       * @param  _token_qty:  the amount of the voucher
+       * @param  addr:  the addr of user
+       * @param  tokenQty:  the amount of the voucher
        * @dev    because of nonReentrant have to supply this function for exitQueue
        * return  the user got TORN which subbed the dev profit
     **/
-    function withdraw_for_exit(address _addr,uint256 _token_qty)  external onlyExitQueue returns (uint256 ret) {
+    function withdraw_for_exit(address addr,uint256 tokenQty)  external onlyExitQueue returns (uint256 ret) {
         address profit_address = RootDB(ROOT_DB).profitRecordContract();
-        uint256 profit = ProfitRecord(profit_address).withDraw(_addr, _token_qty);
-        uint256 torn = _safeWithdraw(_token_qty);
+        uint256 profit = ProfitRecord(profit_address).withDraw(addr, tokenQty);
+        uint256 torn = _safeWithdraw(tokenQty);
         ret =  _safeSendTorn(torn,profit);
-        emit WithDraw(_addr, _token_qty,torn,profit);
+        emit WithDraw(addr, tokenQty,torn,profit);
     }
 
 
@@ -355,14 +355,14 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     /**
        * @notice isBalanceEnough
-       *  return whether is Enough TORN for user to withdraw the _token_qty
+       *  return whether is Enough TORN for user to withdraw the tokenQty
     **/
-    function isBalanceEnough(uint256 _token_qty)  external view returns (bool) {
+    function isBalanceEnough(uint256 tokenQty)  external view returns (bool) {
         if( _nextExitQueueValue() != 0){
             return false;
         }
         uint256  shortage;
-        (shortage,) = getValueShouldUnlock(_token_qty);
+        (shortage,) = getValueShouldUnlock(tokenQty);
         return shortage < IN_SUFFICIENT;
     }
 
