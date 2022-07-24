@@ -11,17 +11,17 @@ Currently,the amount of TORN locked in the Tornado Cash governance contract is 7
 
 
 
-#Relayers Dao consists of several parts:
+# Relayers Dao consists of several parts:
 - Deposit contract(Deposit TORN into relayers and governance)
 - InCome contract(Receive reward)
 - ExitQueue contract(Unstake TORN and queue if the TORN liquidity is not enough)
 - RootDB contract(Record some data,for example,contract address,TORN amount for usrs,etc.)
 - ProfitRecord contract(Record user's reward from staked TORN.)
 
-#Operator
+# Operator
 Operator has 2 rights include staking TORN on Tornado Cash relayers,transfer the ETH to TORN.
 
-#How to work?
+# How to work?
 1. To stake TORN with Relayers Dao,the user sends TORN to the Deposit smart contract.
 1. All deposits into Relayers Dao are assigned to operators who use these deposits TORN to Tornado Cash relayers and governance contract.
 1. All Relayers' reward will be sent to the income contract,transfer ETH/BNB...to TORN is executed by operators when the reward reaches a certain amount.
