@@ -45,3 +45,9 @@ Operator has 2 rights include staking TORN on Tornado Cash relayers,transfer the
 ```
    npx hardhat coverage
 ```
+
+####  Verify code
+```
+   hardhat --network eth etherscan-verify --api-key <your key>  --api-url https://api.etherscan.io
+```
+
