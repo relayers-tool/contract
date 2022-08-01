@@ -306,7 +306,8 @@ describe("test_deposit", function () {
             expect(await mRootDb.totalRelayerTorn()).to.be.equal(0);
             await torn_erc20.connect(user3).mint(user3.address, stake_torn);
             await torn_erc20.connect(user3).approve(mDeposit.address, stake_torn);
-            await mDeposit.connect(user3).depositWithApproval(stake_torn);
+            await expect(mDeposit.connect(user3).depositWithApproval(stake_torn)).to
+                .be.emit(mDeposit, "Deposit").withArgs(user3.address, stake_torn);;
             expect(await mRootDb.totalTorn()).to.be.equal(stake_torn);
 
 

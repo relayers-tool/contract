@@ -47,11 +47,16 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     event LockToGov(uint256 _amount);
 
     /// @notice An event emitted when user withdraw
-    /// @param  _account The: address of user
-    /// @param _token_qty: voucher of the deposit
-    /// @param _torn: the amount of torn in this withdarw
-    /// @param _profit: the profi of torn in this withdarw
-    event WithDraw(address  _account,uint256 _token_qty,uint256 _torn,uint256 _profit);
+    /// @param  account The: address of user
+    /// @param tokenQty: voucher of the deposit
+    /// @param torn: the amount of torn in this withdarw
+    /// @param profit: the profi of torn in this withdarw
+    event WithDraw(address  indexed  account,uint256 tokenQty,uint256 torn,uint256 profit);
+
+    /// @notice An event emitted when user deposit
+    /// @param  account The: address of user
+    /// @param torn: TORN of the deposit
+    event Deposit(address  indexed  account,uint256 torn);
 
     constructor(
         address tornContract,
@@ -223,12 +228,15 @@ contract Deposit is  ReentrancyGuardUpgradeable {
                 4. or unlock for the gov prepare to Transfer2Queue
     **/
     function depositWithApproval(uint256 tornQty) public nonReentrant {
-        address _account = msg.sender;
+        address account = msg.sender;
         require(tornQty > 0,"error para");
-        uint256 root_token = RootDB(ROOT_DB).safeMint(_account, tornQty);
-        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT),_account, address(this), tornQty);
+        uint256 root_token = RootDB(ROOT_DB).safeMint(account, tornQty);
+        SafeERC20Upgradeable.safeTransferFrom(IERC20Upgradeable(TORN_CONTRACT), account, address(this), tornQty);
         //record the deposit
         ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(msg.sender, tornQty,root_token);
+
+        //  emit the Deposit
+        emit Deposit(account,tornQty);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
