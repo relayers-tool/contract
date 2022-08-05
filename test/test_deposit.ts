@@ -155,6 +155,29 @@ describe("test_deposit", function () {
             await expect(mDeposit.connect(operator).stake2Node(10, stake_torn.div(2))).revertedWith("Invalid index");
         });
 
+        it("stake2Node unlock form gov", async function () {
+            let stake_torn = ethers.utils.parseUnits(Math.random() * 100 + "", 18);
+            await mDeposit.connect(operator).setPara(2, stake_torn.mul(5));
+            await mDeposit.connect(operator).setPara(1, stake_torn.mul(5));
+
+            await torn_erc20.connect(user1).approve(mDeposit.address, stake_torn.mul(8));
+            await torn_erc20.connect(user1).mint(user1.address, stake_torn.mul(8));
+            await mDeposit.connect(user1).depositWithApproval(stake_torn.mul(8));
+            expect(await torn_erc20.balanceOf(mDeposit.address)).equal(0);
+            expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).equal(stake_torn.mul(8));
+            await expect(mDeposit.connect(operator).stake2Node(0, stake_torn.mul(5))).emit(mDeposit, "UnLockGov").withArgs(stake_torn.mul(5));
+            expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).equal(stake_torn.mul(3));
+            await expect(mDeposit.connect(operator).stake2Node(0, stake_torn.mul(4))).revertedWith("panic code 0x11");
+
+            await torn_erc20.connect(user1).approve(mDeposit.address, stake_torn.mul(1));
+            await torn_erc20.connect(user1).mint(user1.address, stake_torn.mul(1));
+            await mDeposit.connect(user1).depositWithApproval(stake_torn.mul(1));
+            expect(await torn_erc20.balanceOf(mDeposit.address)).equal(stake_torn.mul(1));
+            await expect(mDeposit.connect(operator).stake2Node(0, stake_torn.mul(2))).emit(mDeposit, "UnLockGov").withArgs(stake_torn.mul(1));
+            expect(await mTornadoGovernanceStaking.lockedBalance(mDeposit.address)).equal(stake_torn.mul(2));
+
+        });
+
     });
     describe("onlyExitQueue", function () {
 

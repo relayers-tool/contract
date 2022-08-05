@@ -43,8 +43,12 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
 
     /// @notice An event emitted when lock torn to gov staking contract
-    /// @param _amount The amount which staked to gov staking contract
-    event LockToGov(uint256 _amount);
+    /// @param amount The amount which staked to gov staking contract
+    event LockToGov(uint256 amount);
+
+    /// @notice An event emitted when unlock torn to gov staking contract
+    /// @param amount The amount which staked to gov staking contract
+    event UnLockGov(uint256 amount);
 
     /// @notice An event emitted when user withdraw
     /// @param  account The: address of user
@@ -193,14 +197,23 @@ contract Deposit is  ReentrancyGuardUpgradeable {
 
     /**
        * @notice stake2Node used to stake TORN to relayers  when it is necessary call by Operator
+       * @dev if the contract balance is insufficient ,it will unlock torn form the gov
        * @param  index: the index of the relayer
        * @param tornQty: the amount of TORN to be stake
     **/
-    function stake2Node(uint256 index, uint256 tornQty) external onlyOperator {
-        address _relayer = RootDB(ROOT_DB).mRelayers(index);
-        require(_relayer != address(0), 'Invalid index');
+    function stake2Node(uint256 index, uint256 tornQty) public onlyOperator {
+        address relayer = RootDB(ROOT_DB).mRelayers(index);
+        require(relayer != address(0), 'Invalid index');
+        uint256 tornBalanceOf = ERC20Upgradeable(TORN_CONTRACT).balanceOf(address(this));
+        if(tornBalanceOf < tornQty){
+            uint256 need_unlock = tornQty - tornBalanceOf;
+            // if the locked balance is insufficient the unlock operation will be revert
+            // so it is unnecessary to check the locked  balance
+            ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(need_unlock);
+            emit UnLockGov(need_unlock);
+        }
         SafeERC20Upgradeable.safeApprove(IERC20Upgradeable(TORN_CONTRACT),TORN_RELAYER_REGISTRY, tornQty);
-        IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(_relayer, tornQty);
+        IRelayerRegistry(TORN_RELAYER_REGISTRY).stakeToRelayer(relayer, tornQty);
     }
 
 
@@ -213,6 +226,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         IERC20PermitUpgradeable(TORN_CONTRACT).permit(msg.sender, address(this), tornQty, deadline, v, r, s);
         depositWithApproval(tornQty);
     }
+
 
     /**
        * @notice deposit used to deposit TORN to relayers dao  with approval
@@ -252,6 +266,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
              }
             if(need_unlock != IN_SUFFICIENT){
                 ITornadoGovernanceStaking(TORN_GOVERNANCE_STAKING).unlock(need_unlock);
+                emit UnLockGov(need_unlock);
              }
          }
 
