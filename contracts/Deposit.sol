@@ -107,7 +107,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         }else if(index == 3){
             rewardAddress = address(uint160(value));
         }else if(index == 4){
-            profitRatio = profit;
+            profitRatio = value;
         }
         else{
             require(false,"Invalid _index");
