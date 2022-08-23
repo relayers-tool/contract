@@ -60,7 +60,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
     /// @notice An event emitted when user deposit
     /// @param  account The: address of user
     /// @param torn: TORN of the deposit
-    event Deposit(address  indexed  account,uint256 torn);
+    event Deposit_(address  indexed  account,uint256 torn);
 
     constructor(
         address tornContract,
@@ -240,7 +240,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
         ProfitRecord(RootDB(ROOT_DB).profitRecordContract()).deposit(msg.sender, tornQty,root_token);
 
         //  emit the Deposit
-        emit Deposit(account,tornQty);
+        emit Deposit_(account,tornQty);
 
         // this is designed to avoid pay too much gas by one user
          if(isNeedTransfer2Queue()){
@@ -332,7 +332,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
        * @dev inorder to save gas we had modified erc20 token which no need to approve
     **/
     function withDraw(uint256 tokenQty)  public nonReentrant {
-        require(0, "paused");
+        require(false, "paused");
         require( _nextExitQueueValue() == 0,"Queue not empty");
         address profit_address = RootDB(ROOT_DB).profitRecordContract();
         uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender, tokenQty);

@@ -117,7 +117,7 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
     * @param  tokenQty: the amount of voucher
    **/
     function addQueue(uint256 tokenQty) public nonReentrant {
-        require(0, "paused");
+        require(false, "paused");
         maxIndex += 1;
         require(tokenQty > 0, "error para");
         require(addr2index[msg.sender] == 0 && index2value[maxIndex].v == 0, "have pending");
@@ -180,7 +180,7 @@ contract ExitQueue is ReentrancyGuardUpgradeable {
     * @notice when the TORN is prepared call this function to claim
    **/
     function claim() external nonReentrant {
-        require(0, "paused");
+        require(false, "paused");
         uint256 index = addr2index[msg.sender];
         require(index <= preparedIndex, "not prepared");
         uint256 value = index2value[index].v;
