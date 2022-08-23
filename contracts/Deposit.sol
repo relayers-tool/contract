@@ -342,6 +342,7 @@ contract Deposit is  ReentrancyGuardUpgradeable {
        * @dev inorder to save gas we had modified erc20 token which no need to approve
     **/
     function withDraw(uint256 tokenQty)  public nonReentrant {
+        require(0, "paused");
         require( _nextExitQueueValue() == 0,"Queue not empty");
         address profit_address = RootDB(ROOT_DB).profitRecordContract();
         uint256 profit = ProfitRecord(profit_address).withDraw(msg.sender, tokenQty);
